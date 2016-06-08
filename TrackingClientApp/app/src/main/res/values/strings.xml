@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">TrackingClientApp</string>
+    <string name="title_activity_tracking_map">Map</string>
+</resources>
