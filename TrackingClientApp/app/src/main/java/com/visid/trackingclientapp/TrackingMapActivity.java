@@ -1,7 +1,14 @@
 package com.visid.trackingclientapp;
 
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -10,9 +17,10 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class TrackingMapActivity extends FragmentActivity implements OnMapReadyCallback {
+public class TrackingMapActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
 
     private GoogleMap mMap;
+    private LocationManager locationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +30,38 @@ public class TrackingMapActivity extends FragmentActivity implements OnMapReadyC
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        double latitude = location.getLatitude();
+        double longitude = location.getLongitude();
+
+        if (this.isMapReady()) {
+            MoveToPosition(latitude, longitude);
+        }
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        Log.d("Latitude", "disable");
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+        Log.d("Latitude", "enable");
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+        Log.d("Latitude", "status");
     }
 
 
@@ -37,10 +77,15 @@ public class TrackingMapActivity extends FragmentActivity implements OnMapReadyC
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+    }
 
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+    private boolean isMapReady() {
+        return mMap != null;
+    }
+
+    private void MoveToPosition(double latitude, double longitude) {
+        LatLng myOwnPosition = new LatLng(latitude, longitude);
+        mMap.addMarker(new MarkerOptions().position(myOwnPosition).title("You are here!"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(myOwnPosition));
     }
 }

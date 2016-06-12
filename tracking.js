@@ -1,52 +1,93 @@
 /* global subscription */
 /* global watchId */
 /* global map */
-var x = document.getElementById("demo");
+var x = document.getElementById("status");
 
 var geo_options = {
   enableHighAccuracy: true, 
   maximumAge        : 60000, 
-  timeout           : 10000
+  timeout           : 20000
 };
 
-var ownTrackingJob = { 
-    identifier : ''    
+var trackingViewModel = {
+    ownTrackingJob : {},
+    observedTrackingJobs : ko.observableArray(),    
+    
+    createTrackingJob : function (name, latitude, longitude) {
+        return {            
+            identifier : ko.observable(name),
+            marker : undefined,
+            subscription : undefined,
+            latitude : ko.observable(latitude),
+            longitude : ko.observable(longitude),
+            utcTimestamp : ko.observable(UtcNow()),
+            updatePositionOnMap : ko.observable(true),
+            observe : ko.observable(true)        
+        }
+    },
+    
+    addTrackingJob : function (self, job, onObserveChanged) {
+        if(!self.containsTrackingJob(self, job.identifier())){
+            self.observedTrackingJobs.push(job);
+            job.observe.subscribe(function(newValue) { onObserveChanged(job); });
+        }        
+    }, 
+    
+    deleteTrackingJob : function (self, job) {
+        for(var i = self.observedTrackingJobs.length - 1; i >= 0; i--) {
+            if(self.observedTrackingJobs[i] === job) {
+               self.observedTrackingJobs.splice(i, 1);
+            }
+        }        
+    },
+    
+    containsTrackingJob : function(self, name){
+        for(var i = self.observedTrackingJobs.length - 1; i >= 0; i--) {
+            if(self.observedTrackingJobs[i] === job) {
+               return true;
+            }
+        }        
+        return false;
     }
-var observedTrackingJobs = [ownTrackingJob];
+};
+
+trackingViewModel.ownTrackingJob = trackingViewModel.createTrackingJob('', 0, 0);
+ko.applyBindings(trackingViewModel);
 
 function initialize(){
+    
+    
     Parse.initialize('myAppId','unused');
     Parse.serverURL = 'http://hmmas8wmeibjab4e.myfritz.net/parse';
     
     initializeMap();
-    getCurrentPosition(onShowPosition)        
+    getCurrentPosition(onShowOwnPosition);       
 }
 
 function beginTracking() {  
     if (navigator.geolocation) {
-        ownTrackingJob.identifier = document.getElementById('trackIdentifier').value;
+        // trackingViewModel.ownTrackingJob.identifier = document.getElementById('trackIdentifier').value;
         watchId = navigator.geolocation.watchPosition(onPosition, showError, geo_options);
-        subscribeToPositionNotifications(ownTrackingJob);                 
+        subscribeToPositionNotifications(trackingViewModel.ownTrackingJob);
+        trackingViewModel.addTrackingJob(trackingViewModel, trackingViewModel.ownTrackingJob, onObserveChanged);                 
     } else { 
-        x.innerHTML = "Geolocation is not supported by this browser.";
+        printStatus("Geolocation is not supported by this browser.");
     }
 }
 
 function observe(){    
-    var trackingJob = {
-            identifier : document.getElementById('observedIdentifier').value,
-            marker : new google.maps.Marker({position: new google.maps.LatLng(0, 0),map:map,title:"You are here!"})
-        };
-    subscribeToPositionNotifications(trackingJob)
-    observedTrackingJobs.push(trackingJob);        
+    var trackingJob = trackingViewModel.createTrackingJob(document.getElementById('observedIdentifier').value, 0, 0);                
+    trackingJob.marker = new google.maps.Marker({position: new google.maps.LatLng(0, 0),map:map,title:"You are here!"});        
+    subscribeToPositionNotifications(trackingJob);
+    trackingViewModel.addTrackingJob(trackingViewModel, trackingJob, onObserveChanged);        
 }
 
 function getCurrentPosition(onGetPosition) {  
     if (navigator.geolocation) {
         watchId = navigator.geolocation.getCurrentPosition(onGetPosition, showError, geo_options);           
-        ownTrackingJob.marker = new google.maps.Marker({position: new google.maps.LatLng(0, 0),map:map,title:"You are here!"})              
+        trackingViewModel.ownTrackingJob.marker = new google.maps.Marker({position: new google.maps.LatLng(0, 0),map:map,title:"You are here!"});
     } else { 
-        x.innerHTML = "Geolocation is not supported by this browser.";
+        printStatus("Geolocation is not supported by this browser.");
     }
 }
 
@@ -57,53 +98,68 @@ function onPosition(position){
     sendPosition(lat, lon);
 }
 
-function onShowPosition(position){
+function onShowOwnPosition(position){
     var lat = position.coords.latitude;
-    var lon = position.coords.longitude;    
+    var lon = position.coords.longitude;
+    
+    trackingViewModel.ownTrackingJob.latitude(lat);
+    trackingViewModel.ownTrackingJob.longitude(lon);    
             
-    showPosition(lat, lon);
+    showPosition(lat, lon, trackingViewModel.ownTrackingJob.marker);
 }
 
 function sendPosition(latitude, longitude){        
     var obj = new Parse.Object('Posts');
     
-    //latitude = Math.random() * 10.0;
-    //longitude = Math.random() * 10.0;        
-    
-    obj.set('name', ownTrackingJob.identifier);  
+    obj.set('name', trackingViewModel.ownTrackingJob.identifier());  
     obj.set('latitude', latitude);
     obj.set('longitude', longitude);
+    obj.set('timestamputc', UtcNow());
 
     obj.save();
 }
 
 function subscribeToPositionNotifications(trackingJob){
     let query = new Parse.Query('Posts');
-    query.equalTo('name', trackingJob.identifier);
+    query.equalTo('name', trackingJob.identifier());
     trackingJob.subscription = query.subscribe();
     
     trackingJob.subscription.on('create', (position) => {
-        var name = position.get('name');
-        var observedTrackingJob = observedTrackingJobs.find(function(v,i) { return v.identifier == name })
-        console.log(position.get('latitude'), position.get('longitude'), name);
-        if (observedTrackingJob !== undefined){
-                x.innerHTML = "Latitude: " + position.get('latitude') + 
-                              "<br>Longitude: " + position.get('longitude') + 
-                              "<br>Name: " + name;  
+        var name = position.get('name');        
+        var observedTrackingJob = trackingViewModel.observedTrackingJobs().find(function(v,i) { return v.identifier() == name });
+        observedTrackingJob.latitude(position.get('latitude'));
+        observedTrackingJob.longitude(position.get('longitude'));
+        observedTrackingJob.utcTimestamp(position.get('timestamputc'));
+                
+        if (observedTrackingJob !== undefined && observedTrackingJob.updatePositionOnMap()){
             showPosition(position.get('latitude'), position.get('longitude'), observedTrackingJob.marker);    
         }                        
     });
 }
 
+function unsubscribeFromPositionNotifications(job){
+    if (job.subscription !== undefined){
+        job.subscription.unsubscribe();    
+    }  
+}
+
+function onObserveChanged(job){
+        if(job.observe() === true){
+            subscribeToPositionNotifications(job);                        
+        }else{
+            unsubscribeFromPositionNotifications(job);
+        }
+}  
+
 function stopTracking() {
     if (navigator.geolocation) {
-        navigator.geolocation.clearWatch(watchId);        
+        navigator.geolocation.clearWatch(watchId);  
+        printStatus("Stopped tracking.");      
     } else { 
-        x.innerHTML = "Cannot reset geolocation tracking.";
+        printStatus("Cannot reset geolocation tracking.");
     }
-    if (ownTrackingJob.subscription !== undefined){
-        ownTrackingJob.subscription.unsubscribe();    
-    }    
+    
+    unsubscribeFromPositionNotifications(trackingViewModel.ownTrackingJob);    
 }
 
 function initializeMap() {
@@ -134,16 +190,26 @@ function showPosition(latitude, longitude, marker) {
 function showError(error) {
     switch(error.code) {
         case error.PERMISSION_DENIED:
-            x.innerHTML = "User denied the request for Geolocation."
+            printStatus("User denied the request for Geolocation.");
             break;
         case error.POSITION_UNAVAILABLE:
-            x.innerHTML = "Location information is unavailable."
+            printStatus("Location information is unavailable.");
             break;
         case error.TIMEOUT:
-            x.innerHTML = "The request to get user location timed out."
+            printStatus("The request to get user location timed out.");
             break;
         case error.UNKNOWN_ERROR:
-            x.innerHTML = "An unknown error occurred."
+            printStatus("An unknown error occurred.");
             break;
     }
+}
+
+function printStatus(message){
+    x.innerHTML = message;
+}
+
+function UtcNow() {
+    var now = new Date(); 
+var now_utc = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),  now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds());
+return now_utc;
 }
