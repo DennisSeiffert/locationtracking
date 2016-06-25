@@ -8,18 +8,23 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class TrackingMapActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private boolean isTrackingServiceRunning = false;
+    private boolean activateMap = false;
+    private Marker currentPositionMarker = null;
     private Button trackButton;
     private BroadcastReceiver receiver = new BroadcastReceiver() {
 
@@ -51,6 +56,14 @@ public class TrackingMapActivity extends FragmentActivity implements OnMapReadyC
                 controlTrackingService();
             }
         });
+
+        final CheckBox activateMapCheckbox = (CheckBox) findViewById(R.id.activateMap);
+        activateMapCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                activateMap = isChecked;
+            }
+        });
     }
 
     private void controlTrackingService() {
@@ -80,7 +93,7 @@ public class TrackingMapActivity extends FragmentActivity implements OnMapReadyC
 
 
     public void onLocationChanged(double latitude, double longitude) {
-        if (this.isMapReady()) {
+        if (this.canUpdateMap()) {
             MoveToPosition(latitude, longitude);
         }
     }
@@ -99,13 +112,18 @@ public class TrackingMapActivity extends FragmentActivity implements OnMapReadyC
         mMap = googleMap;
     }
 
-    private boolean isMapReady() {
-        return mMap != null;
+    private boolean canUpdateMap() {
+        return mMap != null && activateMap;
     }
 
     private void MoveToPosition(double latitude, double longitude) {
         LatLng myOwnPosition = new LatLng(latitude, longitude);
-        mMap.addMarker(new MarkerOptions().position(myOwnPosition).title("You are here!"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(myOwnPosition));
+        if (currentPositionMarker == null) {
+            currentPositionMarker = mMap.addMarker(new MarkerOptions().position(myOwnPosition).title("You are here!"));
+        } else {
+            currentPositionMarker.setPosition(myOwnPosition);
+        }
+
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myOwnPosition, 1.0f));
     }
 }

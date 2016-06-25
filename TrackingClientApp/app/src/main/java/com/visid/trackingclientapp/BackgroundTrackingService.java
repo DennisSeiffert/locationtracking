@@ -14,7 +14,7 @@ public class BackgroundTrackingService extends Service
     public static final String LONGITUDE = "longitude";
     public static final String LATITUDE = "latitude";
     public static final String LOCATIONCHANGEDINTENT = "locationchangedintent";
-    private static final String TAG = "BOOMBOOMTESTGPS";
+    private static final String TAG = "LocationTracker";
     private LocationManager mLocationManager = null;
     private static final int LOCATION_INTERVAL = 1000;
     private static final float LOCATION_DISTANCE = 0f;
@@ -25,14 +25,14 @@ public class BackgroundTrackingService extends Service
 
         public LocationListener(String provider)
         {
-            Log.e(TAG, "LocationListener " + provider);
+            Log.i(TAG, "LocationListener " + provider);
             mLastLocation = new Location(provider);
         }
 
         @Override
         public void onLocationChanged(Location location)
         {
-            Log.e(TAG, "onLocationChanged: " + location);
+            Log.i(TAG, "onLocationChanged: " + location);
             mLastLocation.set(location);
 
             Intent locationChanged = new Intent(LOCATIONCHANGEDINTENT);
@@ -46,19 +46,19 @@ public class BackgroundTrackingService extends Service
         @Override
         public void onProviderDisabled(String provider)
         {
-            Log.e(TAG, "onProviderDisabled: " + provider);
+            Log.w(TAG, "onProviderDisabled: " + provider);
         }
 
         @Override
         public void onProviderEnabled(String provider)
         {
-            Log.e(TAG, "onProviderEnabled: " + provider);
+            Log.i(TAG, "onProviderEnabled: " + provider);
         }
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras)
         {
-            Log.e(TAG, "onStatusChanged: " + provider);
+            Log.i(TAG, "onStatusChanged: " + provider);
         }
     }
 
@@ -76,7 +76,7 @@ public class BackgroundTrackingService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        Log.e(TAG, "onStartCommand");
+        Log.i(TAG, "onStartCommand");
         super.onStartCommand(intent, flags, startId);
         return START_STICKY;
     }
@@ -84,7 +84,7 @@ public class BackgroundTrackingService extends Service
     @Override
     public void onCreate()
     {
-        Log.e(TAG, "onCreate");
+        Log.i(TAG, "onCreate");
         initializeLocationManager();
         try {
             mLocationManager.requestLocationUpdates(
@@ -109,7 +109,7 @@ public class BackgroundTrackingService extends Service
     @Override
     public void onDestroy()
     {
-        Log.e(TAG, "onDestroy");
+        Log.i(TAG, "onDestroy");
         super.onDestroy();
         if (mLocationManager != null) {
             for (int i = 0; i < mLocationListeners.length; i++) {
@@ -125,7 +125,7 @@ public class BackgroundTrackingService extends Service
     }
 
     private void initializeLocationManager() {
-        Log.e(TAG, "initializeLocationManager");
+        Log.i(TAG, "initializeLocationManager");
         if (mLocationManager == null) {
             mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         }
