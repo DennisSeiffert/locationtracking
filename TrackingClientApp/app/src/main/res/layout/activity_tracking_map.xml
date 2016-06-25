@@ -1,4 +1,5 @@
 <GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -12,20 +13,22 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="262dp"
-        tools:context="com.visid.trackingclientapp.TrackingMapActivity" />
+        tools:context="com.visid.trackingclientapp.TrackingMapActivity"
+        tools:layout="@android:layout/activity_list_item" />
 
     <Button
         android:layout_column="0"
         android:layout_row="1"
         android:text="@string/track"
         android:id="@+id/trackButtonId"
-        android:hint="@string/EnterYourName"
-        android:typeface="normal" />
+        android:typeface="normal"
+        android:clickable="true"
+        android:enabled="true" />
 
     <EditText
         android:layout_column="1"
         android:layout_row="1"
-        android:text="@string/EnterYourName"
+        android:hint="@string/EnterYourName"
         android:editable="true"
         android:inputType="text" />
 </GridLayout>

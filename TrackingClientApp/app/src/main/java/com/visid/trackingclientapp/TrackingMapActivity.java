@@ -1,14 +1,13 @@
 package com.visid.trackingclientapp;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.app.FragmentActivity;
+import android.view.View;
+import android.widget.Button;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -17,10 +16,23 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class TrackingMapActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
+public class TrackingMapActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-    private LocationManager locationManager;
+    private boolean isTrackingServiceRunning = false;
+    private Button trackButton;
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            if (bundle != null) {
+                double latitude = bundle.getDouble(BackgroundTrackingService.LATITUDE);
+                double longitude = bundle.getDouble(BackgroundTrackingService.LONGITUDE);
+                TrackingMapActivity.this.onLocationChanged(latitude, longitude);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,39 +43,47 @@ public class TrackingMapActivity extends FragmentActivity implements OnMapReadyC
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
+        trackButton =(Button)findViewById(R.id.trackButtonId);
+        trackButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // start tracking by invoking background tracking service
+                controlTrackingService();
+            }
+        });
+    }
+
+    private void controlTrackingService() {
+        if (isTrackingServiceRunning){
+            trackButton.setText(R.string.track);
+            stopService(new Intent(TrackingMapActivity.this,
+                    BackgroundTrackingService.class));
+        }else{
+            trackButton.setText(R.string.donottrack);
+            startService(new Intent(TrackingMapActivity.this,
+                    BackgroundTrackingService.class));
         }
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+        isTrackingServiceRunning = !isTrackingServiceRunning;
     }
 
     @Override
-    public void onLocationChanged(Location location) {
-        double latitude = location.getLatitude();
-        double longitude = location.getLongitude();
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(receiver, new IntentFilter(BackgroundTrackingService.LOCATIONCHANGEDINTENT));
+    }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(receiver);
+    }
+
+
+    public void onLocationChanged(double latitude, double longitude) {
         if (this.isMapReady()) {
             MoveToPosition(latitude, longitude);
         }
     }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-        Log.d("Latitude", "disable");
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-        Log.d("Latitude", "enable");
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        Log.d("Latitude", "status");
-    }
-
 
     /**
      * Manipulates the map once available.

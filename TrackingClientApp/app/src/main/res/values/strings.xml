@@ -2,5 +2,6 @@
     <string name="app_name">TrackingClientApp</string>
     <string name="title_activity_tracking_map">Map</string>
     <string name="track">Track</string>
+    <string name="donottrack">Stop Tracking</string>
     <string name="EnterYourName">Enter your name...</string>
 </resources>
