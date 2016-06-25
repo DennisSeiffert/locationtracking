@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -18,6 +19,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.vision.text.TextBlock;
 
 public class TrackingMapActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -26,6 +28,7 @@ public class TrackingMapActivity extends FragmentActivity implements OnMapReadyC
     private boolean activateMap = false;
     private Marker currentPositionMarker = null;
     private Button trackButton;
+    private EditText trackingIdTextbox;
     private BroadcastReceiver receiver = new BroadcastReceiver() {
 
         @Override
@@ -47,6 +50,8 @@ public class TrackingMapActivity extends FragmentActivity implements OnMapReadyC
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        trackingIdTextbox = (EditText) findViewById(R.id.trackingIdTextbox);
 
         trackButton =(Button)findViewById(R.id.trackButtonId);
         trackButton.setOnClickListener(new View.OnClickListener() {
@@ -73,8 +78,10 @@ public class TrackingMapActivity extends FragmentActivity implements OnMapReadyC
                     BackgroundTrackingService.class));
         }else{
             trackButton.setText(R.string.donottrack);
-            startService(new Intent(TrackingMapActivity.this,
-                    BackgroundTrackingService.class));
+            Intent startIntent = new Intent(TrackingMapActivity.this,
+                    BackgroundTrackingService.class);
+            startIntent.putExtra(BackgroundTrackingService.TRACKINGID, trackingIdTextbox.getText().toString());
+            startService(startIntent);
         }
         isTrackingServiceRunning = !isTrackingServiceRunning;
     }

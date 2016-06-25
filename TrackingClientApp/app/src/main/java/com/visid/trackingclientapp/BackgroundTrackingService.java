@@ -9,15 +9,22 @@ import android.app.Service;
         import android.os.IBinder;
         import android.util.Log;
 
+import com.parse.Parse;
+import com.parse.ParseObject;
+
+import java.util.Date;
+
 public class BackgroundTrackingService extends Service
 {
     public static final String LONGITUDE = "longitude";
     public static final String LATITUDE = "latitude";
+    public static final String TRACKINGID = "trackingId";
     public static final String LOCATIONCHANGEDINTENT = "locationchangedintent";
     private static final String TAG = "LocationTracker";
     private LocationManager mLocationManager = null;
     private static final int LOCATION_INTERVAL = 1000;
     private static final float LOCATION_DISTANCE = 0f;
+    private String trackingId;
 
     private class LocationListener implements android.location.LocationListener
     {
@@ -41,6 +48,25 @@ public class BackgroundTrackingService extends Service
             bundle.putDouble(LATITUDE, mLastLocation.getLatitude());
             locationChanged.putExtras(bundle);
             sendBroadcast(locationChanged);
+
+            if (canSavePosition()) {
+                savePosition(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+            }
+        }
+
+        private boolean canSavePosition() {
+            return trackingId != null && !trackingId.isEmpty();
+        }
+
+        private void savePosition(double latitude, double longitude) {
+            ParseObject obj = new ParseObject("Posts");
+
+            obj.add("name", trackingId);
+            obj.add("latitude", latitude);
+            obj.add("longitude", longitude);
+            obj.add("timestamputc", new Date().toString());
+
+            obj.saveInBackground();
         }
 
         @Override
@@ -78,6 +104,9 @@ public class BackgroundTrackingService extends Service
     {
         Log.i(TAG, "onStartCommand");
         super.onStartCommand(intent, flags, startId);
+
+        trackingId = intent.getStringExtra(TRACKINGID);
+        Log.i(TAG, trackingId == null ? "trackingId ist null" : trackingId);
         return START_STICKY;
     }
 
@@ -85,12 +114,17 @@ public class BackgroundTrackingService extends Service
     public void onCreate()
     {
         Log.i(TAG, "onCreate");
+
+        InitializeLocationRequests();
+    }
+
+    private void InitializeLocationRequests() {
         initializeLocationManager();
         try {
             mLocationManager.requestLocationUpdates(
                     LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
                     mLocationListeners[1]);
-        } catch (java.lang.SecurityException ex) {
+        } catch (SecurityException ex) {
             Log.i(TAG, "fail to request location update, ignore", ex);
         } catch (IllegalArgumentException ex) {
             Log.d(TAG, "network provider does not exist, " + ex.getMessage());
@@ -99,11 +133,19 @@ public class BackgroundTrackingService extends Service
             mLocationManager.requestLocationUpdates(
                     LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
                     mLocationListeners[0]);
-        } catch (java.lang.SecurityException ex) {
+        } catch (SecurityException ex) {
             Log.i(TAG, "fail to request location update, ignore", ex);
         } catch (IllegalArgumentException ex) {
             Log.d(TAG, "gps provider does not exist " + ex.getMessage());
         }
+    }
+
+    private void InitializeParse() {
+        Parse.initialize(new Parse.Configuration.Builder(this.getApplicationContext())
+                .applicationId("myAppId")
+                .server("http://hmmas8wmeibjab4e.myfritz.net/parse")
+                .build()
+        );
     }
 
     @Override

@@ -4,12 +4,21 @@ android {
     compileSdkVersion 23
     buildToolsVersion "23.0.3"
 
+    dexOptions {
+        jumboMode true
+        incremental true
+        // here heap size give 4g i got this thing from https://groups.google.com/forum/#!topic/adt-dev/P_TLBTyFWVY
+
+        javaMaxHeapSize "4g"
+    }
+
     defaultConfig {
         applicationId "com.visid.trackingclientapp"
         minSdkVersion 15
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -20,8 +29,9 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.google.android.gms:play-services:9.0.2'
+    compile files('libs/Parse-1.13.0.jar')
+    compile files('libs/bolts-tasks-1.4.0.jar')
 }
