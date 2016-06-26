@@ -10,9 +10,11 @@ import android.app.Service;
         import android.util.Log;
 
 import com.parse.Parse;
+import com.parse.ParseException;
 import com.parse.ParseObject;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public class BackgroundTrackingService extends Service
 {
@@ -59,14 +61,24 @@ public class BackgroundTrackingService extends Service
         }
 
         private void savePosition(double latitude, double longitude) {
+            Log.i(TAG, String.format("sending Position to parse server %s.", trackingId));
             ParseObject obj = new ParseObject("Posts");
 
-            obj.add("name", trackingId);
-            obj.add("latitude", latitude);
-            obj.add("longitude", longitude);
-            obj.add("timestamputc", new Date().toString());
+            obj.put("name", trackingId);
+            obj.put("latitude", latitude);
+            obj.put("longitude", longitude);
+            obj.put("timestamputc", new Date());
 
-            obj.saveInBackground();
+            try {
+                //if (!obj.saveInBackground().waitForCompletion(5, TimeUnit.SECONDS)){
+                //    Log.w(TAG, "Position update has not been completed.");
+                //}
+                obj.save();
+                // } catch (InterruptedException e) {
+                //     Log.e(TAG, "unable to send position to parse server: ", e);
+            } catch (ParseException e) {
+                Log.e(TAG, "unable to send position to parse server: ", e);
+            }
         }
 
         @Override
@@ -105,7 +117,10 @@ public class BackgroundTrackingService extends Service
         Log.i(TAG, "onStartCommand");
         super.onStartCommand(intent, flags, startId);
 
-        trackingId = intent.getStringExtra(TRACKINGID);
+        if (intent != null && intent.hasExtra(TRACKINGID)) {
+            trackingId = intent.getStringExtra(TRACKINGID);
+        }
+
         Log.i(TAG, trackingId == null ? "trackingId ist null" : trackingId);
         return START_STICKY;
     }
