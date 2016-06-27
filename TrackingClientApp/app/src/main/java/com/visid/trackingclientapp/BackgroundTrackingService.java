@@ -1,5 +1,6 @@
 package com.visid.trackingclientapp;
 
+import android.app.Notification;
 import android.app.Service;
         import android.content.Context;
         import android.content.Intent;
@@ -7,7 +8,8 @@ import android.app.Service;
         import android.location.LocationManager;
         import android.os.Bundle;
         import android.os.IBinder;
-        import android.util.Log;
+import android.os.Parcel;
+import android.util.Log;
 
 import com.parse.Parse;
 import com.parse.ParseException;
@@ -121,6 +123,7 @@ public class BackgroundTrackingService extends Service
             trackingId = intent.getStringExtra(TRACKINGID);
         }
 
+        startForeground(startId, new Notification(Parcel.obtain()));
         Log.i(TAG, trackingId == null ? "trackingId ist null" : trackingId);
         return START_STICKY;
     }
@@ -155,14 +158,6 @@ public class BackgroundTrackingService extends Service
         }
     }
 
-    private void InitializeParse() {
-        Parse.initialize(new Parse.Configuration.Builder(this.getApplicationContext())
-                .applicationId("myAppId")
-                .server("http://hmmas8wmeibjab4e.myfritz.net/parse")
-                .build()
-        );
-    }
-
     @Override
     public void onDestroy()
     {
@@ -179,6 +174,7 @@ public class BackgroundTrackingService extends Service
                 }
             }
         }
+        stopForeground(true);
     }
 
     private void initializeLocationManager() {
