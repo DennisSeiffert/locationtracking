@@ -27,7 +27,7 @@ public class BackgroundTrackingService extends Service
     private static final String TAG = "LocationTracker";
     private LocationManager mLocationManager = null;
     private static final int LOCATION_INTERVAL = 1000;
-    private static final float LOCATION_DISTANCE = 0f;
+    private static final float LOCATION_DISTANCE = 2.0f;
     private String trackingId;
 
     private class LocationListener implements android.location.LocationListener
@@ -44,18 +44,24 @@ public class BackgroundTrackingService extends Service
         public void onLocationChanged(Location location)
         {
             Log.i(TAG, "onLocationChanged: " + location);
-            mLastLocation.set(location);
 
             Intent locationChanged = new Intent(LOCATIONCHANGEDINTENT);
             Bundle bundle = new Bundle();
-            bundle.putDouble(LONGITUDE, mLastLocation.getLongitude());
-            bundle.putDouble(LATITUDE, mLastLocation.getLatitude());
+            bundle.putDouble(LONGITUDE, location.getLongitude());
+            bundle.putDouble(LATITUDE, location.getLatitude());
             locationChanged.putExtras(bundle);
             sendBroadcast(locationChanged);
 
-            if (canSavePosition()) {
-                savePosition(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+            if (canSavePosition() && hasPositionChanged(location)) {
+                savePosition(location.getLatitude(), location.getLongitude());
             }
+
+            mLastLocation.set(location);
+        }
+
+        private boolean hasPositionChanged(Location location) {
+            return mLastLocation.getLatitude() != location.getLatitude()
+                    && mLastLocation.getLongitude() != location.getLongitude();
         }
 
         private boolean canSavePosition() {
