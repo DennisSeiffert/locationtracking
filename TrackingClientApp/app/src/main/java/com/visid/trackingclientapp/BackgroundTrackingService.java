@@ -2,21 +2,20 @@ package com.visid.trackingclientapp;
 
 import android.app.Notification;
 import android.app.Service;
-        import android.content.Context;
-        import android.content.Intent;
-        import android.location.Location;
-        import android.location.LocationManager;
-        import android.os.Bundle;
-        import android.os.IBinder;
+import android.content.Context;
+import android.content.Intent;
+import android.location.Location;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.os.IBinder;
 import android.os.Parcel;
+import android.os.PowerManager;
 import android.util.Log;
 
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 public class BackgroundTrackingService extends Service
 {
@@ -29,6 +28,7 @@ public class BackgroundTrackingService extends Service
     private static final int LOCATION_INTERVAL = 1000;
     private static final float LOCATION_DISTANCE = 2.0f;
     private String trackingId;
+    private PowerManager.WakeLock wakeLock;
 
     private class LocationListener implements android.location.LocationListener
     {
@@ -138,6 +138,8 @@ public class BackgroundTrackingService extends Service
     public void onCreate()
     {
         Log.i(TAG, "onCreate");
+        PowerManager pm = (PowerManager) getSystemService(this.POWER_SERVICE);
+        this.wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "DoNotSleep");
 
         InitializeLocationRequests();
     }
@@ -181,6 +183,8 @@ public class BackgroundTrackingService extends Service
             }
         }
         stopForeground(true);
+
+        this.wakeLock.release();
     }
 
     private void initializeLocationManager() {
