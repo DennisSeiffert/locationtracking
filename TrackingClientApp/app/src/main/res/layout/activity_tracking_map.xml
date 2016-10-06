@@ -1,44 +1,55 @@
 <GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="fill_parent"
+    android:columnCount="2"
+    android:rowCount="4">
 
-    <fragment android:layout_column="0"
-        android:layout_row="0"
-        android:layout_columnSpan="2"
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:map="http://schemas.android.com/apk/res-auto"
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="262dp"
+        android:layout_column="0"
+        android:layout_columnSpan="2"
+        android:layout_row="0"
         tools:context="com.visid.trackingclientapp.TrackingMapActivity"
         tools:layout="@android:layout/activity_list_item" />
 
     <Button
+        android:id="@+id/trackButtonId"
         android:layout_column="0"
         android:layout_row="1"
-        android:text="@string/track"
-        android:id="@+id/trackButtonId"
-        android:typeface="normal"
         android:clickable="true"
-        android:enabled="true" />
+        android:enabled="true"
+        android:text="@string/track"
+        android:typeface="normal" />
 
     <EditText
+        android:id="@+id/trackingIdTextbox"
         android:layout_column="1"
         android:layout_row="1"
-        android:hint="@string/EnterYourName"
         android:editable="true"
-        android:inputType="text"
-        android:id="@+id/trackingIdTextbox" />
+        android:hint="@string/EnterYourName"
+        android:inputType="text" />
 
     <CheckBox
+        android:id="@+id/activateMap"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/activateMap"
-        android:id="@+id/activateMap"
+        android:layout_column="1"
         android:layout_row="2"
-        android:layout_column="1" />
+        android:text="@string/activateMap" />
+
+    <ListView
+        android:id="@+id/listviewGeoCoordinates"
+        android:layout_width="wrap_content"
+        android:layout_height="160dp"
+        android:layout_column="0"
+        android:layout_columnSpan="2"
+        android:layout_row="3"
+        android:layout_rowWeight="1"
+        android:scrollIndicators="bottom|right" />
 </GridLayout>
 
