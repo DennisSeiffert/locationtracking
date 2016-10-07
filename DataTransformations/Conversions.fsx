@@ -14,13 +14,14 @@ open FSharp.Data
 open gpxconversion
  
       
-type Posts = JsonProvider<"""[{"_updated_at": {"$date": 1467180928182}, "name": "dennis", "longitude": 8.4948289, "_created_at": {"$date": 1467180928182}, "timestamputc": {"$date": 1467180925281}, "latitude": 48.9459225, "_id": "EEWWDoLkLv"}, {"_updated_at": {"$date": 1467180883280}, "name": "dennis", "longitude": 8.4948289, "_created_at": {"$date": 1467180883280}, "timestamputc": {"$date": 1467180880253}, "latitude": 48.9459225, "_id": "ZALR33Tqwg"}, {"_updated_at": {"$date": 1467180838030}, "name": "dennis", "longitude": 8.4948289, "_created_at": {"$date": 1467180838030}, "timestamputc": {"$date": 1467180835236}, "latitude": 48.9459225, "_id": "3HyHDa5F2B"}]""">  
+type Posts = JsonProvider<"""[{"_updated_at": {"$date": 1467828549675}, "name": "dennis", "longitude": 8.4732329, "_created_at": {"$date": 1467828549675}, "timestamputc": {"$date": 1467828547229}, "latitude": 48.9211428, "_id": "SpoEYBRGCy"}]""">  
 
-let geoPoints = Posts.Load("http://127.0.0.1:5000/trackingpoints")                
-                |> Seq.map (fun p -> {timestamp = new DateTime(p.Timestamputc.Date); 
+let geoPoints = Posts.Load("http://127.0.0.1:8080/trackingpoints")                
+                |> Seq.map (fun p -> {timestamp =  new DateTime(p.Timestamputc.Date); 
                         latitude = double p.Latitude; 
                         longitude = double p.Longitude; 
                         name = p.Name })
+              //  |> Seq.where (fun p -> p.timestamp > DateTime.Now.AddHours(-12.0))
                  
 
 
@@ -38,3 +39,6 @@ let gpxModel =
 let xml = ToXml gpxModel
 
 System.IO.File.WriteAllText("/home/dennis/Desktop/routes.gpx", xml)
+
+
+

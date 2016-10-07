@@ -52,6 +52,8 @@ var trackingViewModel = {
 };
 
 trackingViewModel.ownTrackingJob = trackingViewModel.createTrackingJob('', 0, 0);
+beginDate = ko.observable(UtcNow());
+endDate = ko.observable(UtcNow());
 ko.applyBindings(trackingViewModel);
 
 function initialize(){
@@ -185,6 +187,41 @@ function showPosition(latitude, longitude, marker) {
         marker.setPosition(latlon);      
         map.panTo(latlon);    
     }    
+}
+
+function loadTrackingPoints(){
+    $.ajax({
+  type: "POST",
+  url: "http://hmmas8wmeibjab4e.myfritz.net/api/trackingpoints",  
+  contenttype: "application/json",
+  data : JSON.stringify({ beginDate : beginDate(), endDate : endDate()}),
+  success : showTrack
+    });
+}
+
+function showTrack(geoPoints){
+    if (map === undefined) return;
+
+    var points = [];
+	var bounds = new google.maps.LatLngBounds ();
+	$(geoPoints).each(function() {
+	  var lat = $(this).attr("latitude");
+	  var lon = $(this).attr("longitude");
+	  var p = new google.maps.LatLng(lat, lon);
+	  points.push(p);
+	  bounds.extend(p);
+	});
+
+	var poly = new google.maps.Polyline({
+	  // use your own style here
+	  path: points,
+	  strokeColor: "#FF00AA",
+	  strokeOpacity: .7,
+	  strokeWeight: 4
+	});
+	
+	poly.setMap(map);		
+	map.fitBounds(bounds);
 }
 
 function showError(error) {

@@ -39,10 +39,8 @@ public class BackgroundTrackingService extends Service
     static final int MSG_SET_VALUE = 3;
     static final int MSG_LOCATION_INFO = 4;
     private static final String TAG = "LocationTracker";
-    // private static final int LOCATION_INTERVAL = 1000;
-    // private static final float LOCATION_DISTANCE = 2.0f;
-    private static final int LOCATION_INTERVAL = 1000;
-    private static final float LOCATION_DISTANCE = 0.0f;
+    private static final long LOCATION_INTERVAL = 20 * 1000;
+    private static final float LOCATION_DISTANCE = 50.0f;
     final Messenger mMessenger = new Messenger(new IncomingHandler());
     int mValue = 0;
     Location mLastLocation;
@@ -52,7 +50,6 @@ public class BackgroundTrackingService extends Service
     };
     private LocationManager mLocationManager = null;
     private String trackingId;
-    private PowerManager.WakeLock wakeLock;
     private ArrayList<Messenger> mClients = new ArrayList<Messenger>();
     private List<Location> queuedLocations;
 
@@ -120,10 +117,6 @@ public class BackgroundTrackingService extends Service
     public void onCreate()
     {
         Log.i(TAG, "onCreate");
-        //PowerManager pm = (PowerManager) getSystemService(this.POWER_SERVICE);
-        //this.wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "DoNotSleep");
-
-        //InitializeLocationRequests();
     }
 
     private void InitializeLocationRequests() {
@@ -165,8 +158,6 @@ public class BackgroundTrackingService extends Service
             }
         }
         stopForeground(true);
-
-        this.wakeLock.release();
     }
 
     private void initializeLocationManager() {

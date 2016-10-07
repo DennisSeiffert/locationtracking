@@ -80,7 +80,7 @@ public class TrackingMapActivity extends FragmentActivity implements OnMapReadyC
             }
 
             // As part of the sample, tell the user what happened.
-            Toast.makeText(TrackingMapActivity.this, R.string.cast_notification_connected_message,
+            Toast.makeText(TrackingMapActivity.this, R.string.connectedToTrackingService,
                     Toast.LENGTH_SHORT).show();
         }
 
@@ -90,7 +90,7 @@ public class TrackingMapActivity extends FragmentActivity implements OnMapReadyC
             mService = null;
 
             // As part of the sample, tell the user what happened.
-            Toast.makeText(TrackingMapActivity.this, R.string.cast_notification_disconnect,
+            Toast.makeText(TrackingMapActivity.this, R.string.disconnectedFromTrackingService,
                     Toast.LENGTH_SHORT).show();
         }
     };

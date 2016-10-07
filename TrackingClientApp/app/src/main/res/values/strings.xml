@@ -5,4 +5,6 @@
     <string name="donottrack">Stop Tracking</string>
     <string name="EnterYourName">Enter your name...</string>
     <string name="activateMap">aktiviere Map</string>
+    <string name="connectedToTrackingService">Sie sind erfolgreich mit dem Trackingservice verbunden worden.</string>
+    <string name="disconnectedFromTrackingService">Die Verbindung mit dem Trackingservice ist getrennt.</string>
 </resources>
