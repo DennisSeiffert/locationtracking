@@ -51,10 +51,16 @@ var trackingViewModel = {
     }
 };
 
-trackingViewModel.ownTrackingJob = trackingViewModel.createTrackingJob('', 0, 0);
+window.addEventListener('load', function () {
+    trackingViewModel.ownTrackingJob = trackingViewModel.createTrackingJob('', 0, 0);
 beginDate = ko.observable(UtcNow());
 endDate = ko.observable(UtcNow());
 ko.applyBindings(trackingViewModel);
+
+    initialize();
+});
+
+
 
 function initialize(){
     
@@ -122,11 +128,11 @@ function sendPosition(latitude, longitude){
 }
 
 function subscribeToPositionNotifications(trackingJob){
-    let query = new Parse.Query('Posts');
-    query.equalTo('name', trackingJob.identifier());
-    trackingJob.subscription = query.subscribe();
+    var parseQuery = new Parse.Query('Posts');
+    parseQuery.equalTo('name', trackingJob.identifier());
+    trackingJob.subscription = parseQuery.subscribe();
     
-    trackingJob.subscription.on('create', (position) => {
+    trackingJob.subscription.on('create', function(position) {
         var name = position.get('name');        
         var observedTrackingJob = trackingViewModel.observedTrackingJobs().find(function(v,i) { return v.identifier() == name });
         observedTrackingJob.latitude(position.get('latitude'));
@@ -166,8 +172,8 @@ function stopTracking() {
 
 function initializeMap() {
     var mapholder = document.getElementById('mapholder')
-    mapholder.style.height = '250px';
-    mapholder.style.width = '500px';
+    mapholder.style.height = '70%';
+    // mapholder.style.width = '500px';
     var latlon = new google.maps.LatLng(0, 0)
 
     var myOptions = {
@@ -190,12 +196,15 @@ function showPosition(latitude, longitude, marker) {
 }
 
 function loadTrackingPoints(){
+    var utcBeginDate = new Date(beginDate()).toISOString();
+    var utcEndDate = new Date(endDate()).toISOString();
     $.ajax({
-  type: "POST",
-  url: "http://hmmas8wmeibjab4e.myfritz.net/api/trackingpoints",  
-  contenttype: "application/json",
-  data : JSON.stringify({ beginDate : beginDate(), endDate : endDate()}),
-  success : showTrack
+    type: "POST",
+    dataType : "json",
+    url: "http://hmmas8wmeibjab4e.myfritz.net/api/trackingpoints",      
+    contentType: "application/json",
+    data : JSON.stringify({ beginDate : utcBeginDate, endDate : utcEndDate}),
+    success : showTrack
     });
 }
 
