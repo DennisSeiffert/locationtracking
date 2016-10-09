@@ -119,7 +119,8 @@ function onShowOwnPosition(position){
 function sendPosition(latitude, longitude){        
     var obj = new Parse.Object('Posts');
     
-    obj.set('name', trackingViewModel.ownTrackingJob.identifier());  
+    obj.set('name', trackingViewModel.ownTrackingJob.identifier());
+    obj.set('origin', 'web');  
     obj.set('latitude', latitude);
     obj.set('longitude', longitude);
     obj.set('timestamputc', UtcNow());

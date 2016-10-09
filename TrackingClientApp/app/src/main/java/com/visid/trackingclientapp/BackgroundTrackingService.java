@@ -14,7 +14,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.Parcel;
-import android.os.PowerManager;
 import android.os.RemoteException;
 import android.util.Log;
 
@@ -123,21 +122,22 @@ public class BackgroundTrackingService extends Service
         initializeLocationManager();
         try {
             mLocationManager.requestLocationUpdates(
-                    LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
-                    mLocationListeners[1]);
-        } catch (SecurityException ex) {
-            Log.i(TAG, "fail to request location update, ignore", ex);
-        } catch (IllegalArgumentException ex) {
-            Log.d(TAG, "network provider does not exist, " + ex.getMessage());
-        }
-        try {
-            mLocationManager.requestLocationUpdates(
                     LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
                     mLocationListeners[0]);
         } catch (SecurityException ex) {
             Log.i(TAG, "fail to request location update, ignore", ex);
         } catch (IllegalArgumentException ex) {
             Log.d(TAG, "gps provider does not exist " + ex.getMessage());
+        }
+
+        try {
+            mLocationManager.requestLocationUpdates(
+                    LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
+                    mLocationListeners[1]);
+        } catch (SecurityException ex) {
+            Log.i(TAG, "fail to request location update, ignore", ex);
+        } catch (IllegalArgumentException ex) {
+            Log.d(TAG, "network provider does not exist, " + ex.getMessage());
         }
     }
 
@@ -181,8 +181,11 @@ public class BackgroundTrackingService extends Service
 
             InformListeners(location);
 
-            if (canSavePosition() && hasPositionChanged(location)) {
-                savePosition(location.getLatitude(), location.getLongitude(), location.getTime());
+            if (!hasPositionChanged(location)) return;
+
+            if (canSavePosition()) {
+                savePosition(location.getLatitude(), location.getLongitude(), location.getTime(),
+                        location.getProvider());
             }
 
             if (!this.isConnectedToInternet(getApplicationContext())) {
@@ -191,7 +194,8 @@ public class BackgroundTrackingService extends Service
             } else {
                 for (Location queuedLocation : queuedLocations) {
                     if (canSavePosition()) {
-                        // savePosition(queuedLocation.getLatitude(), queuedLocation.getLongitude(), location.getTime());
+                        savePosition(queuedLocation.getLatitude(), queuedLocation.getLongitude(),
+                                location.getTime(), location.getProvider());
                         InformListeners(queuedLocation);
                     }
                 }
@@ -210,11 +214,12 @@ public class BackgroundTrackingService extends Service
             return trackingId != null && !trackingId.isEmpty() && this.isConnectedToInternet(getApplicationContext());
         }
 
-        private void savePosition(double latitude, double longitude, long timeInMillisecondsUtc) {
+        private void savePosition(double latitude, double longitude, long timeInMillisecondsUtc, String provider) {
             Log.i(TAG, String.format("sending Position to parse server %s.", trackingId));
             ParseObject obj = new ParseObject("Posts");
 
             obj.put("name", trackingId);
+            obj.put("origin", provider);
             obj.put("latitude", latitude);
             obj.put("longitude", longitude);
             obj.put("timestamputc", new Date(timeInMillisecondsUtc));
