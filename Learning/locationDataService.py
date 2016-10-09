@@ -34,12 +34,15 @@ def get_trackingpoints():
 
      requestData = request.json
      beginDate = datetime.utcnow() - datetime(1,1,1)
+     trackingId = ''
      if 'beginDate' in requestData:
         beginDate = datetime.strptime(requestData['beginDate'], datetimeFormat)
      endDate = datetime.utcnow()
      if 'endDate' in requestData:
         endDate = datetime.strptime(requestData['endDate'], datetimeFormat)
-     posts = mongoDbImport.importDataFromCentralMongoDb(beginDate, endDate)
+     if 'trackingId' in requestData:
+         trackingId = requestData['trackingId']
+     posts = mongoDbImport.importDataFromCentralMongoDb(beginDate, endDate, trackingId)
      return flask.Response(generate(posts), mimetype="application/json")
 
 if __name__ == '__main__':

@@ -38,8 +38,10 @@ public class BackgroundTrackingService extends Service
     static final int MSG_SET_VALUE = 3;
     static final int MSG_LOCATION_INFO = 4;
     private static final String TAG = "LocationTracker";
-    private static final long LOCATION_INTERVAL = 20 * 1000;
-    private static final float LOCATION_DISTANCE = 50.0f;
+    //time interval in ms
+    private static final long LOCATION_INTERVAL = 10 * 1000;
+    // distance in meters
+    private static final float LOCATION_DISTANCE = 25.0f;
     final Messenger mMessenger = new Messenger(new IncomingHandler());
     int mValue = 0;
     Location mLastLocation;

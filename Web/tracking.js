@@ -55,6 +55,7 @@ window.addEventListener('load', function () {
     trackingViewModel.ownTrackingJob = trackingViewModel.createTrackingJob('', 0, 0);
 beginDate = ko.observable(UtcNow());
 endDate = ko.observable(UtcNow());
+trackingId = ko.observable();
 ko.applyBindings(trackingViewModel);
 
     initialize();
@@ -204,7 +205,7 @@ function loadTrackingPoints(){
     dataType : "json",
     url: "http://hmmas8wmeibjab4e.myfritz.net/api/trackingpoints",      
     contentType: "application/json",
-    data : JSON.stringify({ beginDate : utcBeginDate, endDate : utcEndDate}),
+    data : JSON.stringify({ beginDate : utcBeginDate, endDate : utcEndDate, trackingId : trackingId()}),
     success : showTrack
     });
 }
