@@ -3,6 +3,6 @@ RUN apt-get update
 RUN apt-get install -y python-pip python-dev uwsgi-plugin-python
 COPY requirements.txt .
 RUN pip install -r requirements.txt
-COPY . /code
-WORKDIR /code 
+COPY Learning/ /Learning
+WORKDIR /Learning 
 ENTRYPOINT ["python", "locationDataService.py"]

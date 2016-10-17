@@ -155,7 +155,7 @@ public class BackgroundTrackingService extends Service
                 } catch (java.lang.SecurityException ex) {
                     Log.i(TAG, "fail to request location update, ignore", ex);
                 } catch (Exception ex) {
-                    Log.i(TAG, "fail to remove location listners, ignore", ex);
+                    Log.i(TAG, "fail to remove location listeners, ignore", ex);
                 }
             }
         }
@@ -187,7 +187,7 @@ public class BackgroundTrackingService extends Service
 
             if (canSavePosition()) {
                 savePosition(location.getLatitude(), location.getLongitude(), location.getTime(),
-                        location.getProvider());
+                        location.getProvider(), location.getAltitude());
             }
 
             if (!this.isConnectedToInternet(getApplicationContext())) {
@@ -197,7 +197,7 @@ public class BackgroundTrackingService extends Service
                 for (Location queuedLocation : queuedLocations) {
                     if (canSavePosition()) {
                         savePosition(queuedLocation.getLatitude(), queuedLocation.getLongitude(),
-                                location.getTime(), location.getProvider());
+                                location.getTime(), location.getProvider(), queuedLocation.getAltitude());
                         InformListeners(queuedLocation);
                     }
                 }
@@ -216,7 +216,8 @@ public class BackgroundTrackingService extends Service
             return trackingId != null && !trackingId.isEmpty() && this.isConnectedToInternet(getApplicationContext());
         }
 
-        private void savePosition(double latitude, double longitude, long timeInMillisecondsUtc, String provider) {
+        private void savePosition(double latitude, double longitude, long timeInMillisecondsUtc,
+                                  String provider, double altitude) {
             Log.i(TAG, String.format("sending Position to parse server %s.", trackingId));
             ParseObject obj = new ParseObject("Posts");
 
@@ -224,6 +225,7 @@ public class BackgroundTrackingService extends Service
             obj.put("origin", provider);
             obj.put("latitude", latitude);
             obj.put("longitude", longitude);
+            obj.put("altitude", altitude);
             obj.put("timestamputc", new Date(timeInMillisecondsUtc));
 
             obj.saveInBackground().continueWith(new Continuation<Void, Void>() {
