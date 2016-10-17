@@ -132,7 +132,7 @@ public class BackgroundTrackingService extends Service
             Log.d(TAG, "gps provider does not exist " + ex.getMessage());
         }
 
-        try {
+/*        try {
             mLocationManager.requestLocationUpdates(
                     LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
                     mLocationListeners[1]);
@@ -140,7 +140,7 @@ public class BackgroundTrackingService extends Service
             Log.i(TAG, "fail to request location update, ignore", ex);
         } catch (IllegalArgumentException ex) {
             Log.d(TAG, "network provider does not exist, " + ex.getMessage());
-        }
+        } */
     }
 
     @Override
