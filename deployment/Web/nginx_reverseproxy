@@ -14,33 +14,33 @@ server {
         location /parse {
                 proxy_buffering on;
                 proxy_read_timeout 60;
-                proxy_pass  http://localhost:1337;
+                proxy_pass  http://backend_parseserver:1337;
                 proxy_connect_timeout 10;
 		proxy_set_header Upgrade $http_upgrade;
-	        proxy_set_header Connection $connection_upgrade;
+#	        proxy_set_header Connection $connection_upgrade;
 		proxy_http_version 1.1;		
         }
 
         location /api/trackingpoints {
                 proxy_buffering on;
                 proxy_read_timeout 60;
-                proxy_pass  http://192.168.1.101:8080/trackingpoints;
+                proxy_pass  http://dataapi_locationtracker:8080/trackingpoints;
 		proxy_set_header content-type "application/json";
                 proxy_connect_timeout 10;
                 proxy_set_header Upgrade $http_upgrade;
-                proxy_set_header Connection $connection_upgrade;
+ #               proxy_set_header Connection $connection_upgrade;
                 proxy_http_version 1.1;
         }
 
-        location / {               
-		proxy_buffering on;              
-		proxy_read_timeout 60;
-                proxy_pass  http://127.0.0.1:5000;
-		proxy_connect_timeout 10;
+#        location / {               
+#		proxy_buffering on;              
+#		proxy_read_timeout 60;
+#               proxy_pass  http://127.0.0.1:5000;
+#		proxy_connect_timeout 10;
 		# important for nginx because kestrel needs this header due to a bug in kestrel
 		# http://stackoverflow.com/questions/33846148/asp-net-5-behind-nginx
-	        proxy_set_header Connection keep-alive;
-	    }
+#	        proxy_set_header Connection keep-alive;
+#	    }
 
         location /geotracking {
                 root /Web;
