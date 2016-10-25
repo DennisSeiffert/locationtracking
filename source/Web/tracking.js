@@ -67,7 +67,7 @@ function initialize(){
     
     
     Parse.initialize('myAppId','unused');
-    Parse.serverURL = 'http://hmmas8wmeibjab4e.myfritz.net/parse';
+    Parse.serverURL = '/parse';
     
     initializeMap();
     getCurrentPosition(onShowOwnPosition);       
@@ -203,7 +203,7 @@ function loadTrackingPoints(){
     $.ajax({
     type: "POST",
     dataType : "json",
-    url: "http://hmmas8wmeibjab4e.myfritz.net/api/trackingpoints",      
+    url: "/api/trackingpoints",      
     contentType: "application/json",
     data : JSON.stringify({ beginDate : utcBeginDate, endDate : utcEndDate, trackingId : trackingId()}),
     success : showTrack

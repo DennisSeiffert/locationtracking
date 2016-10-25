@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y ca-certificates nginx
 VOLUME ["/var/cache/nginx"]
 
 COPY nginx_reverseproxy /etc/nginx/sites-enabled/
+RUN rm /etc/nginx/sites-enabled/default
 
 # cannot have relative dirs here
 # so dockerfile and deps must be copied to root folder on the docker host

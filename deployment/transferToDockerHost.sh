@@ -52,7 +52,7 @@ if [ $answer != "n" ]; then
 
     # cd deployment
     # docker build -t webserver/gateway:v1 .
-    # docker run -d -p 80:80 -p 443:443 --name webwerver_gateway --net webserver_gateway_network  webserver/gateway:v1 
+    # docker run -d -p 80:80 -p 443:443 --name webserver_gateway --net webserver_gateway_network  webserver/gateway:v1 
     # docker network create -d bridge webserver_gateway_network
     # docker network connect webserver_gateway_network dataapi_locationtracker
     # docker network connect webserver_gateway_network backend_parseserver
