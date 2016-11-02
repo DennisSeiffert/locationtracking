@@ -11,14 +11,13 @@ RUN apt-get update && apt-get install -y wget dialog
 # install nodejs
 #RUN wget http://node-arm.herokuapp.com/node_latest_armhf.deb
 #RUN dpkg -i node_latest_armhf.deb
-RUN apt-get update && wget https://nodejs.org/dist/v4.4.0/node-v4.4.0-linux-armv7l.tar.gz && tar -xvf node-v4.4.0-linux-armv7l.tar.gz && cd node-v4.4.0-linux-armv7l && sudo cp -R * /usr/local/
+RUN apt-get update && wget https://nodejs.org/dist/v4.5.0/node-v4.5.0-linux-armv7l.tar.gz && tar -xvf node-v4.5.0-linux-armv7l.tar.gz && cd node-v4.5.0-linux-armv7l && sudo cp -R * /usr/local/
 
 #COPY . /src
 
-
 COPY ParseServer /ParseServer
 
-ENV MONGODB_URI=mongodb://192.168.1.101:3017
+ENV MONGODB_URI=mongodb://backend_mongo:3017/parse
 
 WORKDIR /ParseServer
 

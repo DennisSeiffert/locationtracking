@@ -41,13 +41,13 @@ public class BackgroundTrackingService extends Service
     //time interval in ms
     private static final long LOCATION_INTERVAL = 10 * 1000;
     // distance in meters
-    private static final float LOCATION_DISTANCE = 25.0f;
+    private static final float LOCATION_DISTANCE = 5.0f;
     final Messenger mMessenger = new Messenger(new IncomingHandler());
     int mValue = 0;
     Location mLastLocation;
     LocationListener[] mLocationListeners = new LocationListener[]{
-            new LocationListener(LocationManager.GPS_PROVIDER),
-            new LocationListener(LocationManager.NETWORK_PROVIDER)
+            new LocationListener(LocationManager.GPS_PROVIDER)
+            // new LocationListener(LocationManager.NETWORK_PROVIDER)
     };
     private LocationManager mLocationManager = null;
     private String trackingId;
@@ -132,6 +132,7 @@ public class BackgroundTrackingService extends Service
             Log.d(TAG, "gps provider does not exist " + ex.getMessage());
         }
 
+        Log.i(TAG, "initialized gps provider.");
 /*        try {
             mLocationManager.requestLocationUpdates(
                     LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,

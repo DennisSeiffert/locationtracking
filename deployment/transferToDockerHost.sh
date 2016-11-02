@@ -1,5 +1,18 @@
 #!/bin/bash
 
+echo "deploy mongo db to docker host [Y|n]:"
+read answer
+if [ $answer != "n" ]; then
+    scp Mongo/* pi@192.168.1.101:/home/pi/deployment    
+
+    ssh pi@192.168.1.101
+
+    # cd deployment
+    # docker build -t backend/mongo:v1 .
+    # docker run -d -p 3017:3017 --name backend_mongo  -v /var/lib/mongodb:/var/lib/mongodb backend/mongo:v1 
+    # rm -r *  
+fi
+
 echo "deploy learning api to docker host [Y|n]:"
 read answer
 if [ $answer != "n" ]; then
@@ -28,20 +41,6 @@ if [ $answer != "n" ]; then
     # rm -r *  
 fi
 
-echo "deploy mongo db to docker host [Y|n]:"
-read answer
-if [ $answer != "n" ]; then
-    #scp ParseServer/* pi@192.168.1.101:/home/pi/deployment
-    #scp -r ../source/ParseServer pi@192.168.1.101:/home/pi/deployment/
-
-    ssh pi@192.168.1.101
-
-    # cd deployment
-    # docker build -t backend/parseserver:v1 .
-    # docker run -d -p 1337:1337 -p 3017:3017 --name backend_parseserver backend/parseserver:v1
-    # rm -r *  
-fi
-
 echo "deploy web app to docker host [Y|n]:"
 read answer
 if [ $answer != "n" ]; then
@@ -52,10 +51,11 @@ if [ $answer != "n" ]; then
 
     # cd deployment
     # docker build -t webserver/gateway:v1 .
-    # docker run -d -p 80:80 -p 443:443 --name webserver_gateway --net webserver_gateway_network  webserver/gateway:v1 
     # docker network create -d bridge webserver_gateway_network
+    # docker run -d -p 80:80 -p 443:443 --name webserver_gateway --net webserver_gateway_network  webserver/gateway:v1     
     # docker network connect webserver_gateway_network dataapi_locationtracker
     # docker network connect webserver_gateway_network backend_parseserver
     # docker network connect webserver_gateway_network webserver_gateway
+    # docker network connect webserver_gateway_network backend_mongo    
     # rm -r *  
 fi
