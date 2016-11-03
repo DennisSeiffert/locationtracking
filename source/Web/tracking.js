@@ -180,8 +180,8 @@ function initializeMap() {
 
     var myOptions = {
         center:latlon,zoom:14,
-        mapTypeId:google.maps.MapTypeId.ROADMAP,
-        mapTypeControl:false,
+        mapTypeId:google.maps.MapTypeId.TERRAIN,
+        mapTypeControl:true,
         navigationControlOptions:{style:google.maps.NavigationControlStyle.SMALL}
     }
     
@@ -233,6 +233,8 @@ function showTrack(geoPoints){
 	
 	poly.setMap(map);		
 	map.fitBounds(bounds);
+
+    displayPathElevation(points, map)
 }
 
 function showError(error) {
