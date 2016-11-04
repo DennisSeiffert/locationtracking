@@ -1,0 +1,7 @@
+.elevationbar {
+    fill: grey;
+}
+
+.elevationbar.active {
+    fill: red;
+}

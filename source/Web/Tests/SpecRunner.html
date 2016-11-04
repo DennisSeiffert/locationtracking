@@ -6,6 +6,7 @@
 
   <link rel="shortcut icon" type="image/png" href="lib/jasmine-2.5.2/jasmine_favicon.png">
   <link rel="stylesheet" href="lib/jasmine-2.5.2/jasmine.css">
+  <link rel="stylesheet" href="../elevationChart.css">
 
   <script src="lib/jasmine-2.5.2/jasmine.js"></script>
   <script src="lib/jasmine-2.5.2/jasmine-html.js"></script>
@@ -14,13 +15,17 @@
   <!-- include source files here... -->
   <script src="http://maps.google.com/maps/api/js?sensor=false"></script>
   <script src="https://www.google.com/jsapi"></script>
-  <script src="../distance.js"></script>        
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="../distance.js"></script>  
+  <script src="../elevation.js"></script>        
 
   <!-- include spec files here... -->
-  <script src="trackViewModelSpecs.js"></script>  
+  <script src="TrackViewModelSpecs.js"></script>
+  <script src="ElevationSpecs.js"></script>   
 
 </head>
 
 <body>
+  <div id="elevation_chart"></div>
 </body>
 </html>

@@ -13,7 +13,7 @@ describe("trackViewModel", function() {
     expect(sut.totalDistanceInMeters).toEqual(11755297.543391723);
   });
 
-    it("should be able to get point at index", function() { 
+  it("should be able to get point at index", function() { 
         var point = sut.getPointAt(2);   
         expect(Math.round(point.lat())).toEqual(-18);
         expect(Math.round(point.lng())).toEqual(178);

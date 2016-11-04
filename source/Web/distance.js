@@ -18,7 +18,8 @@ function distance(lat1, lon1, lat2, lon2) {
 
 function TrackViewModel(points){
     this.totalDistanceInMeters = 0.0;
-    this.points = points;         
+    this.points = points;  
+    this.elevationMarker = null;       
 
     this.getIndexOfNearestPoint = function(distanceInMeters) {
         var currentDistanceInMeters = 0.0;
@@ -33,6 +34,14 @@ function TrackViewModel(points){
 
     this.getPointAt = function(index){
       return this.points[index];
+    }
+
+    this.assignElevationMarker = function(marker){
+        this.elevationMarker = marker;
+    }
+
+    this.hasElevationMarker = function(){
+        return this.elevationMarker !== null;
     }
 
     this.calculateTotalDistance = function() {

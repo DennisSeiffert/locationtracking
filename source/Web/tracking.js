@@ -2,7 +2,6 @@
 /* global watchId */
 /* global map */
 /* global currentTrack */
-/* global elevationMarker */
 var x = document.getElementById("status");
 
 var geo_options = {
@@ -191,8 +190,7 @@ function initializeMap() {
         navigationControlOptions:{style:google.maps.NavigationControlStyle.SMALL}
     }
     
-    map = new google.maps.Map(document.getElementById("mapholder"), myOptions);
-    elevationMarker = new google.maps.Marker({position: new google.maps.LatLng(0, 0),map:map,title:"Elevation Marker"}); 
+    map = new google.maps.Map(document.getElementById("mapholder"), myOptions);     
 }
 
 function showPosition(latitude, longitude, marker) {         
@@ -225,6 +223,7 @@ function showTrack(geoPoints){
 	$(geoPoints).each(function() {
 	  var lat = $(this).attr("latitude");
 	  var lon = $(this).attr("longitude");
+      var timestamp = $(this).attr("timestamputc");
 	  var p = new google.maps.LatLng(lat, lon);
 	  points.push(p);
 	  bounds.extend(p);
@@ -233,6 +232,7 @@ function showTrack(geoPoints){
     points = points.reverse();
 
     currentTrack = new TrackViewModel(points);
+    currentTrack.assignElevationMarker(new google.maps.Marker({position: new google.maps.LatLng(0, 0),map:map,title:"Elevation Marker"}));
     currentTrack.calculateTotalDistance();
 
 	var poly = new google.maps.Polyline({
@@ -246,7 +246,7 @@ function showTrack(geoPoints){
 	poly.setMap(map);		
 	map.fitBounds(bounds);
 
-    displayPathElevation(points, map)
+    displayPathElevation(points, map, currentTrack)
 }
 
 function showError(error) {
