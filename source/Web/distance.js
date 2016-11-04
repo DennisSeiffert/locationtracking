@@ -24,7 +24,7 @@ function TrackViewModel(points){
     this.getIndexOfNearestPoint = function(distanceInMeters) {
         var currentDistanceInMeters = 0.0;
         for(var i=1;i < this.points.length; i++){
-            currentDistanceInMeters += distance(this.points[i-1].lat(), this.points[i-1].lng(), this.points[i].lat(), this.points[i].lng());
+            currentDistanceInMeters += distance(this.points[i-1].latitude, this.points[i-1].longitude, this.points[i].latitude, this.points[i].longitude);
             if(currentDistanceInMeters > distanceInMeters){
                 return i-1;
             }
@@ -46,7 +46,7 @@ function TrackViewModel(points){
 
     this.calculateTotalDistance = function() {
         for(var i=1;i < this.points.length; i++){
-            this.totalDistanceInMeters += distance(this.points[i-1].lat(), this.points[i-1].lng(), this.points[i].lat(), this.points[i].lng());
+            this.totalDistanceInMeters += distance(this.points[i-1].latitude, this.points[i-1].longitude, this.points[i].latitude, this.points[i].longitude);
         }
     }
 }

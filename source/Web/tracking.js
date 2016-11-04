@@ -231,7 +231,7 @@ function showTrack(geoPoints){
     // reverse order to begin with first tracking point at index 0
     points = points.reverse();
 
-    currentTrack = new TrackViewModel(points);
+    currentTrack = new TrackViewModel(geopoints);
     currentTrack.assignElevationMarker(new google.maps.Marker({position: new google.maps.LatLng(0, 0),map:map,title:"Elevation Marker"}));
     currentTrack.calculateTotalDistance();
 

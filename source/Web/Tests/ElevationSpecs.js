@@ -2,10 +2,11 @@ describe("Elevation Chart", function() {
   var currentTrack;  
 
   beforeEach(function() {
-    currentTrack = new TrackViewModel([new google.maps.LatLng(37.772, -122.214), 
-                  new google.maps.LatLng(21.291, -157.821), 
-                  new google.maps.LatLng(-18.142, 178.431),
-                  new google.maps.LatLng( -27.467, 153.027)]);            
+    currentTrack = new TrackViewModel([
+                  { latitude : 37.772, longitude : -122.214 }, 
+                  { latitude : 21.291, longitude : -157.821 },  
+                  { latitude : -18.142, longitude : 178.431 },
+                  { latitude : -27.467, longitude : 153.027 }]);            
   });
 
   it("should be able to draw simple elevation graph", function() {      
