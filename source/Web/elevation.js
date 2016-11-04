@@ -27,6 +27,7 @@ function plotElevation(elevations, status) {
   }
   // Create a new chart in the elevation_chart DIV.
   var chart = new google.visualization.ColumnChart(chartDiv);
+  google.visualization.events.addListener(chart, 'onmouseover', onMouseOverHandler);
 
   // Extract the data from which to populate the chart.
   // Because the samples are equidistant, the 'Sample'
@@ -45,4 +46,13 @@ function plotElevation(elevations, status) {
     legend: 'none',
     titleY: 'Elevation (m)'
   });
+}
+
+function onMouseOverHandler(e) {
+  var row = e.row;
+  var meters = row / 256.0 * currentTrack.totalDistanceInMeters;
+  var markerPointIndex = currentTrack.getIndexOfNearestPoint(meters);
+  var geoPoint = currentTrack.getPointAt(markerPointIndex);
+
+  showPosition(geoPoint.lat(), geoPoint.lng(), elevationMarker)
 }

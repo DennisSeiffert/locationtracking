@@ -1,6 +1,8 @@
 /* global subscription */
 /* global watchId */
 /* global map */
+/* global currentTrack */
+/* global elevationMarker */
 var x = document.getElementById("status");
 
 var geo_options = {
@@ -53,11 +55,11 @@ var trackingViewModel = {
 
 window.addEventListener('load', function () {
     trackingViewModel.ownTrackingJob = trackingViewModel.createTrackingJob('', 0, 0);
-beginDate = ko.observable(UtcNow());
-endDate = ko.observable(UtcNow());
-trackingId = ko.observable();
-ko.applyBindings(trackingViewModel);
-
+    beginDate = ko.observable(UtcNow());
+    endDate = ko.observable(UtcNow());
+    trackingId = ko.observable();
+    currentTrack = new TrackViewModel([]);    
+    ko.applyBindings(trackingViewModel);
     initialize();
 });
 
@@ -93,7 +95,8 @@ function observe(){
 
 function getCurrentPosition(onGetPosition) {  
     if (navigator.geolocation) {
-        watchId = navigator.geolocation.getCurrentPosition(onGetPosition, showError, geo_options);           
+        watchId = navigator.geolocation.getCurrentPosition(onGetPosition, showError, geo_options);      
+        if(watchId === undefined) return;     
         trackingViewModel.ownTrackingJob.marker = new google.maps.Marker({position: new google.maps.LatLng(0, 0),map:map,title:"You are here!"});
     } else { 
         printStatus("Geolocation is not supported by this browser.");
@@ -108,6 +111,8 @@ function onPosition(position){
 }
 
 function onShowOwnPosition(position){
+    if(trackingViewModel.ownTrackingJob.marker === undefined) return;
+
     var lat = position.coords.latitude;
     var lon = position.coords.longitude;
     
@@ -173,7 +178,8 @@ function stopTracking() {
 }
 
 function initializeMap() {
-    var mapholder = document.getElementById('mapholder')
+    var mapholder = document.getElementById('mapholder');
+    if (mapholder === null) return;
     mapholder.style.height = '70%';
     // mapholder.style.width = '500px';
     var latlon = new google.maps.LatLng(0, 0)
@@ -186,6 +192,7 @@ function initializeMap() {
     }
     
     map = new google.maps.Map(document.getElementById("mapholder"), myOptions);
+    elevationMarker = new google.maps.Marker({position: new google.maps.LatLng(0, 0),map:map,title:"Elevation Marker"}); 
 }
 
 function showPosition(latitude, longitude, marker) {         
@@ -222,6 +229,11 @@ function showTrack(geoPoints){
 	  points.push(p);
 	  bounds.extend(p);
 	});
+    // reverse order to begin with first tracking point at index 0
+    points = points.reverse();
+
+    currentTrack = new TrackViewModel(points);
+    currentTrack.calculateTotalDistance();
 
 	var poly = new google.maps.Polyline({
 	  // use your own style here
