@@ -11,11 +11,11 @@ describe("Elevation Chart", function() {
 
   it("should be able to draw simple elevation graph", function() {  
       var chart = new Chart([
-          {index : 0, elevation : 10}, 
-          {index : 1, elevation : 20}, 
-          {index : 2, elevation : 30}, 
-          {index : 3, elevation : 40}, 
-          {index : 4, elevation : 50}], currentTrack);
+          {index : 0, elevation : 10, speed : 2344.0}, 
+          {index : 1, elevation : 20, speed : 2344.0}, 
+          {index : 2, elevation : 30, speed : 2344.0}, 
+          {index : 3, elevation : 40, speed : 2344.0}, 
+          {index : 4, elevation : 50, speed : 2344.0}], currentTrack);
       chart.initializeChart();                   
   }); 
 

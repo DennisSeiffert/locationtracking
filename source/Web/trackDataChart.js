@@ -24,7 +24,7 @@ function Chart(data, currentTrack) {
 
 
 
-  this.addAxes = function (chartWidth, chartHeight) {
+  this.addAxes = function (xAxisWidth, chartHeight) {
     var axes = this.chartWrapper.append('g');
 
     axes.append('g')
@@ -41,6 +41,16 @@ function Chart(data, currentTrack) {
       .attr('dy', '.71em')
       .style('text-anchor', 'end')
       .text('Elevation (m)');
+
+    axes.append('g')
+      .attr('class', 'ySpeed axis')
+      .attr('transform', 'translate('+ xAxisWidth +', 0)')
+      .call(this.ySpeedAxis)
+      .append('text')      
+      .attr('transform', 'rotate(-90)')
+      .attr('y', 70)                  
+      .style('text-anchor', 'end')
+      .text('Speed (m/s)');
   }
 
   this.drawPaths = function (chartWidth, chartHeight) {
@@ -49,7 +59,7 @@ function Chart(data, currentTrack) {
     this.bars.append("rect")
       .attr("class", "elevationbar")
       .attr("x", function (d) { return self.x(d.index); })
-      .attr("width", function (d) { return (self.x(d.index + 1) - self.x(d.index)) / 2 })
+      .attr("width", function (d) { return Math.min(self.x(d.index + 1), self.x.range()[1]) - self.x(d.index) })
       .attr("y", function (d) { return self.y(d.elevation); })
       .attr("height", function (d, i, j) { return chartHeight - self.y(d.elevation); })
       .on("mouseover", function (d) {
@@ -59,12 +69,17 @@ function Chart(data, currentTrack) {
       .on("mouseout", function (d) {
         d3.select(this).attr('fill', '').classed("active", false);
       });
+    this.path = this.chartWrapper.append('path').datum(this.data).classed('line', true);
+    this.line = d3.svg.line()
+      .x(function(d) { return self.x(d.index) })
+      .y(function(d) { return self.ySpeed(d.speed) });
+    this.path.attr('d', this.line);
   }
 
   this.initializeChart = function () {
     var dimensions = this.updateDimensions(window.innerWidth);
 
-    this.x = d3.scale.linear().range([0, dimensions.chartWidth])
+    this.x = d3.scale.linear().range([0, dimensions.xAxisWidth])
       .domain(d3.extent(this.data, function (d) { return d.index; }));
     this.y = d3.scale.linear().range([dimensions.chartHeight, 0])
       .domain([0, d3.max(this.data, function (d) { return d.elevation; })]);
@@ -75,7 +90,7 @@ function Chart(data, currentTrack) {
       .innerTickSize(-dimensions.chartHeight).outerTickSize(0).tickPadding(10);
     this.yAxis = d3.svg.axis().scale(this.y).orient('left')
       .innerTickSize(-dimensions.chartWidth).outerTickSize(0).tickPadding(10);
-    this.ySpeedAxis = d3.svg.axis().scale(this.y).orient('right')
+    this.ySpeedAxis = d3.svg.axis().scale(this.ySpeed).orient('right')
       .innerTickSize(-dimensions.chartWidth).outerTickSize(0).tickPadding(10);
 
     this.svg = d3.select('#elevation_chart').append('svg')
@@ -85,7 +100,7 @@ function Chart(data, currentTrack) {
       .append('g')
       .attr('transform', 'translate(' + dimensions.margin.left + ',' + dimensions.margin.top + ')');
 
-    this.addAxes(dimensions.chartWidth, dimensions.chartHeight);
+    this.addAxes(dimensions.xAxisWidth, dimensions.chartHeight);
     this.drawPaths(dimensions.chartWidth, dimensions.chartHeight);
     var self = this;
     window.addEventListener('resize', function () { self.renderChart(self); });
@@ -96,8 +111,9 @@ function Chart(data, currentTrack) {
 
 
     //update x and y scales to new dimensions
-    self.x.range([0, dimensions.chartWidth]);
+    self.x.range([0, dimensions.xAxisWidth]);
     self.y.range([dimensions.chartHeight, 0]);
+    self.ySpeed.range([dimensions.chartHeight, 0]);
 
     //update svg elements to new dimensions
     self.svg
@@ -108,6 +124,7 @@ function Chart(data, currentTrack) {
     //update the axis and line
     self.xAxis.scale(self.x);
     self.yAxis.scale(self.y);
+    self.ySpeedAxis.scale(self.ySpeed);
 
     self.svg.select('.x.axis')
       .attr('transform', 'translate(0,' + dimensions.chartHeight + ')')
@@ -116,22 +133,31 @@ function Chart(data, currentTrack) {
     self.svg.select('.y.axis')
       .call(self.yAxis);
 
+    self.svg.select('.ySpeed.axis')
+      .call(self.ySpeedAxis);
+
     self.chartWrapper.selectAll(".elevationbar")
       .attr("x", function (d) { return self.x(d.index); })
-      .attr("width", function (d) { return (self.x(d.index + 1) - self.x(d.index)) / 2 })
+      .attr("width", function (d) {         
+        return Math.min(self.x(d.index + 1), self.x.range()[1]) - self.x(d.index) 
+      })
       .attr("y", function (d) { return self.y(d.elevation); })
       .attr("height", function (d, i, j) { return dimensions.chartHeight - self.y(d.elevation); });
+
+    self.path.attr('d', self.line);
   }
 
   this.updateDimensions = function (winWidth) {
     var dimensions = {
-      margin: { top: 20, right: 20, left: 40, bottom: 40 },
-      svgWidth: winWidth,
-      svgHeight: 300
+      margin: { top: 20, right: 40, left: 40, bottom: 40 },
+      svgWidth: winWidth - 40,
+      svgHeight: 300,
+      leftAxisSpace : 40
     };
 
-    dimensions.chartWidth = winWidth - dimensions.margin.left - dimensions.margin.right;
+    dimensions.chartWidth = dimensions.svgWidth - dimensions.margin.left - dimensions.margin.right;
     dimensions.chartHeight = dimensions.svgHeight - dimensions.margin.top - dimensions.margin.bottom;
+    dimensions.xAxisWidth = dimensions.chartWidth - dimensions.leftAxisSpace;
 
     return dimensions;
   }
