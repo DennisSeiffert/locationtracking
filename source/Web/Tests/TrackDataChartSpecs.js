@@ -9,13 +9,20 @@ describe("Elevation Chart", function() {
                   { latitude : -27.467, longitude : 153.027 }]);            
   });
 
-  it("should be able to draw simple elevation graph", function() {      
-      plotElevation([{elevation : 10}, {elevation : 20}, {elevation : 30}, {elevation : 40}, {elevation : 50}], google.maps.ElevationStatus.OK, currentTrack);        
+  it("should be able to draw simple elevation graph", function() {  
+      var chart = new Chart([
+          {index : 0, elevation : 10}, 
+          {index : 1, elevation : 20}, 
+          {index : 2, elevation : 30}, 
+          {index : 3, elevation : 40}, 
+          {index : 4, elevation : 50}], currentTrack);
+      chart.initializeChart();                   
   }); 
 
   it("should be able to identify points by hovering over elevation graph", function() {
-      spyOn(currentTrack, 'hasElevationMarker').and.returnValue(false);      
-      onMouseOverHandler(2, currentTrack);
+      spyOn(currentTrack, 'hasElevationMarker').and.returnValue(false);
+      var chart = new Chart([], currentTrack);      
+      chart.onMouseOverHandler(2);
       expect(currentTrack.hasElevationMarker).toHaveBeenCalled();    
   }); 
 

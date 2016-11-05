@@ -3,15 +3,20 @@ describe("trackViewModel", function() {
 
   beforeEach(function() {
     sut = new TrackViewModel([
-                  { latitude : 37.772, longitude : -122.214 }, 
-                  { latitude : 21.291, longitude : -157.821 },  
-                  { latitude : -18.142, longitude : 178.431 },
-                  { latitude : -27.467, longitude : 153.027 }]);            
+                  { latitude : 37.772, longitude : -122.214, timestamputc : '2016-10-01T10:10:10.000Z' }, 
+                  { latitude : 21.291, longitude : -157.821, timestamputc : '2016-10-01T10:12:10.000Z' },  
+                  { latitude : -18.142, longitude : 178.431, timestamputc : '2016-10-02T10:10:10.000Z' },
+                  { latitude : -27.467, longitude : 153.027, timestamputc : '2016-12-01T10:10:10.000Z' }]);            
   });
 
   it("should be able to calculate total distance", function() {
     sut.calculateTotalDistance();
     expect(sut.totalDistanceInMeters).toEqual(11755297.543391727);
+  });
+
+  it("should be able to calculate speed", function() {
+    sut.calculateSpeed();
+    expect(sut.points[0].speed).toEqual(32240.93465257345);
   });
 
   it("should be able to get point at index", function() { 

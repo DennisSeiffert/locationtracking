@@ -44,6 +44,14 @@ function TrackViewModel(points){
         return this.elevationMarker !== null;
     }
 
+    this.calculateSpeed = function() {
+        for(var i=0;i < this.points.length - 1; i++){
+            var distanceBetween = distance(this.points[i].latitude, this.points[i].longitude, this.points[i+1].latitude, this.points[i+1].longitude);
+            var timespan = Date.parse(this.points[i+1].timestamputc) - Date.parse(this.points[i].timestamputc);
+            this.points[i].speed = distanceBetween / (timespan / 1000.0); 
+        }
+    }
+
     this.calculateTotalDistance = function() {
         for(var i=1;i < this.points.length; i++){
             this.totalDistanceInMeters += distance(this.points[i-1].latitude, this.points[i-1].longitude, this.points[i].latitude, this.points[i].longitude);
