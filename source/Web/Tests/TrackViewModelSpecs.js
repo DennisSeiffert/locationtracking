@@ -44,7 +44,7 @@ describe("trackViewModel", function () {
     it("should get index of nearest point", function () {
       expect(sut.getIndexOfNearestPoint(11755297.543391727)).toEqual(4);
       expect(sut.getIndexOfNearestPoint(0.0)).toEqual(0);
-      expect(sut.getIndexOfNearestPoint(6000000.0)).toEqual(2);
+      expect(sut.getIndexOfNearestPoint(6000000.0)).toEqual(3);
     });
   });
 

@@ -21,15 +21,13 @@ function TrackViewModel(points) {
     this.points = points;
     this.elevationMarker = null;
 
-    this.getIndexOfNearestPoint = function (distanceInMeters) {
-        var currentDistanceInMeters = 0.0;
-        for (var i = 1; i < this.points.length; i++) {
-            currentDistanceInMeters += distance(this.points[i - 1].latitude, this.points[i - 1].longitude, this.points[i].latitude, this.points[i].longitude);
-            if (currentDistanceInMeters > distanceInMeters) {
-                return i - 1;
+    this.getIndexOfNearestPoint = function (distanceInMeters) {        
+        for (var i = 0; i < this.points.length; i++) {            
+            if (this.points[i].distanceCovered >= distanceInMeters) {
+                return i;
             }
         }
-        return this.points.length - 1;
+        return 0;
     };
 
     this.getPointAt = function (index) {
