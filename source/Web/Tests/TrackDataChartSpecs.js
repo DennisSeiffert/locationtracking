@@ -10,7 +10,7 @@ describe("Elevation Chart", function() {
   });
 
   it("should be able to draw simple elevation graph", function() { 
-      currentTrack.calculateSpeed(); 
+      currentTrack.calculate(); 
       var chart = new Chart([
           {index : 0, elevation : 10 }, 
           {index : 1, elevation : 20 }, 

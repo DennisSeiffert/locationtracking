@@ -44,29 +44,27 @@ function TrackViewModel(points) {
         return this.elevationMarker !== null;
     }
 
-    this.calculateSpeed = function () {
+    this.calculate = function () {
+        //special treatment for first point
+        if (this.points.length > 0) {
+            this.points[0].speed = 0.0;
+            this.points[0].distanceCovered = 0.0;
+            this.points[0].timestamp = Date.parse(this.points[0].timestamputc.$date);
+        }
+
         for (var i = 0; i < this.points.length - 1; i++) {
             var distanceBetween = distance(this.points[i].latitude, this.points[i].longitude, this.points[i + 1].latitude, this.points[i + 1].longitude);
             var timespan = Date.parse(this.points[i + 1].timestamputc.$date) - Date.parse(this.points[i].timestamputc.$date);
             if (timespan > 0.0) {
-                this.points[i].speed = distanceBetween / (timespan / 1000.0);
+                this.points[i+1].speed = distanceBetween / (timespan / 1000.0);
             }
             else {
-                this.points[i].speed = 0.0;
+                this.points[i+1].speed = 0.0;
             }
-
-            this.points[i].timestamp = Date.parse(this.points[i].timestamputc.$date);
+            this.points[i+1].distanceCovered = this.points[i].distanceCovered + distanceBetween;
+            this.points[i+1].timestamp = Date.parse(this.points[i+1].timestamputc.$date);
         }
 
-        //special treatment for last point
-        if (this.points.length > 0) {
-            this.points[this.points.length - 1].speed = 0.0;
-        }
-    }
-
-    this.calculateTotalDistance = function () {
-        for (var i = 1; i < this.points.length; i++) {
-            this.totalDistanceInMeters += distance(this.points[i - 1].latitude, this.points[i - 1].longitude, this.points[i].latitude, this.points[i].longitude);
-        }
+        this.totalDistanceInMeters = this.points[this.points.length - 1].distanceCovered;        
     }
 }

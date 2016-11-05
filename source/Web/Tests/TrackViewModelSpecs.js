@@ -11,15 +11,23 @@ describe("trackViewModel", function () {
   });
 
   it("should be able to calculate total distance", function () {
-    sut.calculateTotalDistance();
+    sut.calculate();
     expect(sut.totalDistanceInMeters).toEqual(11755297.543391727);
   });
 
+  it("should be able to calculate distances", function () {
+    sut.calculate();
+    expect(sut.points[0].distanceCovered).toEqual(0.0);
+    expect(sut.points[1].distanceCovered).toEqual(3868912.1583088143);
+    expect(sut.points[2].distanceCovered).toEqual(3868912.1583088143);
+    expect(sut.points[4].distanceCovered).toEqual(11755297.543391727);
+  });
+
   it("should be able to calculate speed", function () {
-    sut.calculateSpeed();
-    expect(sut.points[0].speed).toEqual(118.97023857038174);
-    expect(sut.points[1].speed).toEqual(0.0);
-    expect(sut.points[2].speed).toBeGreaterThan(0.0);
+    sut.calculate();
+    expect(sut.points[1].speed).toEqual(118.97023857038174);
+    expect(sut.points[2].speed).toEqual(0.0);
+    expect(sut.points[3].speed).toBeGreaterThan(0.0);
   });
 
   it("should be able to get point at index", function () {
@@ -30,7 +38,7 @@ describe("trackViewModel", function () {
 
   describe("when total distance has been calculated", function () {
     beforeEach(function () {
-      sut.calculateTotalDistance();
+      sut.calculate();
     });
 
     it("should get index of nearest point", function () {
