@@ -230,10 +230,12 @@ function showTrack(geoPoints){
 	});
     // reverse order to begin with first tracking point at index 0
     points = points.reverse();
+    geoPoints = geoPoints.reverse();
 
-    currentTrack = new TrackViewModel(geopoints);
+    currentTrack = new TrackViewModel(geoPoints);
     currentTrack.assignElevationMarker(new google.maps.Marker({position: new google.maps.LatLng(0, 0),map:map,title:"Elevation Marker"}));
     currentTrack.calculateTotalDistance();
+    currentTrack.calculateSpeed();
 
 	var poly = new google.maps.Polyline({
 	  // use your own style here

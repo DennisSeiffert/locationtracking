@@ -50,7 +50,7 @@ function Chart(data, currentTrack) {
       .attr('transform', 'rotate(-90)')
       .attr('y', 70)                  
       .style('text-anchor', 'end')
-      .text('Speed (m/s)');
+      .text('Speed (km/h)');
   }
 
   this.drawPaths = function (chartWidth, chartHeight) {
@@ -69,10 +69,13 @@ function Chart(data, currentTrack) {
       .on("mouseout", function (d) {
         d3.select(this).attr('fill', '').classed("active", false);
       });
-    this.path = this.chartWrapper.append('path').datum(this.data).classed('line', true);
+    this.path = this.chartWrapper.append('path').datum(this.currentTrack.points).classed('line', true);
     this.line = d3.svg.line()
-      .x(function(d) { return self.x(d.index) })
-      .y(function(d) { return self.ySpeed(d.speed) });
+      .x(function(d) { 
+        return self.xSpeed(d.timestamp); 
+      })
+      .y(function(d) { return self.ySpeed(d.speed * 3.6) })
+      .interpolate('monotone');
     this.path.attr('d', this.line);
   }
 
@@ -81,12 +84,16 @@ function Chart(data, currentTrack) {
 
     this.x = d3.scale.linear().range([0, dimensions.xAxisWidth])
       .domain(d3.extent(this.data, function (d) { return d.index; }));
+    this.xSpeed = d3.time.scale().range([0, dimensions.xAxisWidth])
+      .domain(d3.extent(this.currentTrack.points, function (d) { return d.timestamp; }));
     this.y = d3.scale.linear().range([dimensions.chartHeight, 0])
       .domain([0, d3.max(this.data, function (d) { return d.elevation; })]);
     this.ySpeed = d3.scale.linear().range([dimensions.chartHeight, 0])
-      .domain([0, d3.max(this.data, function (d) { return d.speed; })]);
+      .domain([0, d3.max(this.currentTrack.points, function (d) { return d.speed * 3.6; })]);
 
     this.xAxis = d3.svg.axis().scale(this.x).orient('bottom')
+      .innerTickSize(-dimensions.chartHeight).outerTickSize(0).tickPadding(10);
+    this.xSpeedAxis = d3.svg.axis().scale(this.xSpeed).orient('bottom')
       .innerTickSize(-dimensions.chartHeight).outerTickSize(0).tickPadding(10);
     this.yAxis = d3.svg.axis().scale(this.y).orient('left')
       .innerTickSize(-dimensions.chartWidth).outerTickSize(0).tickPadding(10);
@@ -111,6 +118,7 @@ function Chart(data, currentTrack) {
 
 
     //update x and y scales to new dimensions
+    self.xSpeed.range([0, dimensions.xAxisWidth]);
     self.x.range([0, dimensions.xAxisWidth]);
     self.y.range([dimensions.chartHeight, 0]);
     self.ySpeed.range([dimensions.chartHeight, 0]);
@@ -122,6 +130,7 @@ function Chart(data, currentTrack) {
     self.chartWrapper.attr('transform', 'translate(' + dimensions.margin.left + ',' + dimensions.margin.top + ')');
 
     //update the axis and line
+    self.xSpeedAxis.scale(self.xSpeed);
     self.xAxis.scale(self.x);
     self.yAxis.scale(self.y);
     self.ySpeedAxis.scale(self.ySpeed);
