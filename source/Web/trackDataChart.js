@@ -2,7 +2,7 @@
 
 
 function Chart(data, currentTrack) {
-  this.data = data;
+  this.data = data;  
   this.currentTrack = currentTrack;
   this.x = null;
   this.y = null;
@@ -12,15 +12,23 @@ function Chart(data, currentTrack) {
   this.chartWrapper = null;
 
   this.onMouseOverHandler = function (index) {
-    var meters = index / 256.0 * this.currentTrack.totalDistanceInMeters;
-    var markerPointIndex = this.currentTrack.getIndexOfNearestPoint(meters);
-    var geoPoint = this.currentTrack.getPointAt(markerPointIndex);
+    var geoPoint = this.getGeoPointFromElevationDataIndex(index)
 
     if (this.currentTrack.hasElevationMarker()) {
       showPosition(geoPoint.latitude, geoPoint.longitude, this.currentTrack.elevationMarker);
     }
   }
 
+  this.getGeoPointFromElevationDataIndex = function (index) {
+    var meters = index / this.data.length * this.currentTrack.totalDistanceInMeters;
+    var markerPointIndex = this.currentTrack.getIndexOfNearestPoint(meters);
+    var geoPoint = this.currentTrack.getPointAt(markerPointIndex);
+    return geoPoint;
+  }
+
+  this.toKm = function(meters){
+    return meters / 1000.0;
+  }
 
 
 
@@ -44,11 +52,11 @@ function Chart(data, currentTrack) {
 
     axes.append('g')
       .attr('class', 'ySpeed axis')
-      .attr('transform', 'translate('+ xAxisWidth +', 0)')
+      .attr('transform', 'translate(' + xAxisWidth + ', 0)')
       .call(this.ySpeedAxis)
-      .append('text')      
+      .append('text')
       .attr('transform', 'rotate(-90)')
-      .attr('y', 70)                  
+      .attr('y', 70)
       .style('text-anchor', 'end')
       .text('Speed (km/h)');
   }
@@ -58,8 +66,11 @@ function Chart(data, currentTrack) {
     this.bars = this.chartWrapper.selectAll(".bar").data(this.data).enter();
     this.bars.append("rect")
       .attr("class", "elevationbar")
-      .attr("x", function (d) { return self.x(d.index); })
-      .attr("width", function (d) { return Math.min(self.x(d.index + 1), self.x.range()[1]) - self.x(d.index) })
+      .attr("x", function (d) { 
+        return self.x(self.toKm(self.getGeoPointFromElevationDataIndex(d.index).distanceCovered)); 
+      })
+      .attr("width", function (d) { return Math.min(self.x(self.toKm(self.getGeoPointFromElevationDataIndex(d.index + 1).distanceCovered)), self.x.range()[1]) - 
+                            self.x(self.toKm(self.getGeoPointFromElevationDataIndex(d.index).distanceCovered)) })
       .attr("y", function (d) { return self.y(d.elevation); })
       .attr("height", function (d, i, j) { return chartHeight - self.y(d.elevation); })
       .on("mouseover", function (d) {
@@ -71,21 +82,22 @@ function Chart(data, currentTrack) {
       });
     this.path = this.chartWrapper.append('path').datum(this.currentTrack.points).classed('line', true);
     this.line = d3.svg.line()
-      .x(function(d) { 
-        return self.xSpeed(d.timestamp); 
+      .x(function (d) {
+        return self.x(self.toKm(d.distanceCovered));
       })
-      .y(function(d) { return self.ySpeed(d.speed * 3.6) })
+      .y(function (d) { return self.ySpeed(d.speed * 3.6) })
       .interpolate('monotone');
     this.path.attr('d', this.line);
   }
 
   this.initializeChart = function () {
     var dimensions = this.updateDimensions(window.innerWidth);
+    var self = this;
 
     this.x = d3.scale.linear().range([0, dimensions.xAxisWidth])
-      .domain(d3.extent(this.data, function (d) { return d.index; }));
-    this.xSpeed = d3.time.scale().range([0, dimensions.xAxisWidth])
-      .domain(d3.extent(this.currentTrack.points, function (d) { return d.timestamp; }));
+      .domain(d3.extent(this.data, function (d) { return self.toKm(self.getGeoPointFromElevationDataIndex(d.index).distanceCovered); }));
+    // this.xSpeed = d3.time.scale().range([0, dimensions.xAxisWidth])
+    //   .domain(d3.extent(this.currentTrack.points, function (d) { return d.timestamp; }));
     this.y = d3.scale.linear().range([dimensions.chartHeight, 0])
       .domain([0, d3.max(this.data, function (d) { return d.elevation; })]);
     this.ySpeed = d3.scale.linear().range([dimensions.chartHeight, 0])
@@ -93,8 +105,8 @@ function Chart(data, currentTrack) {
 
     this.xAxis = d3.svg.axis().scale(this.x).orient('bottom')
       .innerTickSize(-dimensions.chartHeight).outerTickSize(0).tickPadding(10);
-    this.xSpeedAxis = d3.svg.axis().scale(this.xSpeed).orient('bottom')
-      .innerTickSize(-dimensions.chartHeight).outerTickSize(0).tickPadding(10);
+    // this.xSpeedAxis = d3.svg.axis().scale(this.xSpeed).orient('bottom')
+    //   .innerTickSize(-dimensions.chartHeight).outerTickSize(0).tickPadding(10);
     this.yAxis = d3.svg.axis().scale(this.y).orient('left')
       .innerTickSize(-dimensions.chartWidth).outerTickSize(0).tickPadding(10);
     this.ySpeedAxis = d3.svg.axis().scale(this.ySpeed).orient('right')
@@ -108,8 +120,7 @@ function Chart(data, currentTrack) {
       .attr('transform', 'translate(' + dimensions.margin.left + ',' + dimensions.margin.top + ')');
 
     this.addAxes(dimensions.xAxisWidth, dimensions.chartHeight);
-    this.drawPaths(dimensions.chartWidth, dimensions.chartHeight);
-    var self = this;
+    this.drawPaths(dimensions.chartWidth, dimensions.chartHeight);    
     window.addEventListener('resize', function () { self.renderChart(self); });
   }
 
@@ -118,7 +129,7 @@ function Chart(data, currentTrack) {
 
 
     //update x and y scales to new dimensions
-    self.xSpeed.range([0, dimensions.xAxisWidth]);
+    //self.xSpeed.range([0, dimensions.xAxisWidth]);
     self.x.range([0, dimensions.xAxisWidth]);
     self.y.range([dimensions.chartHeight, 0]);
     self.ySpeed.range([dimensions.chartHeight, 0]);
@@ -130,7 +141,7 @@ function Chart(data, currentTrack) {
     self.chartWrapper.attr('transform', 'translate(' + dimensions.margin.left + ',' + dimensions.margin.top + ')');
 
     //update the axis and line
-    self.xSpeedAxis.scale(self.xSpeed);
+    //self.xSpeedAxis.scale(self.xSpeed);
     self.xAxis.scale(self.x);
     self.yAxis.scale(self.y);
     self.ySpeedAxis.scale(self.ySpeed);
@@ -143,12 +154,14 @@ function Chart(data, currentTrack) {
       .call(self.yAxis);
 
     self.svg.select('.ySpeed.axis')
+      .attr('transform', 'translate(' + dimensions.xAxisWidth + ', 0)')
       .call(self.ySpeedAxis);
 
     self.chartWrapper.selectAll(".elevationbar")
-      .attr("x", function (d) { return self.x(d.index); })
-      .attr("width", function (d) {         
-        return Math.min(self.x(d.index + 1), self.x.range()[1]) - self.x(d.index) 
+      .attr("x", function (d) { return self.x(self.toKm(self.getGeoPointFromElevationDataIndex(d.index).distanceCovered)); })
+      .attr("width", function (d) {
+        return Math.min(self.x(self.toKm(self.getGeoPointFromElevationDataIndex(d.index + 1).distanceCovered)), self.x.range()[1]) - 
+                            self.x(self.toKm(self.getGeoPointFromElevationDataIndex(d.index).distanceCovered));
       })
       .attr("y", function (d) { return self.y(d.elevation); })
       .attr("height", function (d, i, j) { return dimensions.chartHeight - self.y(d.elevation); });
@@ -161,7 +174,7 @@ function Chart(data, currentTrack) {
       margin: { top: 20, right: 40, left: 40, bottom: 40 },
       svgWidth: winWidth - 40,
       svgHeight: 300,
-      leftAxisSpace : 40
+      leftAxisSpace: 40
     };
 
     dimensions.chartWidth = dimensions.svgWidth - dimensions.margin.left - dimensions.margin.right;
