@@ -50,12 +50,10 @@ def post_rawData():
      posts = mongoDbImport.importDataFromCentralMongoDb(beginDate, endDate, trackingId)
      return flask.Response(generate(posts), mimetype="application/json")
 
-#@app.route("/tracks", methods=['POST'])
 def update_tracks():
     mongoDbImport.updateTracks(datetime.utcnow())
     return flask.Response(json.dumps([]), mimetype="application/json")
 
-#@app.route("/tracks", methods=['OPTIONS'])
 def options_trackIds():
     tracks = mongoDbImport.getTracks()
     trackIds = map(lambda t: {"name":t.name,
@@ -76,6 +74,15 @@ def get_tracks():
         yield ']'
     tracks = mongoDbImport.getTracks()
     return flask.Response(generate(tracks), mimetype="application/json")
+
+
+def get_track(trackname):
+    return flask.Response(json.dumps([]), mimetype="application/json")
+
+
+@app.route("/tracks/<trackname>", methods=['GET'])
+def gettrackbyname(trackname):
+    return get_track(trackname)
 
 @app.route("/tracks", methods=['GET', 'POST', 'OPTIONS'])
 def resolvetracks():

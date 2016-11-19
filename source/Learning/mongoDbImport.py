@@ -4,7 +4,7 @@ from itertools import chain
 from Track import Track
 from TrackingPoint import TrackingPoint
 
-mongoDbInstance =  '192.168.1.101' #'backend_mongo'
+mongoDbInstance =  'backend_mongo'
 mongoDbPort = 3017
 
 def importDataFromCentralMongoDb(fromBegin, tillEnd, trackingId) :
