@@ -11,3 +11,25 @@
     stroke-width: 2px;
     fill: none;
 }
+
+.speedmarker {
+    stroke: blueviolet;    
+    stroke-width: 1px;
+    fill: none;
+    display: none;
+}
+
+.speedmarker.visible {    
+    display: block;
+}
+
+.elevationmarker {
+    stroke: brown;
+    stroke-width: 1px;
+    fill: none;
+    display: none;
+}
+
+.elevationmarker.visible {
+    display: block;
+}

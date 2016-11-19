@@ -2,7 +2,7 @@
 
 
 function Chart(data, currentTrack) {
-  this.data = data;  
+  this.data = data;
   this.currentTrack = currentTrack;
   this.x = null;
   this.y = null;
@@ -10,6 +10,8 @@ function Chart(data, currentTrack) {
   this.yAxis = null;
   this.svg = null;
   this.chartWrapper = null;
+  this.speedMarker = null;
+  this.elevationMarker = null;
 
   this.onMouseOverHandler = function (index) {
     var geoPoint = this.getGeoPointFromElevationDataIndex(index)
@@ -19,6 +21,26 @@ function Chart(data, currentTrack) {
     }
   }
 
+  this.onTouchMove = function () {
+    var xPos = d3.touches(this)[0][0];
+    var yPos = d3.touches(this)[0];
+    var dimensions = this.updateDimensions();
+
+    this.speedMarker
+      .attr("x1", xPos)
+      .attr("y1", yPos)
+      .attr("x2", dimensions.xAxisWidth)
+      .attr("y2", yPos)
+      .classed('visible', true);
+
+    this.elevationMarker
+      .attr("x1", 0)
+      .attr("y1", yPos)
+      .attr("x2", xPos)
+      .attr("y2", yPos)
+      .classed('visible', true);
+  }
+
   this.getGeoPointFromElevationDataIndex = function (index) {
     var meters = index / this.data.length * this.currentTrack.totalDistanceInMeters;
     var markerPointIndex = this.currentTrack.getIndexOfNearestPoint(meters);
@@ -26,7 +48,7 @@ function Chart(data, currentTrack) {
     return geoPoint;
   }
 
-  this.toKm = function(meters){
+  this.toKm = function (meters) {
     return meters / 1000.0;
   }
 
@@ -66,11 +88,13 @@ function Chart(data, currentTrack) {
     this.bars = this.chartWrapper.selectAll(".bar").data(this.data).enter();
     this.bars.append("rect")
       .attr("class", "elevationbar")
-      .attr("x", function (d) { 
-        return self.x(self.toKm(self.getGeoPointFromElevationDataIndex(d.index).distanceCovered)); 
+      .attr("x", function (d) {
+        return self.x(self.toKm(self.getGeoPointFromElevationDataIndex(d.index).distanceCovered));
       })
-      .attr("width", function (d) { return Math.min(self.x(self.toKm(self.getGeoPointFromElevationDataIndex(d.index + 1).distanceCovered)), self.x.range()[1]) - 
-                            self.x(self.toKm(self.getGeoPointFromElevationDataIndex(d.index).distanceCovered)) })
+      .attr("width", function (d) {
+        return Math.min(self.x(self.toKm(self.getGeoPointFromElevationDataIndex(d.index + 1).distanceCovered)), self.x.range()[1]) -
+          self.x(self.toKm(self.getGeoPointFromElevationDataIndex(d.index).distanceCovered))
+      })
       .attr("y", function (d) { return self.y(d.elevation); })
       .attr("height", function (d, i, j) { return chartHeight - self.y(d.elevation); })
       .on("mouseover", function (d) {
@@ -117,10 +141,15 @@ function Chart(data, currentTrack) {
       .attr('height', dimensions.svgHeight);
     this.chartWrapper = this.svg
       .append('g')
-      .attr('transform', 'translate(' + dimensions.margin.left + ',' + dimensions.margin.top + ')');
+      .attr('transform', 'translate(' + dimensions.margin.left + ',' + dimensions.margin.top + ')')
+      .on('touchmove', this.onTouchMove);
+
+    this.touchScale = d3.scale.linear().domain([0,dimensions.xAxisWidth]).range([0,this.data.length-1]).clamp(true);
+    this.speedMarker = this.chartWrapper.append('line').classed('speedmarker', true);
+    this.elevationMarker = this.chartWrapper.append('line').classed('elevationmarker', true);
 
     this.addAxes(dimensions.xAxisWidth, dimensions.chartHeight);
-    this.drawPaths(dimensions.chartWidth, dimensions.chartHeight);    
+    this.drawPaths(dimensions.chartWidth, dimensions.chartHeight);
     window.addEventListener('resize', function () { self.renderChart(self); });
   }
 
@@ -160,8 +189,8 @@ function Chart(data, currentTrack) {
     self.chartWrapper.selectAll(".elevationbar")
       .attr("x", function (d) { return self.x(self.toKm(self.getGeoPointFromElevationDataIndex(d.index).distanceCovered)); })
       .attr("width", function (d) {
-        return Math.min(self.x(self.toKm(self.getGeoPointFromElevationDataIndex(d.index + 1).distanceCovered)), self.x.range()[1]) - 
-                            self.x(self.toKm(self.getGeoPointFromElevationDataIndex(d.index).distanceCovered));
+        return Math.min(self.x(self.toKm(self.getGeoPointFromElevationDataIndex(d.index + 1).distanceCovered)), self.x.range()[1]) -
+          self.x(self.toKm(self.getGeoPointFromElevationDataIndex(d.index).distanceCovered));
       })
       .attr("y", function (d) { return self.y(d.elevation); })
       .attr("height", function (d, i, j) { return dimensions.chartHeight - self.y(d.elevation); });
