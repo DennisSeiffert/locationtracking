@@ -21,10 +21,10 @@ server {
 		proxy_http_version 1.1;		
         }
 
-        location /api/trackingpoints {
+        location /api/tracks {
                 proxy_buffering on;
                 proxy_read_timeout 60;
-                proxy_pass  http://dataapi_locationtracker:8080/trackingpoints;
+                proxy_pass  http://dataapi_locationtracker:8080/tracks;
 		proxy_set_header content-type "application/json";
                 proxy_connect_timeout 10;
                 proxy_set_header Upgrade $http_upgrade;

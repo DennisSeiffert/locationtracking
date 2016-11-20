@@ -57,6 +57,12 @@ window.addEventListener('load', function () {
     beginDate = ko.observable(UtcNow());
     endDate = ko.observable(UtcNow());
     trackingId = ko.observable();
+    tracksMetadata = ko.observableArray();
+    selectedTrack = ko.observable();
+    selectedTrack.subscribe(function(newValue) {
+        beginDate(selectedTrack().mintimestamp);
+        endDate(selectedTrack().maxtimestamp);
+    });
     currentTrack = new TrackViewModel([]);    
     ko.applyBindings(trackingViewModel);
     initialize();
@@ -71,7 +77,9 @@ function initialize(){
     Parse.serverURL = '/parse';
     
     initializeMap();
-    getCurrentPosition(onShowOwnPosition);       
+    getCurrentPosition(onShowOwnPosition);
+
+    loadTracks();       
 }
 
 function beginTracking() {  
@@ -202,37 +210,56 @@ function showPosition(latitude, longitude, marker) {
     }    
 }
 
+function loadTracks(){    
+    $.ajax({
+    type: "OPTIONS",
+    dataType : "json",
+    url: "/api/tracks",      
+    contentType: "application/json",    
+    success : bindTracks
+    });
+}
+
+function bindTracks(tracks){
+    $(tracks).each(function() {
+          
+	  var trackname = this.name;
+      var mintimestamp = new Date(this.mintimestamputc.$date);
+      var maxtimestamp = new Date(this.maxtimestamputc.$date);      
+        tracksMetadata.push({ name:trackname, mintimestamp : mintimestamp, maxtimestamp: maxtimestamp });
+    });      
+}
+
 function loadTrackingPoints(){
     var utcBeginDate = new Date(beginDate()).toISOString();
     var utcEndDate = new Date(endDate()).toISOString();
     $.ajax({
     type: "POST",
     dataType : "json",
-    url: "/api/trackingpoints",      
+    url: "/api/tracks/"+ selectedTrack().name,      
     contentType: "application/json",
-    data : JSON.stringify({ beginDate : utcBeginDate, endDate : utcEndDate, trackingId : trackingId()}),
+    data : JSON.stringify({ beginDate : utcBeginDate, endDate : utcEndDate}),
     success : showTrack
     });
 }
 
-function showTrack(geoPoints){
+function showTrack(track){
     if (map === undefined) return;
 
     var points = [];
 	var bounds = new google.maps.LatLngBounds ();
-	$(geoPoints).each(function() {
-	  var lat = $(this).attr("latitude");
-	  var lon = $(this).attr("longitude");
-      var timestamp = $(this).attr("timestamputc");
+	$(track.trackingpoints).each(function() {
+	  var lat = this.latitude;
+	  var lon = this.longitude;      
 	  var p = new google.maps.LatLng(lat, lon);
 	  points.push(p);
 	  bounds.extend(p);
 	});
     // reverse order to begin with first tracking point at index 0
     points = points.reverse();
-    geoPoints = geoPoints.reverse();
+    //geoPoints = geoPoints.reverse();
 
-    currentTrack = new TrackViewModel(geoPoints);
+    currentTrack = new TrackViewModel(track.trackingpoints);
     currentTrack.assignElevationMarker(new google.maps.Marker({position: new google.maps.LatLng(0, 0),map:map,title:"Elevation Marker"}));    
     currentTrack.calculate();
 

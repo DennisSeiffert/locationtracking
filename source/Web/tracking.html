@@ -86,7 +86,10 @@
                                                 </div>
                                                 <div class="row">
                                                     <label>Tracking Id</label>
-                                                    <input type="text" data-bind="value : trackingId" />
+                                                    <select data-bind="options: tracksMetadata,
+                                                                optionsText: 'name',
+                                                                value: selectedTrack,
+                                                                optionsCaption: 'Choose...'"></select>                                                    
                                                 </div>
                                                 <div class="row">
                                                     <button onclick="loadTrackingPoints()">Load Track Points</button>

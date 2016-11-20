@@ -4,8 +4,25 @@ from itertools import chain
 from Track import Track
 from TrackingPoint import TrackingPoint
 
-mongoDbInstance =  'backend_mongo'
+mongoDbInstance =  '192.168.1.101' #'backend_mongo'
 mongoDbPort = 3017
+
+
+def mapToDomainModel(t):
+    trackingpointsRef = t['value']['trackingpoints']
+    trackingpoints = []
+
+    if len(trackingpointsRef) > 0:
+        def mapTrackingPoint(x):
+            return TrackingPoint(x['latitude'], x['longitude'], x['timestamp'])
+
+        def mapTrackingPoints(x):
+            if 'trackingpoints' in x:
+                return map(mapTrackingPoint, x['trackingpoints'])
+            return [mapTrackingPoint(x)]
+
+        trackingpoints = list(chain.from_iterable(map(mapTrackingPoints, trackingpointsRef)))
+    return Track(t['_id']['name'], trackingpoints)
 
 def importDataFromCentralMongoDb(fromBegin, tillEnd, trackingId) :
     client = MongoClient(mongoDbInstance, mongoDbPort)
@@ -20,20 +37,6 @@ def importDataFromCentralMongoDb(fromBegin, tillEnd, trackingId) :
         yield post
 
 def getTracks():
-    def mapToDomainModel(t):
-        trackingpointsRef = t['value']['trackingpoints']
-        trackingpoints = []
-
-        if len(trackingpointsRef) > 0:
-            def mapTrackingPoint(x):
-                return TrackingPoint(x['latitude'], x['longitude'], x['timestamp'])
-            def mapTrackingPoints(x):
-                if 'trackingpoints' in x:
-                    return map(mapTrackingPoint, x['trackingpoints'])
-                return [mapTrackingPoint(x)]
-            trackingpoints = list(chain.from_iterable(map(mapTrackingPoints, trackingpointsRef)))
-        return  Track(t['_id']['name'], trackingpoints)
-
     client = MongoClient(mongoDbInstance, mongoDbPort)
     db = client.parse
     tracks = db.Tracks.find()
@@ -41,6 +44,13 @@ def getTracks():
 
     for track in domainModelTracks:
         yield track
+
+def getTrack(trackname):
+    client = MongoClient(mongoDbInstance, mongoDbPort)
+    db = client.parse
+    track = db.Tracks.find({"_id" :{ "name" : trackname}})
+    domainModelTrack = mapToDomainModel(track[0])
+    return domainModelTrack
 
 def updateTracks(updateDatetime):
     mapFunction = Code("function()"

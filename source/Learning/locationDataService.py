@@ -18,12 +18,12 @@ datetimeFormat = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 def jsonSerializing(obj):
     if isinstance(obj, datetime):
-        return obj.isoformat() + 'Z'
+        return {"$date": obj.isoformat() + 'Z'}
     if isinstance(obj, Track.Track):
-        return {"name": obj.name, "trackingpoints" : json.dumps(obj.trackingpoints, default=jsonSerializing)}
+        return {"name": obj.name, "trackingpoints" : map(jsonSerializing, obj.trackingpoints)}
     if isinstance(obj, TrackingPoint.TrackingPoint):
-        return {"latitude": obj.latitude, "longitude": obj.longitude, "timestamputc" : json.dumps(obj.timestamputc, default=jsonSerializing)}
-    return json_util.default(obj.__dict__)
+        return {"latitude": obj.latitude, "longitude": obj.longitude, "timestamputc" : jsonSerializing(obj.timestamputc)}
+    return json_util.default(obj)
 
 @app.route("/trackingpoints", methods=['POST'])
 def post_rawData():
@@ -57,10 +57,10 @@ def update_tracks():
 def options_trackIds():
     tracks = mongoDbImport.getTracks()
     trackIds = map(lambda t: {"name":t.name,
-                              "mintimestamputc" : json.dumps(t.mintimestamputc, default=jsonSerializing),
-                              "maxtimestamputc" : json.dumps(t.maxtimestamputc, default=jsonSerializing) },
+                              "mintimestamputc" : jsonSerializing(t.mintimestamputc),
+                              "maxtimestamputc" : jsonSerializing(t.maxtimestamputc) },
                    tracks)
-    return flask.Response(json.dumps(trackIds), mimetype="application/json")
+    return flask.Response(json.dumps(trackIds, indent=None), mimetype="application/json")
 
 def get_tracks():
     def generate(ts):
@@ -77,10 +77,11 @@ def get_tracks():
 
 
 def get_track(trackname):
-    return flask.Response(json.dumps([]), mimetype="application/json")
+    track = mongoDbImport.getTrack(trackname)
+    return flask.Response(json.dumps(track, default=jsonSerializing), mimetype="application/json")
 
 
-@app.route("/tracks/<trackname>", methods=['GET'])
+@app.route("/tracks/<trackname>", methods=['POST'])
 def gettrackbyname(trackname):
     return get_track(trackname)
 
