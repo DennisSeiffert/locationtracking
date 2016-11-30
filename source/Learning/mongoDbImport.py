@@ -4,7 +4,7 @@ from itertools import chain
 from Track import Track
 from TrackingPoint import TrackingPoint
 
-mongoDbInstance = '192.168.1.101' #''backend_mongo'
+mongoDbInstance = 'backend_mongo'
 mongoDbPort = 3017
 
 
@@ -23,18 +23,6 @@ def mapToDomainModel(t):
 
         trackingpoints = list(chain.from_iterable(map(mapTrackingPoints, trackingpointsRef)))
     return Track(t['_id']['name'], trackingpoints)
-
-def importDataFromCentralMongoDb(fromBegin, tillEnd, trackingId) :
-    client = MongoClient(mongoDbInstance, mongoDbPort)
-    db = client.parse
-    posts = db.Posts
-    filterCriteria = [{ "timestamputc" : { "$gt" : fromBegin }},
-                                      { "timestamputc" : { "$lt" : tillEnd }},
-                                      { "origin" : "gps" }]
-    if trackingId != '':
-        filterCriteria.append({ "name" : trackingId })
-    for post in posts.find({"$and" : filterCriteria }).sort("timestamputc", -1):
-        yield post
 
 def getTracks():
     client = MongoClient(mongoDbInstance, mongoDbPort)

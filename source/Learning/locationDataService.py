@@ -25,31 +25,6 @@ def jsonSerializing(obj):
         return {"latitude": obj.latitude, "longitude": obj.longitude, "timestamputc" : jsonSerializing(obj.timestamputc)}
     return json_util.default(obj)
 
-@app.route("/trackingpoints", methods=['POST'])
-def post_rawData():
-     def generate(p):
-        yield '['
-        index = 0
-        for post in p:
-            if index > 0:
-                yield ","
-            yield json.dumps(post, default=jsonSerializing)
-            index += 1
-        yield ']'
-
-     requestData = request.json
-     beginDate = datetime.utcnow() - datetime(1,1,1)
-     trackingId = ''
-     if 'beginDate' in requestData:
-        beginDate = datetime.strptime(requestData['beginDate'], datetimeFormat)
-     endDate = datetime.utcnow()
-     if 'endDate' in requestData:
-        endDate = datetime.strptime(requestData['endDate'], datetimeFormat)
-     if 'trackingId' in requestData:
-         trackingId = requestData['trackingId']
-     posts = mongoDbImport.importDataFromCentralMongoDb(beginDate, endDate, trackingId)
-     return flask.Response(generate(posts), mimetype="application/json")
-
 def update_tracks():
     mongoDbImport.updateTracks(datetime.utcnow())
     return flask.Response(json.dumps([]), mimetype="application/json")
