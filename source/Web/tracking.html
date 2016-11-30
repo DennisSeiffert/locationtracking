@@ -57,9 +57,9 @@
                                     <ul class="nav navbar-nav">
                                         <li>
                                             <form class="form-horizontal" style="margin-left:15px;margin-right:15px">
-                                                <div class="form-group">                                                    
-                                                        <button onclick="beginTracking()" class="btn btn-default btn-success active">Track ...</button>                                                                                                        
-                                                        <button onclick="stopTracking()" class="btn btn-default btn-danger">Stop tracking</button>                                                    
+                                                <div class="form-group">
+                                                    <button onclick="beginTracking()" class="btn btn-default btn-success active">Track ...</button>
+                                                    <button onclick="stopTracking()" class="btn btn-default btn-danger">Stop tracking</button>
                                                 </div>
                                                 <div class="form-group">
                                                     <label class="col-md-4  col-sm-4 col-xs-4 control-label">Tracking Id</label>
@@ -78,76 +78,85 @@
                                                     <div class="container-fluid">
                                                         <div class="row">
                                                             <label>from</label>
-                                                    <input type="datetime-local" data-bind="value : beginDate" />
-                                                </div>
-                                                <div class="row">
-                                                    <label>until</label>
-                                                    <input type="datetime-local" data-bind="value : endDate" />
-                                                </div>
-                                                <div class="row">
-                                                    <label>Tracking Id</label>
-                                                    <select data-bind="options: tracksMetadata,
+                                                            <input type="datetime-local" data-bind="value : beginDate" />
+                                                        </div>
+                                                        <div class="row">
+                                                            <label>until</label>
+                                                            <input type="datetime-local" data-bind="value : endDate" />
+                                                        </div>
+                                                        <div class="row">
+                                                            <!--<label>Tracking Id</label>-->
+                                                            <select id="trackSelection" data-bind="options: tracksMetadata,
                                                                 optionsText: 'name',
                                                                 value: selectedTrack,
-                                                                optionsCaption: 'Choose...'"></select>                                                    
-                                                </div>
-                                                <div class="row">
-                                                    <button onclick="loadTrackingPoints()">Load Track Points</button>
-                                                </div>
-                                </div>
-                                </li>
-                                </ul>
-                                </li>
-                                <li role="presentation" class="dropdown">
-                                    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                                                                optionsCaption: 'Choose...'"></select>
+                                                            <!--<div class="dropdown">
+                                                                <button class="btn dropdown-toggle" type="button" data-toggle="dropdown">Tracking Id
+                                                                    <span class="caret"></span></button>
+                                                                <ul class="dropdown-menu" role="menu" data-bind="foreach: tracksMetadata">
+                                                                    <li>
+                                                                        <a role="menuitem" tabindex="-1" href="#" data-bind="text: name, click: $parent.selectedTrack"></a>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>-->
+                                                        </div>
+                                                        <div class="row">
+                                                            <button onclick="loadTrackingPoints()">Load Track Points</button>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li role="presentation" class="dropdown">
+                                            <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                                             Observation <span class="caret"></span>
                                             </a>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <div>
-                                                <div class="container-fluid">
-                                                    <div class="row">
-                                                        <label>observe by identifer: </label><input type="text" id="observedIdentifier">
-                                                    </div>
-                                                    <div class="row">
-                                                        <button onclick="observe()">Observe</button>
-                                                    </div>
-                                                </div>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <div>
+                                                        <div class="container-fluid">
+                                                            <div class="row">
+                                                                <label>observe by identifer: </label><input type="text" id="observedIdentifier">
+                                                            </div>
+                                                            <div class="row">
+                                                                <button onclick="observe()">Observe</button>
+                                                            </div>
+                                                        </div>
+                                                </li>
+                                            </ul>
                                         </li>
                                     </ul>
-                                </li>
-                                </ul>
+                                    </div>
                                 </div>
-                            </div>
                         </nav>
+                        </div>
                     </div>
-                </div>
 
-                <div class="inner cover">
-                    <div id="mapholder" class="jumbotron" style="padding-top:0px;padding-bottom:0px"></div>
-                    <div id="elevation_chart"></div>
-                </div>
-
-                <div class="mastfoot">
-                    <div class="inner">
-                        own position: <label data-bind="text : ownTrackingJob.latitude"></label> <label data-bind="text : ownTrackingJob.longitude"></label>
+                    <div class="inner cover">
+                        <div id="mapholder" class="jumbotron" style="padding-top:0px;padding-bottom:0px"></div>
+                        <div id="elevation_chart"></div>
                     </div>
+
+                    <div class="mastfoot">
+                        <div class="inner">
+                            own position: <label data-bind="text : ownTrackingJob.latitude"></label> <label data-bind="text : ownTrackingJob.longitude"></label>
+                        </div>
+                    </div>
+
                 </div>
 
             </div>
 
         </div>
 
-    </div>
-
-    <ul data-bind="foreach: observedTrackingJobs">
-        <li>
-            observing <b data-bind="text: identifier"></b> on (<b data-bind="text: latitude"></b>, <b data-bind="text: longitude"></b>)
-            at <b data-bind="text: utcTimestamp"></b>
-            <label>update positions in map</label><input type="checkbox" data-bind="checked : updatePositionOnMap">
-            <label>observe</label><input type="checkbox" data-bind="checked : observe">
-        </li>
-    </ul>
+        <ul data-bind="foreach: observedTrackingJobs">
+            <li>
+                observing <b data-bind="text: identifier"></b> on (<b data-bind="text: latitude"></b>, <b data-bind="text: longitude"></b>)
+                at <b data-bind="text: utcTimestamp"></b>
+                <label>update positions in map</label><input type="checkbox" data-bind="checked : updatePositionOnMap">
+                <label>observe</label><input type="checkbox" data-bind="checked : observe">
+            </li>
+        </ul>
 </body>
 
 </html>

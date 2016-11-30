@@ -76,14 +76,21 @@ def get_tracks():
     return flask.Response(generate(tracks), mimetype="application/json")
 
 
-def get_track(trackname):
-    track = mongoDbImport.getTrack(trackname)
+def get_track(trackname, beginDate, endDate):
+    track = mongoDbImport.getTrack(trackname, beginDate, endDate)
     return flask.Response(json.dumps(track, default=jsonSerializing), mimetype="application/json")
 
 
 @app.route("/tracks/<trackname>", methods=['POST'])
 def gettrackbyname(trackname):
-    return get_track(trackname)
+    requestData = request.json
+    beginDate = datetime.utcnow() - datetime(1, 1, 1)
+    if 'beginDate' in requestData:
+        beginDate = datetime.strptime(requestData['beginDate'], datetimeFormat)
+    endDate = datetime.utcnow()
+    if 'endDate' in requestData:
+        endDate = datetime.strptime(requestData['endDate'], datetimeFormat)
+    return get_track(trackname, beginDate, endDate)
 
 @app.route("/tracks", methods=['GET', 'POST', 'OPTIONS'])
 def resolvetracks():

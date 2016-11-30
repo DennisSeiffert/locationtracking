@@ -3,7 +3,6 @@
 /* global map */
 /* global currentTrack */
 var x = document.getElementById("status");
-
 var geo_options = {
   enableHighAccuracy: true, 
   maximumAge        : 60000, 
@@ -66,6 +65,10 @@ window.addEventListener('load', function () {
     currentTrack = new TrackViewModel([]);    
     ko.applyBindings(trackingViewModel);
     initialize();
+    
+    $('#trackSelection').click(function(e) {
+        e.stopPropagation();        
+    });
 });
 
 
@@ -213,7 +216,7 @@ function showPosition(latitude, longitude, marker) {
 function loadTracks(){    
     $.ajax({
     type: "OPTIONS",
-    dataType : "json",
+    dataType : "json",    
     url: "/api/tracks",      
     contentType: "application/json",    
     success : bindTracks

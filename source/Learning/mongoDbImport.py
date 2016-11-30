@@ -4,7 +4,7 @@ from itertools import chain
 from Track import Track
 from TrackingPoint import TrackingPoint
 
-mongoDbInstance =  '192.168.1.101' #'backend_mongo'
+mongoDbInstance = '192.168.1.101' #''backend_mongo'
 mongoDbPort = 3017
 
 
@@ -45,11 +45,13 @@ def getTracks():
     for track in domainModelTracks:
         yield track
 
-def getTrack(trackname):
+def getTrack(trackname, beginDate, endDate):
     client = MongoClient(mongoDbInstance, mongoDbPort)
     db = client.parse
     track = db.Tracks.find({"_id" :{ "name" : trackname}})
     domainModelTrack = mapToDomainModel(track[0])
+    domainModelTrack.sort()
+    domainModelTrack.restrict(beginDate, endDate)
     return domainModelTrack
 
 def updateTracks(updateDatetime):
@@ -61,12 +63,14 @@ def updateTracks(updateDatetime):
             "longitude: this.longitude,"
             "timestamp: this.timestamputc"
         "};"
-        "emit(key, value);"
+        "if(this.origin == 'gps'){"
+        "   emit(key, value);"
+        "}"
     "};")
     reduceFunction = Code("function(key, values) {"
                         "var result = [];"
                         "values.forEach( function(value) {"
-                        "                      result.push(value);"
+                        "                            result.push(value);"
                         "                }"
                         "              );"
                         "return { trackingpoints: result };"
