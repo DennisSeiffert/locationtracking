@@ -3,7 +3,7 @@ from lettuce import step, world, before
 from nose.tools import assert_equals
 
 from locationDataService import app
-import mongoDbImport
+import TrackRepository
 
 
 @before.all
@@ -13,8 +13,8 @@ def before_all():
 
 @step(u'Given some tracking points in database')
 def given_some_tracking_points_in_database(step):
-    mongoDbImport.mongoDbInstance = '192.168.1.101'
-    mongoDbImport.mongoDbPort = 3017
+    TrackRepository.mongoDbInstance = '192.168.1.101'
+    TrackRepository.mongoDbPort = 3017
     print 'working in real data'
 
 @step(u'When I want to get all tracking points')

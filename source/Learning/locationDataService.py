@@ -8,7 +8,7 @@ from flask import Flask
 from flask import request
 
 import TrackingPoint
-import mongoDbImport
+import TrackRepository
 import Track
 
 app = Flask(__name__)
@@ -26,11 +26,11 @@ def jsonSerializing(obj):
     return json_util.default(obj)
 
 def update_tracks():
-    mongoDbImport.updateTracks(datetime.utcnow())
+    TrackRepository.updateTracks(datetime.utcnow())
     return flask.Response(json.dumps([]), mimetype="application/json")
 
 def options_trackIds():
-    tracks = mongoDbImport.getTracks()
+    tracks = TrackRepository.getTracks()
     trackIds = map(lambda t: {"name":t.name,
                               "mintimestamputc" : jsonSerializing(t.mintimestamputc),
                               "maxtimestamputc" : jsonSerializing(t.maxtimestamputc) },
@@ -47,12 +47,12 @@ def get_tracks():
             yield json.dumps(track, default=jsonSerializing)
             index += 1
         yield ']'
-    tracks = mongoDbImport.getTracks()
+    tracks = TrackRepository.getTracks()
     return flask.Response(generate(tracks), mimetype="application/json")
 
 
 def get_track(trackname, beginDate, endDate):
-    track = mongoDbImport.getTrack(trackname, beginDate, endDate)
+    track = TrackRepository.getTrack(trackname, beginDate, endDate)
     return flask.Response(json.dumps(track, default=jsonSerializing), mimetype="application/json")
 
 
