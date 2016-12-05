@@ -3,3 +3,4 @@ class TrackingPoint:
         self.latitude = latitude
         self.longitude = longitude
         self.timestamputc = timestamputc
+        self.distanceFromAncestor = 0

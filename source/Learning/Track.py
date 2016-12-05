@@ -1,5 +1,7 @@
 import datetime
 
+from geopy.distance import vincenty
+
 
 class Track:
 
@@ -16,6 +18,10 @@ class Track:
             timestamps = map(lambda t: t.timestamputc, self.trackingpoints)
             self.mintimestamputc = min(timestamps)
             self.maxtimestamputc = max(timestamps)
+
+    @staticmethod
+    def calculateDistance(lat1, lon1, lat2, lon2):
+        return vincenty((lat1, lon1), (lat2, lon2)).meters
 
     def sort(self):
         list.sort(self.trackingpoints, cmp = lambda x,y: int((x.timestamputc - y.timestamputc).total_seconds()))

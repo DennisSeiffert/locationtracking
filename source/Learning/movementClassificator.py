@@ -37,6 +37,8 @@ import tensorflow as tf
 
 from tensorflow.contrib import learn
 
+from movementDataPreparation import requestTracks
+
 FLAGS = None
 
 MAX_DOCUMENT_LENGTH = 100
@@ -63,6 +65,7 @@ def char_rnn_model(x, y):
 
 def main(unused_argv):
   # Prepare training and testing data
+  tracks = requestTracks()
   dbpedia = learn.datasets.load_dataset(
       'dbpedia', test_with_fake_data=FLAGS.test_with_fake_data)
   x_train = pandas.DataFrame(dbpedia.train.data)[1]
