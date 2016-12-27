@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 from geopy.distance import vincenty
 
@@ -9,8 +9,8 @@ class Track:
     def __init__(self, name, trackingpoints):
         self.name = name
         self.trackingpoints = trackingpoints
-        self.mintimestamputc = datetime.datetime.utcnow()
-        self.maxtimestamputc = datetime.datetime.utcnow()
+        self.mintimestamputc = datetime.utcnow()
+        self.maxtimestamputc = datetime.utcnow()
         self.sort()
         self.calculateDateRange()
         self.calculateDistances()
@@ -31,8 +31,10 @@ class Track:
 
     def calculateVelocities(self):
         for i in range(1, len(self.trackingpoints)):
-            self.trackingpoints[i].velocity = self.trackingpoints[i].distanceFromAncestor / \
-                                              (self.trackingpoints[i].timestamputc - self.trackingpoints[i-1].timestamputc).total_seconds()
+            timespan = (self.trackingpoints[i].timestamputc - self.trackingpoints[i-1].timestamputc).total_seconds()
+            if timespan > 0:
+                self.trackingpoints[i].velocity = self.trackingpoints[i].distanceFromAncestor / timespan
+
 
 
     def sort(self):
