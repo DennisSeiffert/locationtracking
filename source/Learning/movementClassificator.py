@@ -167,8 +167,8 @@ def main(unused_argv):
     LOG_DIR = './ops_logs/sin'
     TIMESTEPS = 5
     RNN_LAYERS = [{'num_units': TIMESTEPS}]
-    DENSE_LAYERS = None
-    TRAINING_STEPS = 130000
+    DENSE_LAYERS = [2]
+    TRAINING_STEPS = 13000
     PRINT_STEPS = TRAINING_STEPS / 100
     BATCH_SIZE = 100
 
