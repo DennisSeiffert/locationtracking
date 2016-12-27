@@ -140,7 +140,7 @@ def lstm_model(num_units, rnn_layers, dense_layers=None, learning_rate=0.1, opti
     def _lstm_model(X, y):
         stacked_lstm = tf.contrib.rnn.MultiRNNCell(
             lstm_cells(rnn_layers), state_is_tuple=True)
-        x_ = tf.unstack(X, axis=1, num=num_units)
+        x_ = tf.unpack(X, axis=1, num=num_units)
         output, _ = tf.contrib.rnn.static_rnn(
             stacked_lstm, x_, dtype=dtypes.float32)
         output = dnn_layers(output[-1], dense_layers)
@@ -165,26 +165,26 @@ def main(unused_argv):
     # (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.0, 23.0)], dtype=np.float32)
     tracks = np.array(list(requestTracks()), dtype=np.float32)    
     LOG_DIR = './ops_logs/sin'
-    TIMESTEPS = 3
-    RNN_LAYERS = [{'num_units': 5}]
+    TIMESTEPS = 5
+    RNN_LAYERS = [{'num_units': TIMESTEPS}]
     DENSE_LAYERS = None
-    TRAINING_STEPS = 100000
-    PRINT_STEPS = TRAINING_STEPS / 10
+    TRAINING_STEPS = 130000
+    PRINT_STEPS = TRAINING_STEPS / 100
     BATCH_SIZE = 100
 
-    tracksDataFrame = pd.DataFrame(tracks, dtype=np.float32)
+    #tracksDataFrame = pd.DataFrame(tracks, dtype=np.float32)
     #prepare geopoints as list of 2-tuple
-    geoPoints = pd.DataFrame([p for tuple in tracksDataFrame.drop(2, axis=1).itertuples(False) for p in tuple], dtype=np.float32)
-    velocities = pd.DataFrame([v for pair in zip(tracksDataFrame[2], tracksDataFrame[2]) for v in pair], dtype=np.float32)
-    train_x, val_x, test_x = prepare_data(geoPoints, TIMESTEPS, labels=False)
-    train_y, val_y, test_y = prepare_data(geoPoints, TIMESTEPS, labels=True)
-    X, y = dict(train=train_x, val=val_x, test=test_x), dict(train=train_y, val=val_y, test=test_y)
+    #geoPoints = pd.DataFrame([p for tuple in tracksDataFrame.drop(2, axis=1).itertuples(False) for p in tuple], dtype=np.float32)
+    #velocities = pd.DataFrame([v for pair in zip(tracksDataFrame[2], tracksDataFrame[2]) for v in pair], dtype=np.float32)
+    #train_x, val_x, test_x = prepare_data(geoPoints, TIMESTEPS, labels=False)
+    #train_y, val_y, test_y = prepare_data(velocities, TIMESTEPS, labels=True)
+    #X, y = dict(train=train_x, val=val_x, test=test_x), dict(train=train_y, val=val_y, test=test_y)
 
     regressor = tflearn.Estimator(
         model_fn=lstm_model(TIMESTEPS, RNN_LAYERS, DENSE_LAYERS),
                                 model_dir=LOG_DIR)
-    #X, y = generate_data(
-    #    np.sin, np.linspace(0, 100, 10000, dtype=np.float32), TIMESTEPS, seperate=False)
+    X, y = generate_data(
+        x_sin, np.linspace(0, 100, 10000, dtype=np.float32), TIMESTEPS, seperate=False)
     # create a lstm instance and validation monitor    
     validation_monitor = tflearn.monitors.ValidationMonitor(X['val'], y['val'],
                                                             every_n_steps=PRINT_STEPS,
@@ -200,11 +200,12 @@ def main(unused_argv):
     # from sklearn.metrics import mean_squared_error
     # predictedList = list(predicted)
     # testList = list(y['test'])
+
     # score = mean_squared_error(predictedList, testList)
     # print ("MSE: %f" % score)
     from matplotlib import pyplot as plt
-    plot_predicted, = plt.plot(list(predicted)[:100], label='predicted')
-    plot_test, = plt.plot(y['test'][:100], label='test')
+    plot_predicted, = plt.plot(list(predicted), label='predicted')
+    plot_test, = plt.plot(list(y['test']), label='test')
     plt.legend(handles=[plot_predicted, plot_test])
     plt.show()
 
