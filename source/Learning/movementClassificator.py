@@ -43,7 +43,7 @@ def rnn_data(data, time_steps, labels=False):
     for i in range(len(data) - time_steps):
         if labels:
             try:
-                rnn_df.append(data.iloc[i + time_steps].as_matrix())
+                rnn_df.append(data.iloc[i:i + time_steps].as_matrix())
             except AttributeError:
                 rnn_df.append(data.iloc[i + time_steps])
         else:
@@ -120,8 +120,9 @@ def lstm_model(num_units, rnn_layers, dense_layers=None, learning_rate=0.1, opti
             return [tf.contrib.rnn.DropoutWrapper(
                 tf.contrib.rnn.BasicLSTMCell(layer['num_units'],
                                              state_is_tuple=True), layer['keep_prob'])
-                    if layer.get(
-                        'keep_prob') else tf.contrib.rnn.BasicLSTMCell(layer['num_units'],
+                    if layer.get('keep_prob') 
+                    else 
+                        tf.contrib.rnn.BasicLSTMCell(layer['num_units'],
                                                                        state_is_tuple=True)
                     for layer in layers]
         return [tf.contrib.rnn.BasicLSTMCell(steps, state_is_tuple=True) for steps in layers]
@@ -140,11 +141,12 @@ def lstm_model(num_units, rnn_layers, dense_layers=None, learning_rate=0.1, opti
     def _lstm_model(X, y):
         stacked_lstm = tf.contrib.rnn.MultiRNNCell(
             lstm_cells(rnn_layers), state_is_tuple=True)
-        x_ = tf.unpack(X, axis=1, num=num_units)
-        output, _ = tf.contrib.rnn.static_rnn(
+        x_ = tf.reshape(X, [-1, 8, 2])
+        output, _ = tf.nn.dynamic_rnn(
             stacked_lstm, x_, dtype=dtypes.float32)
-        output = dnn_layers(output[-1], dense_layers)
-        prediction, loss = tflearn.models.linear_regression(output, y)
+        output_ = output[-1]
+        output_ = dnn_layers(output_, dense_layers)
+        prediction, loss = tflearn.models.linear_regression(output_, y)
         train_op = tf.contrib.layers.optimize_loss(
             loss, tf.contrib.framework.get_global_step(), optimizer=optimizer,
             learning_rate=learning_rate)
@@ -154,37 +156,37 @@ def lstm_model(num_units, rnn_layers, dense_layers=None, learning_rate=0.1, opti
 
 
 def main(unused_argv):
-    # tracks = np.array([(7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.4,
-    # 23.0), (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.0, 23.0),
-    # (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.0, 23.0),
-    # (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.0, 23.0),
-    # (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.0, 23.0),
-    # (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.0, 23.0),
-    # (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.0, 23.0),
-    # (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.0, 23.0),
-    # (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.0, 23.0)], dtype=np.float32)
-    tracks = np.array(list(requestTracks()), dtype=np.float32)    
+    tracks = np.array([(7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.4,
+    23.0), (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.0, 23.0),
+    (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.0, 23.0),
+    (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.0, 23.0),
+    (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.0, 23.0),
+    (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.0, 23.0),
+    (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.0, 23.0),
+    (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.0, 23.0),
+    (7.0, 8.4, 23.0), (7.0, 8.4, 23.0), (7.0, 8.0, 23.0)], dtype=np.float32)
+    #tracks = np.array(list(requestTracks()), dtype=np.float32)    
     LOG_DIR = './ops_logs/sin'
-    TIMESTEPS = 5
-    RNN_LAYERS = [{'num_units': TIMESTEPS}]
-    DENSE_LAYERS = [2]
-    TRAINING_STEPS = 13000
+    TIMESTEPS = 8
+    RNN_LAYERS = [{'num_units': 128}, {'num_units': 128}]
+    DENSE_LAYERS = None #[2]
+    TRAINING_STEPS = 1300
     PRINT_STEPS = TRAINING_STEPS / 100
-    BATCH_SIZE = 100
+    BATCH_SIZE = 5
 
-    #tracksDataFrame = pd.DataFrame(tracks, dtype=np.float32)
+    tracksDataFrame = pd.DataFrame(tracks, dtype=np.float32)
     #prepare geopoints as list of 2-tuple
-    #geoPoints = pd.DataFrame([p for tuple in tracksDataFrame.drop(2, axis=1).itertuples(False) for p in tuple], dtype=np.float32)
-    #velocities = pd.DataFrame([v for pair in zip(tracksDataFrame[2], tracksDataFrame[2]) for v in pair], dtype=np.float32)
-    #train_x, val_x, test_x = prepare_data(geoPoints, TIMESTEPS, labels=False)
-    #train_y, val_y, test_y = prepare_data(velocities, TIMESTEPS, labels=True)
-    #X, y = dict(train=train_x, val=val_x, test=test_x), dict(train=train_y, val=val_y, test=test_y)
+    geoPoints = tracksDataFrame.drop(2, axis=1)
+    velocities = tracksDataFrame[2]
+    train_x, val_x, test_x = split_data(geoPoints)
+    train_y, val_y, test_y = split_data(velocities)
+    X, y = dict(train=train_x, val=val_x, test=test_x), dict(train=train_y, val=val_y, test=test_y)
 
     regressor = tflearn.Estimator(
         model_fn=lstm_model(TIMESTEPS, RNN_LAYERS, DENSE_LAYERS),
                                 model_dir=LOG_DIR)
-    X, y = generate_data(
-        x_sin, np.linspace(0, 100, 10000, dtype=np.float32), TIMESTEPS, seperate=False)
+    # X, y = generate_data(
+    #     np.sin, np.linspace(0, 100, 10000, dtype=np.float32), TIMESTEPS, seperate=False)
     # create a lstm instance and validation monitor    
     validation_monitor = tflearn.monitors.ValidationMonitor(X['val'], y['val'],
                                                             every_n_steps=PRINT_STEPS,
