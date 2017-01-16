@@ -8,6 +8,6 @@ describe command('curl -X GET -H "X-Parse-Application-Id: myAppId" -I --retry 1 
   its(:stdout) { should match 'OK' }
 end
 
-describe command('curl -X POST -H "Content-Type: application/json" http://hmmas8wmeibjab4e.myfritz.net/api/trackingpoints -d "{}"') do
-  its(:stdout) { should match '[' }
+describe command('curl -X POST -H "Content-Type: application/json" http://hmmas8wmeibjab4e.myfritz.net/api/tracks') do
+  its(:stdout) { should match '[]' }
 end
