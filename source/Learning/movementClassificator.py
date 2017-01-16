@@ -125,7 +125,7 @@ def lstm_model(num_units, rnn_layers, dense_layers=None, learning_rate=0.1, opti
                         tf.contrib.rnn.BasicLSTMCell(layer['num_units'],
                                                                        state_is_tuple=True)
                     for layer in layers]
-        return [tf.contrib.rnn.BasicLSTMCell(steps, state_is_tuple=True) for steps in layers]
+        return  
 
     def dnn_layers(input_layers, layers):
         if layers and isinstance(layers, dict):
