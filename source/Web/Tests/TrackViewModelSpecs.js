@@ -15,6 +15,33 @@ describe("trackViewModel", function () {
     expect(sut.totalDistanceInMeters).toEqual(11755297.543391727);
   });
 
+  it("should transform json", function (){
+    var input = JSON.parse("[ { \"newPropertyName\": 1, \"NewMappedPages\": 1, \"total\": 60 },    "
+        +"[ { \"indicator\": {\"value\": \"Central government debt, total (% of GDP)\"},"
+        +"\"country\": {\"id\":\"CZ\",\"value\":\"Czech Republic\"},"
+        +"\"value\":null,\"decimal\":\"1\",\"date\":\"2000\"},"
+        +"{ \"indicator\": {\"value\": \"Central government debt, total (% of GDP)\"},"
+        +"\"country\": {\"id\":\"CZ\",\"value\":\"Czech Republic\"},"
+        +"\"value\":\"16.6567773464055\",\"decimal\":\"1\",\"date\":\"2010\"} ] ]")
+
+    var transform = function(input){
+      var result = [];
+      for(var i = 0; i < input.length;i++){
+         result.push(input[i]);
+         for(var j = 0; j < input[i].length; j++){
+           if(input[i][j].country !== undefined){
+             input[i][j].country = {name: input[i][j].country.id, value : input[i][j].country.value};
+           }
+         }
+      }
+
+      return result;
+    }
+
+    var transformedObject = transform(input);
+    expect(transformedObject[1][0].country.name).toEqual("CZ");
+  });
+
   it("should be able to calculate distances", function () {
     sut.calculate();
     expect(sut.points[0].distanceCovered).toEqual(0.0);

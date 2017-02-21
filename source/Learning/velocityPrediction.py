@@ -18,15 +18,19 @@ import tensorflow as tf
 import tensorflow.contrib.learn as learn
 import tensorflow.contrib.layers as layers
 import tensorflow.contrib.rnn as rnn
+
+import movementDataPreparation as move
 tf.logging.set_verbosity(tf.logging.INFO)
 
 
 class DataPreparation:
-    def __init__(self, timesteps, batchsize):
+    def __init__(self, timesteps, batchsize, val_size=0.1, test_size=0.1):
         self.Features = ['latitude', 'longitude']
         self.timesteps = timesteps
         self.batchsize = batchsize
         self.current_step = 0
+        self.val_size = val_size
+        self.test_size = test_size
 
     def __expand_geopoints(self, geopoints, timesteps):
         new_input = np.array([geopoints[i:i+timesteps].as_matrix() for i in range(0, geopoints.shape[0] - timesteps)])
@@ -53,15 +57,15 @@ class DataPreparation:
 
         return train, val, test, geopoints_train, geopoints_val, geopoints_test
 
-    def __split_data(self, data, val_size=0.1, test_size=0.1):
+    def __split_data(self, data):
         """
         splits data to training, validation and testing parts
         """
-        ntest = int(round(len(data) * (1 - test_size)))
-        nval = int(round(len(data.iloc[:ntest]) * (1 - val_size)))
+        ntest = int(round(len(data) * (1 - self.test_size)))
+        nval = int(round(len(data.iloc[:ntest]) * (1 - self.val_size)))
         df_train, df_val, df_test = data.iloc[:nval], data.iloc[nval:ntest], data.iloc[ntest:]
-        assert len(df_train) > self.timesteps, "training uses %r elements to be able to look back in the past." % self.timesteps
-        assert len(df_val) > self.timesteps, "validation uses %r elements to be able to look back in the past." % self.timesteps
+        #assert len(df_train) >= self.timesteps, "training uses {0} of {1} elements to be able to look back in the past.".format(self.timesteps, len(df_train))
+        #assert len(df_val) >= self.timesteps, "validation uses {0} of {1} elements to be able to look back in the past.".format(self.timesteps, len(df_val))
         # assert len(df_test) > self.timesteps, "test uses %r elements to be able to look back in the past." % self.timesteps
         return df_train, df_val, df_test
 
@@ -154,8 +158,9 @@ class Model:
 
 def main(_):
     max_count = 100    
-    tracks = [tuple([i * 1.0, max_count-i, np.sin(np.deg2rad(i)) * 100.0]) for i in range(0, max_count)]
-    data_preparation = DataPreparation(2, 40)   
+    # tracks = [tuple([i * 1.0, max_count-i, np.sin(np.deg2rad(i)) * 100.0]) for i in range(0, max_count)]
+    tracks = move.requestTracks()
+    data_preparation = DataPreparation(10, 100)   
     rnn_with_regression_model = Model(rnn_units=[1024, 512, 256],                                      
                                           timesteps=data_preparation.timesteps)    
 
@@ -177,16 +182,16 @@ def main(_):
                                                           early_stopping_rounds=100)
     estimator = learn.Estimator(    
     model_fn=rnn_with_regression_model.model_fn,
-            model_dir="/tmp/velocityPredictionRNN")
-            #config=learn.RunConfig(save_checkpoints_secs=600,
+            model_dir="/tmp/velocityPredictionRNN",
+            config=learn.RunConfig(save_checkpoints_secs=600))
             #                       log_device_placement=True))
     data_preparation.assign_data(tracks)
-    for epoch in range(0, 1):
-        data_preparation.reset_step()
-        while data_preparation.current_step > -1:
-            estimator.fit(input_fn=lambda : data_preparation.input_fn_train(step=data_preparation.current_step),
-                          # monitors=[validation_monitor],
-                          steps=500)
+    # for epoch in range(0, 100):
+    #     data_preparation.reset_step()
+    #     while data_preparation.current_step > -1:
+    #         estimator.fit(input_fn=lambda : data_preparation.input_fn_train(step=data_preparation.current_step),
+    #                       # monitors=[validation_monitor],
+    #                       steps=500)
             # estimator.evaluate(input_fn=data_preparation.input_fn_val, steps=100)    
     data_preparation.reset_step()
     predicted = estimator.predict(input_fn=data_preparation.input_fn_test, as_iterable=False)

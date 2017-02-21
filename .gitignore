@@ -4,3 +4,6 @@ google_maps_api.xml
 ops_logs
 source/Learning/testData
 deployment/Tests
+packages
+node_modules
+build

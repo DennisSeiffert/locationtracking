@@ -1,0 +1,10 @@
+FSharp.Data
+FSharp.Compiler.Service
+fsunit
+Akka
+Akka.FSharp
+Akka.Serialization.Wire
+Akka.Persistence
+Akka.Persistence.FSharp
+Akka.Remote
+Akka.Serialization.Hyperion

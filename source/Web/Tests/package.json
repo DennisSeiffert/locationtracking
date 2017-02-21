@@ -1,0 +1,22 @@
+{
+  "name": "fabletests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "fable_reactTests.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "fable-compiler": "^0.7.34"
+  },
+  "dependencies": {
+    "core-js": "^2.4.1",
+    "fable-core": "^0.7.25",
+    "fable-powerpack": "0.0.19",
+    "fable-react": "^0.8.0",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2"
+  }
+}

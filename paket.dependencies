@@ -1,0 +1,13 @@
+source https://www.nuget.org/api/v2
+nuget Akka
+nuget Akka.FSharp
+nuget Akka.Persistence
+nuget Akka.Persistence.FSharp
+nuget Akka.Remote
+nuget Akka.Serialization.Hyperion
+nuget Akka.Serialization.Wire
+nuget FAKE
+nuget FSharp.Compiler.Service
+nuget FSharp.Data
+nuget fsunit
+nuget FsPickler ~> "1.2.21"

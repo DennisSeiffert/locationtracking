@@ -1,0 +1,12 @@
+/commondata/Programming/Repositories/LocationTracker/source/DataTransformations/obj/Debug/.NETFramework,Version=v4.6.2.AssemblyAttribute.fs
+/commondata/Programming/Repositories/LocationTracker/build/DataTransformations.dll.mdb
+/commondata/Programming/Repositories/LocationTracker/build/DataTransformations.dll
+/commondata/Programming/Repositories/LocationTracker/source/DataTransformations/obj/Debug/DataTransformations.dll
+/commondata/Programming/Repositories/LocationTracker/source/DataTransformations/obj/Debug/DataTransformations.dll.mdb
+/commondata/Programming/Repositories/LocationTracker/source/DataTransformations/obj/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.fs
+/commondata/Programming/Repositories/LocationTracker/source/DataTransformations/obj/Debug/.NETFramework,Version=v4.6.AssemblyAttribute.fs
+/commondata/Programming/Repositories/LocationTracker/build/DataTransformations.exe.mdb
+/commondata/Programming/Repositories/LocationTracker/build/DataTransformations.exe
+/commondata/Programming/Repositories/LocationTracker/source/DataTransformations/obj/Debug/DataTransformations.exe
+/commondata/Programming/Repositories/LocationTracker/source/DataTransformations/obj/Debug/DataTransformations.exe.mdb
+/commondata/Programming/Repositories/LocationTracker/build/DataTransformations.exe.config

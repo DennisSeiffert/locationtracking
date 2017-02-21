@@ -59,3 +59,14 @@ if [ $answer != "n" ]; then
     # docker network connect webserver_gateway_network backend_mongo    
     # rm -r *  
 fi
+
+echo "deploy akka to docker host [Y|n]:"
+read answer
+if [ $answer != "n" ]; then
+    scp Akka/* pi@192.168.1.101:/home/pi/deployment
+    #scp -r ../source/Web pi@192.168.1.101:/home/pi/deployment/
+
+    ssh pi@192.168.1.101
+
+
+fi
