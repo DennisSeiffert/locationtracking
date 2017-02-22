@@ -7,3 +7,4 @@ deployment/Tests
 packages
 node_modules
 build
+**/*.exe

@@ -46,3 +46,14 @@ let mappedResult = mapToTargetStructure sampleRules parsedApiResponse
 
 
 MappingService.main()
+
+#r "../../packages/FSharp.Data/lib/net40/FSharp.Data.dll"
+
+open FSharp.Data.HttpRequestHeaders
+open FSharp.Data
+let response = Http.RequestString( 
+                            "http://hmmas8wmeibjab4e.myfritz.net/api/tracks",
+                            httpMethod = "OPTIONS",                                                    
+                            headers = [ ContentType HttpContentTypes.Json ]
+                            )
+printfn "%s" (response.ToString())

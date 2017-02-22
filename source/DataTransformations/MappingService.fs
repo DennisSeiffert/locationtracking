@@ -3,6 +3,8 @@ module MappingService
 open Akka.FSharp
 open Akka.Actor  
 open FSharp.Data
+open FSharp.Data.HttpRequestHeaders
+
 // return Deploy instance able to operate in remote scope
 let deployRemotely address = Deploy(RemoteScope (Address.Parse address))  
 let spawnRemote systemOrContext remoteSystemAddress actorName expr =  
@@ -33,8 +35,12 @@ let main() =
         spawnRemote system "akka.tcp://remote-system@localhost:9001/" "hello"
            // actorOf wraps custom handling function with message receiver logic
            <@ actorOf (fun msg -> 
-                                let response = Http.Request "https://www.google.com"
-                                printfn "'%s'" (response.Body.ToString())
+                                let response = Http.RequestString( 
+                                                    "http://hmmas8wmeibjab4e.myfritz.net/api/tracks",
+                                                    httpMethod = "OPTIONS",                                                    
+                                                    headers = [ ContentType HttpContentTypes.Json ]
+                                                )
+                                printfn "%s" (response.ToString())
                       )@>
 
     // send example message to remotely deployed actor
