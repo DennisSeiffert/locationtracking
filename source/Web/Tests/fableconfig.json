@@ -1,13 +1,31 @@
 {
-    "projFile": "./fable_reactTests.fsx",
+    "projFile": "./fable_main.fsx",        
     "sourceMaps": true,
-    "rollup": {
-        "dest": "./bundle.js",
-        "external": ["react", "react-dom", "redux"],
-        "globals": {
-            "react": "React",
-            "react-dom": "ReactDOM",
-            "redux": "Redux"
-        }
+    //"plugins": ["./node_modules/fable-plugins-nunit/Fable.Plugins.NUnit.dll"],
+    // "rollup": {
+    //     "dest": "./bundle.js",
+    //     "external": ["react", "react-dom", "redux"],
+    //     "globals": {
+    //         "react": "React",
+    //         "react-dom": "ReactDOM",
+    //         "redux": "Redux"            
+    //     },
+    //     "plugins": {                        
+    //             "replace" :  { 
+    //                     "process.env.NODE_ENV": "'development'"
+    //                 }
+    //     }
+    // },
+    "scripts": {
+        // "prebuild": "npm install",
+        "postbuild": "webpack"
+    },
+    "targets": {
+        "watch" : {   
+            "scripts": {
+                    "postbuild-once": "node node_modules/webpack-dev-server/bin/webpack-dev-server --colors --hot"
+                    //"postbuild-once": "webpack --watch"
+                }
+    }
     }
 }

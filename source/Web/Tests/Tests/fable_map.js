@@ -1,0 +1,240 @@
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+import { setType } from "fable-core/Symbol";
+import _Symbol from "fable-core/Symbol";
+import { Any, equals, Interface, extendInfo, compareRecords, equalsRecords } from "fable-core/Util";
+import { createElement, Component } from "react";
+import { map as map_1 } from "fable-core/List";
+import List from "fable-core/List";
+import { LocationTracker, TrackVisualization } from "./fable_domainModel";
+import { createConnector, withStateMapper, withProps, buildComponent } from "fable-reactredux/Fable.Helpers.ReactRedux";
+export var GeoOptions = function () {
+    function GeoOptions(enableHighAccuracy, maximumAge, timeout) {
+        _classCallCheck(this, GeoOptions);
+
+        this.enableHighAccuracy = enableHighAccuracy;
+        this.maximumAge = maximumAge;
+        this.timeout = timeout;
+    }
+
+    _createClass(GeoOptions, [{
+        key: _Symbol.reflection,
+        value: function () {
+            return {
+                type: "Fable_map.GeoOptions",
+                interfaces: ["FSharpRecord", "System.IEquatable", "System.IComparable"],
+                properties: {
+                    enableHighAccuracy: "boolean",
+                    maximumAge: "number",
+                    timeout: "number"
+                }
+            };
+        }
+    }, {
+        key: "Equals",
+        value: function (other) {
+            return equalsRecords(this, other);
+        }
+    }, {
+        key: "CompareTo",
+        value: function (other) {
+            return compareRecords(this, other);
+        }
+    }]);
+
+    return GeoOptions;
+}();
+setType("Fable_map.GeoOptions", GeoOptions);
+export var defaultGeoOptions = new GeoOptions(true, 60000, 20000);
+export var GoogleMapPoint = function () {
+    function GoogleMapPoint(latitude, longitude) {
+        _classCallCheck(this, GoogleMapPoint);
+
+        this.Latitude = latitude;
+        this.Longitude = longitude;
+    }
+
+    _createClass(GoogleMapPoint, [{
+        key: _Symbol.reflection,
+        value: function () {
+            return {
+                type: "Fable_map.GoogleMapPoint",
+                interfaces: ["FSharpRecord", "System.IEquatable", "System.IComparable"],
+                properties: {
+                    Latitude: "number",
+                    Longitude: "number"
+                }
+            };
+        }
+    }, {
+        key: "Equals",
+        value: function (other) {
+            return equalsRecords(this, other);
+        }
+    }, {
+        key: "CompareTo",
+        value: function (other) {
+            return compareRecords(this, other);
+        }
+    }]);
+
+    return GoogleMapPoint;
+}();
+setType("Fable_map.GoogleMapPoint", GoogleMapPoint);
+export var MapView = function (_Component) {
+    _inherits(MapView, _Component);
+
+    _createClass(MapView, [{
+        key: _Symbol.reflection,
+        value: function () {
+            return extendInfo(MapView, {
+                type: "Fable_map.MapView",
+                interfaces: [],
+                properties: {
+                    mapHolder: Interface("Fable.Import.React.ReactElement")
+                }
+            });
+        }
+    }]);
+
+    function MapView(props) {
+        _classCallCheck(this, MapView);
+
+        var _this = _possibleConstructorReturn(this, (MapView.__proto__ || Object.getPrototypeOf(MapView)).call(this, props));
+
+        this.state = {
+            map: null,
+            polyLineOfTrack: null
+        };
+        _this["mapHolder@"] = createElement("div", {
+            className: "jumbotron",
+            style: {
+                paddingTop: "0px",
+                paddingBottom: "0px",
+                height: "400px"
+            }
+        });
+        return _this;
+    }
+
+    _createClass(MapView, [{
+        key: "componentDidMount",
+        value: function (_arg1) {
+            this.Initialize();
+        }
+    }, {
+        key: "componentDidUpdate",
+        value: function (prevState, actualState) {
+            var matchValue = this.state.map;
+
+            if (matchValue != null) {
+                this.showTrack();
+            } else {}
+        }
+    }, {
+        key: "showTrack",
+        value: function () {
+            var _this2 = this;
+
+            if (!(this.props.Track.Points.tail == null)) {
+                (function () {
+                    var bounds = new google.maps.LatLngBounds();
+                    var googleMapPoints = map_1(function (p) {
+                        var point = new google.maps.LatLng(p.latitude, p.longitude);
+                        bounds.extend(point);
+                        return point;
+                    }, _this2.props.Track.Points);
+                    var polyLine = new google.maps.Polyline({
+                        path: Array.from(googleMapPoints),
+                        strokeColor: "#FF00AA",
+                        strokeOpacity: .7,
+                        strokeWeight: 4
+                    });
+                    polyLine.setMap(_this2.state.map);
+
+                    _this2.state.map.fitBounds(bounds);
+
+                    _this2.setState(function () {
+                        var inputRecord = _this2.state;
+                        var polyLineOfTrack = polyLine;
+                        return {
+                            map: inputRecord.map,
+                            polyLineOfTrack: polyLineOfTrack
+                        };
+                    }());
+                })();
+            } else if (!equals(this.state.polyLineOfTrack, null)) {
+                this.state.polyLineOfTrack.setMap(null);
+                this.state.map.clear();
+            }
+        }
+    }, {
+        key: "Initialize",
+        value: function () {
+            var initialLatLng = new google.maps.LatLng(0, 0);
+            var options = {
+                center: initialLatLng,
+                zoom: 14,
+                mapTypeId: google.maps.MapTypeId.TERRAIN,
+                mapTypeControl: true,
+                navigationControlOptions: {
+                    style: google.maps.NavigationControlStyle.SMALL
+                }
+            };
+            var map = new google.maps.Map(document.getElementsByClassName("jumbotron")[0], options);
+            this.setState({
+                map: map,
+                polyLineOfTrack: null
+            });
+        }
+    }, {
+        key: "render",
+        value: function () {
+            return this.mapHolder;
+        }
+    }, {
+        key: "mapHolder",
+        get: function () {
+            return this["mapHolder@"];
+        }
+    }]);
+
+    return MapView;
+}(Component);
+setType("Fable_map.MapView", MapView);
+
+function mapStateToProps(state, ownprops) {
+    return {
+        Track: state.Visualization
+    };
+}
+
+function setDefaultProps(ownprops) {
+    return {
+        Track: new TrackVisualization("", new List())
+    };
+}
+
+export var createMapViewComponent = buildComponent(function (c) {
+    return withProps(function (ownprops) {
+        return setDefaultProps(ownprops);
+    }, c);
+}(function (c) {
+    return withStateMapper(function (state) {
+        return function (ownprops) {
+            return mapStateToProps(state, ownprops);
+        };
+    }, c);
+}(createConnector())), {
+    TComponent: MapView,
+    TProps: Any,
+    TCtx: Any,
+    TState: LocationTracker
+});
+//# sourceMappingURL=fable_map.js.map

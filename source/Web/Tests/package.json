@@ -2,21 +2,39 @@
   "name": "fabletests",
   "version": "1.0.0",
   "description": "",
-  "main": "fable_reactTests.js",
+  "main": "fable_main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node ./node_modules/fable-compiler",
+    "watch": "node ./node_modules/fable-compiler -w --verbose --target watch"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "fable-compiler": "^0.7.34"
+    "copy-webpack-plugin": "^4.0.1",
+    "fable-compiler": "^0.7.34",
+    "fable-import-fetch": "^0.2.4",
+    "fable-plugins-nunit": "^0.0.3",
+    "fable-react": "^0.8.5",
+    "fable-reactredux": "^0.3.0",
+    "fable-redux": "^0.2.0",
+    "fable-reduxthunk": "^0.2.0",
+    "mocha": "^2.5.3",
+    "raw-loader": "^0.5.1",
+    "rollup-plugin-replace": "^1.1.1",
+    "source-map-loader": "^0.2.0",
+    "webpack": "^2.2.1",
+    "webpack-dev-server": "^2.4.2"
   },
   "dependencies": {
     "core-js": "^2.4.1",
-    "fable-core": "^0.7.25",
+    "fable-core": "^0.7.29",
     "fable-powerpack": "0.0.19",
     "fable-react": "^0.8.0",
     "react": "^15.4.2",
-    "react-dom": "^15.4.2"
+    "react-dom": "^15.4.2",
+    "react-redux": "^5.0.3",
+    "redux": "^3.6.0",
+    "redux-thunk": "^2.2.0"
   }
 }

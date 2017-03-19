@@ -1,6 +1,15 @@
 #r "node_modules/fable-core/Fable.Core.dll"
 #r "node_modules/fable-powerpack/Fable.PowerPack.dll"
 #r "node_modules/fable-react/Fable.React.dll"
+#r "node_modules/fable-redux/Fable.Redux.dll"
+#r "node_modules/fable-reactredux/Fable.ReactRedux.dll"
+#r "node_modules/fable-reduxthunk/Fable.ReduxThunk.dll"
+#load "fable_Commands.fsx"
+open Commands
+#load "fable_domainModel.fsx"
+open Fable_domainModel
+#load "fable_backend.fsx"
+open Backend
 
 open Fable.Core
 open Fable.Import
@@ -8,22 +17,26 @@ open System
 open Fable.Core.JsInterop
 module R = Fable.Helpers.React
 open R.Props
-
-type [<Pojo>] NavigationViewModel  =            
-    abstract onBeginTracking: string->unit
-    abstract onStopTracking: string->unit    
-    abstract onLoadTrackingPoints : string -> string -> string -> unit
-    abstract onLoadTracks : unit -> unit
-    
+open Fable.Helpers.ReactRedux
+open Fable.Helpers.ReduxThunk
 
 type [<Pojo>] NavigationViewState = 
     { 
         trackingIdentifier: string
         SelectedTrack : string
-        beginDateTimeLocal : string
-        endDateTimeLocal : string
-        VisualizeRecordedTracks : string        
+        beginDateTimeLocal : DateTime
+        endDateTimeLocal : DateTime
+        VisualizeRecordedTracks : string               
     }
+
+type [<Pojo>] ModelViewProps = {
+    onLoadTracks : unit -> unit 
+    onBeginTracking : string -> unit
+    onStopTracking : string -> unit
+    onLoadTrackingPoints : DateTime * DateTime * string -> unit
+    onClearTrackingPoints : unit -> unit
+    Tracks : Track List
+}
 
 [<KeyValueList>]
 type AdditionalHtmlAttr = 
@@ -34,24 +47,23 @@ type AdditionalHtmlAttr =
     |[<CompiledName("aria-expanded")>]AriaExpanded of string
     interface IHTMLProp
 
-type NavigationView(props) as this =
-    inherit React.Component<NavigationViewModel, NavigationViewState>(props)      
-    do this.setInitState { 
-        trackingIdentifier = ""
-        SelectedTrack = ""
-        beginDateTimeLocal = ""
-        endDateTimeLocal = ""
-        VisualizeRecordedTracks = "Visualize Recorded Tracks"
-        }
+type NavigationView(props) =
+    inherit React.Component<ModelViewProps, NavigationViewState>(props)      
+    do base.setInitState({ 
+                            trackingIdentifier = ""
+                            SelectedTrack = ""
+                            beginDateTimeLocal = DateTime.Now
+                            endDateTimeLocal = DateTime.Now
+                            VisualizeRecordedTracks = "Visualize Recorded Tracks"        
+                        })
 
     member this.componentDidMount (_) =
         this.props.onLoadTracks()
-
     member this.onBeginTracking(_) = 
-        this.props.onBeginTracking(this.state.trackingIdentifier)
+        this.props.onBeginTracking this.state.trackingIdentifier
 
-    member this.onStopTracking(_) = 
-        this.props.onStopTracking(this.state.trackingIdentifier)    
+    member this.onStopTracking(_) =         
+        this.props.onStopTracking this.state.trackingIdentifier
 
     member this.onBeginDateTimeLocalChanged(e: React.SyntheticEvent) = 
         this.setState(
@@ -60,7 +72,7 @@ type NavigationView(props) as this =
                 SelectedTrack = this.state.SelectedTrack
                 beginDateTimeLocal = unbox e.target?value
                 endDateTimeLocal = this.state.endDateTimeLocal
-                VisualizeRecordedTracks = this.state.VisualizeRecordedTracks
+                VisualizeRecordedTracks = this.state.VisualizeRecordedTracks                
             })
 
     member this.onEndDateTimeLocalChanged(e: React.SyntheticEvent) = 
@@ -70,11 +82,36 @@ type NavigationView(props) as this =
                 SelectedTrack = this.state.SelectedTrack
                 beginDateTimeLocal = this.state.beginDateTimeLocal
                 endDateTimeLocal = unbox e.target?value
-                VisualizeRecordedTracks = this.state.VisualizeRecordedTracks
+                VisualizeRecordedTracks = this.state.VisualizeRecordedTracks                
             })
 
+    member this.onTrackSelected(e: React.FormEvent) =
+        let selectedTrackName = unbox e.target?value
+        let selectedTrack = this.props.Tracks |> List.find (fun i -> i.name = selectedTrackName)
+        this.setState(
+            { 
+                trackingIdentifier = this.state.trackingIdentifier
+                SelectedTrack = selectedTrack.name
+                beginDateTimeLocal = selectedTrack.mintimestamp
+                endDateTimeLocal = selectedTrack.maxtimestamp
+                VisualizeRecordedTracks = this.state.VisualizeRecordedTracks                
+            })
+        e.preventDefault()
+
     member this.onLoadTrackingPoints(_) =
-        this.props.onLoadTrackingPoints this.state.beginDateTimeLocal this.state.endDateTimeLocal this.state.SelectedTrack
+        this.props.onLoadTrackingPoints(this.state.beginDateTimeLocal, this.state.endDateTimeLocal, this.state.SelectedTrack)
+
+    member this.onClearTrackingPoints(_) = 
+        this.props.onClearTrackingPoints()
+    member this.getTrackSelection() = 
+        R.select [ 
+                    Id "trackSelection"                                                           
+                    Value (U2.Case1 this.state.SelectedTrack)
+                    OnChange this.onTrackSelected                                                                                                                                          
+                 ] (this.props.Tracks
+                   |> List.map (fun t -> R.option [                                                    
+                                                     Value (U2.Case1 t.name)
+                                                   ] [ unbox t.name]))
 
     member this.render () =
 
@@ -140,25 +177,25 @@ type NavigationView(props) as this =
                                                    R.div [ ClassName "row" ] [ 
                                                        R.label [ ] [ unbox "from" ]
                                                        R.input [ Type "datetime-local"
-                                                                 Value (U2.Case1 this.state.beginDateTimeLocal)
+                                                                 Value (U2.Case1(this.state.beginDateTimeLocal.ToString()))
                                                                  OnChange this.onBeginDateTimeLocalChanged ] [ ]
                                                    ]
                                                    R.div [ ClassName "row" ] [ 
                                                        R.label [ ] [ unbox "until" ]
                                                        R.input [ Type "datetime-local"
-                                                                 Value (U2.Case1 this.state.endDateTimeLocal)
+                                                                 Value (U2.Case1(this.state.endDateTimeLocal.ToString()))
                                                                  OnChange this.onEndDateTimeLocalChanged ] [ ]
                                                    ]
                                                    R.div [ ClassName "row" ] [ 
-                                                       R.select [ 
-                                                           Id "trackSelection"
-                                                           Value (U2.Case1 this.state.SelectedTrack )
-                                                       ] [ ]
+                                                       this.getTrackSelection()
                                                    ]
                                                    R.div [ ClassName "row" ] [ 
                                                        R.button [ 
                                                            OnClick this.onLoadTrackingPoints
                                                        ] [ unbox "Load Track Points"]
+                                                       R.button [ 
+                                                           OnClick this.onClearTrackingPoints
+                                                       ] [ unbox "Clear"]
                                                    ]
                                                ]
                                            ]
@@ -240,3 +277,26 @@ type NavigationView(props) as this =
         //         OnKeyDown this.handleKeyDown
         //     ] []
         // ]
+
+let private mapStateToProps (state : LocationTracker) (ownprops : ModelViewProps) =
+    { ownprops with
+        Tracks = state.Tracks        
+    }
+
+let private mapDispatchToProps (dispatch : ReactRedux.Dispatcher) ownprops =
+    { ownprops with
+        onLoadTracks = fun () -> dispatch <| asThunk (Backend.getAllTracks)   
+        onLoadTrackingPoints = fun(start, ``end``, trackName) -> dispatch <| asThunk (Backend.loadTrackingPoints(start, ``end``, trackName))
+        onClearTrackingPoints = fun () -> dispatch(Commands.ClearTrackingPoints)
+    }
+
+let private setDefaultProps (ownprops : ModelViewProps) =
+    { ownprops with
+         Tracks = List.Empty }         
+
+let createNavigationViewComponent =
+    createConnector ()
+    |> withStateMapper mapStateToProps
+    |> withDispatchMapper mapDispatchToProps
+    |> withProps setDefaultProps
+    |> buildComponent<NavigationView, _, _, _>
