@@ -34,17 +34,20 @@ let main() =
     let aref =  
         spawnRemote system "akka.tcp://remote-system@localhost:9001/" "hello"
            // actorOf wraps custom handling function with message receiver logic
-           <@ actorOf (fun msg -> 
+           <@ actorOf2 (fun actor msg -> 
                                 let response = Http.RequestString( 
                                                     "http://hmmas8wmeibjab4e.myfritz.net/api/tracks",
                                                     httpMethod = "OPTIONS",                                                    
                                                     headers = [ ContentType HttpContentTypes.Json ]
                                                 )
+                                actor.Sender() <! response.ToString()
                                 printfn "%s" (response.ToString())
-                      )@>
+                      ) @>
 
     // send example message to remotely deployed actor
     aref <! "Hello world"
+
+    
 
     // thanks to location transparency, we can select 
     // remote actors as if they where existing on local node

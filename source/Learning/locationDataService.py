@@ -18,7 +18,7 @@ datetimeFormat = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 def jsonSerializing(obj):
     if isinstance(obj, datetime):
-        return {"$date": obj.isoformat() + 'Z'}
+        return {"date": obj.isoformat() + 'Z'}
     if isinstance(obj, Track.Track):
         return {"name": obj.name, "trackingpoints" : map(jsonSerializing, obj.trackingpoints)}
     if isinstance(obj, TrackingPoint.TrackingPoint):

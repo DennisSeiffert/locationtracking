@@ -12,7 +12,7 @@ RUN rm /etc/nginx/sites-enabled/default
 
 # cannot have relative dirs here
 # so dockerfile and deps must be copied to root folder on the docker host
-COPY Web/ /Web/geotracking
+COPY . /Web/geotracking
 
 EXPOSE 80 443
 

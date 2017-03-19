@@ -13,6 +13,14 @@ if [ $answer != "n" ]; then
     # rm -r *  
 fi
 
+echo "deploy cassandra db to docker host [Y|n]:"
+read answer
+if [ $answer != "n" ]; then
+    scp Cassandra/* pi@192.168.1.101:/home/pi/deployment    
+
+    ssh pi@192.168.1.101
+fi
+
 echo "deploy learning api to docker host [Y|n]:"
 read answer
 if [ $answer != "n" ]; then
@@ -45,7 +53,7 @@ echo "deploy web app to docker host [Y|n]:"
 read answer
 if [ $answer != "n" ]; then
     scp Web/* pi@192.168.1.101:/home/pi/deployment
-    scp -r ../source/Web pi@192.168.1.101:/home/pi/deployment/
+    scp -r ../source/Web/Tests/build pi@192.168.1.101:/home/pi/deployment/
 
     ssh pi@192.168.1.101
 
@@ -65,8 +73,26 @@ read answer
 if [ $answer != "n" ]; then
     scp Akka/* pi@192.168.1.101:/home/pi/deployment
     #scp -r ../source/Web pi@192.168.1.101:/home/pi/deployment/
+    ssh pi@192.168.1.101
+fi
+
+echo "deploy zookeeper to docker host [Y|n]:"
+read answer
+if [ $answer != "n" ]; then
+    scp Zookeeper/* pi@192.168.1.101:/home/pi/deployment    
 
     ssh pi@192.168.1.101
-
-
 fi
+
+echo "deploy kafka to docker host [Y|n]:"
+read answer
+if [ $answer != "n" ]; then
+    scp Kafka/* pi@192.168.1.101:/home/pi/deployment    
+
+    ssh pi@192.168.1.101
+fi
+
+# sudo docker start $(sudo docker ps -a -q -f "name=backend_mongo")
+# sudo docker start $(sudo docker ps -a -q -f "name=dataapi_locationtracker")
+# sudo docker start $(sudo docker ps -a -q -f "name=backend_parseserver")
+# sudo docker start $(sudo docker ps -a -q -f "name=webserver_gateway")
