@@ -53,7 +53,7 @@ echo "deploy web app to docker host [Y|n]:"
 read answer
 if [ $answer != "n" ]; then
     scp Web/* pi@192.168.1.101:/home/pi/deployment
-    scp -r ../source/Web/Tests/build pi@192.168.1.101:/home/pi/deployment/
+    scp  ../source/Web/Tests/build/* pi@192.168.1.101:/home/pi/deployment/
 
     ssh pi@192.168.1.101
 
