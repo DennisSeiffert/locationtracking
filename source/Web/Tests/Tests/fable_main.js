@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { createNavigationViewComponent } from "./fable_navigation";
-import { createMapViewComponent } from "./fable_map";
-import { Track, TrackingService, LocationTracker, TrackVisualization } from "./fable_domainModel";
+import { createElevationViewComponent } from "./fable_elevation";
+import { Track, TrackingPoint, TrackingService, LocationTracker, TrackVisualization } from "./fable_domainModel";
 import { ofArray } from "fable-core/List";
 import List from "fable-core/List";
 import { addDays, now } from "fable-core/Date";
@@ -18,7 +18,7 @@ export function createApp(initialState) {
         className: "site-wrapper-inner"
     }, createElement("div", {
         className: "cover-container"
-    }, createNavigationViewComponent(null), createMapViewComponent(null))));
+    }, createNavigationViewComponent(null), createElevationViewComponent(null))));
 }
 export function reducer(state, _arg1) {
     if (_arg1.type === "StopTracking") {
@@ -48,7 +48,7 @@ export function reducer(state, _arg1) {
     }
 }
 export function start() {
-    var initialStoreState = new LocationTracker(new TrackingService(), new TrackVisualization("", new List()), ofArray([new Track(now(), function () {
+    var initialStoreState = new LocationTracker(new TrackingService(), new TrackVisualization("", TrackVisualization.calculate(ofArray([new TrackingPoint(8.9, 5.9, now(), 34.9, 0, 32300.9, 0, 320.3), new TrackingPoint(9.9, 5.9, now(), 34.9, 0, 32300.9, 1, 32.3)]))), ofArray([new Track(now(), function () {
         var copyOfStruct = now();
         return addDays(copyOfStruct, 1);
     }(), "first Track"), new Track(now(), function () {

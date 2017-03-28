@@ -71,10 +71,15 @@ let loadTrackingPoints (start, ``end``,  trackName) (dispatch : ReactRedux.Dispa
         if response.Ok then
             let! track = response.json<obj> ()                
             let trackingPoints = (downcast (box track?trackingpoints)) |> Array.map (fun t -> { 
-                                                                                      latitude = (box t?latitude) :?> double
-                                                                                      longitude = (box t?longitude) :?> double
-                                                                                      timestamputc = DateTime.Parse(string t?timestamputc?date)
-                                                                                    })        
+                                                                                                latitude = (box t?latitude) :?> double
+                                                                                                longitude = (box t?longitude) :?> double
+                                                                                                timestamputc = DateTime.Parse(string t?timestamputc?date)
+                                                                                                speed = 0.0
+                                                                                                elevation = 0.0
+                                                                                                distance = 0.0
+                                                                                                distanceCovered = 0.0
+                                                                                                index = 0
+                                                                                            })        
             dispatch (Commands.ReceivedTrack trackingPoints)
         else
             dispatchShowError dispatch None "Could not fetch track from server!"  

@@ -14,6 +14,8 @@ open Commands
 open Fable_navigation
 #load "fable_map.fsx"
 open Fable_map
+#load "fable_elevation.fsx"
+open Fable_elevation
 
 
 
@@ -38,10 +40,12 @@ let createApp initialState =
             R.div [ ClassName "site-wrapper-inner"] [ 
                 R.div [ ClassName "cover-container"] [                     
                     createNavigationViewComponent()
-                    createMapViewComponent()
+                    //createMapViewComponent()
+                    createElevationViewComponent()
                 ]
             ]            
         ]
+
 
 let reducer (state: LocationTracker) = function
     | BeginTracking identifer ->
@@ -67,7 +71,26 @@ let start() =
     let initialStoreState = 
             {
                 TrackingService= new TrackingService(); 
-                Visualization=new TrackVisualization(name=String.Empty, points=List.Empty);
+                Visualization=new TrackVisualization(name=String.Empty, points = TrackVisualization.calculate [{
+                                                                                    latitude = 8.9
+                                                                                    longitude = 5.9
+                                                                                    timestamputc = DateTime.Now
+                                                                                    speed = 34.9
+                                                                                    distanceCovered = 0.0
+                                                                                    distance = 32300.9
+                                                                                    index = 0
+                                                                                    elevation = 320.3
+                                                                                };
+                                                                                {
+                                                                                    latitude = 9.9
+                                                                                    longitude = 5.9
+                                                                                    timestamputc = DateTime.Now
+                                                                                    speed = 34.9
+                                                                                    distanceCovered = 0.0
+                                                                                    distance = 32300.9
+                                                                                    index = 1
+                                                                                    elevation = 32.3
+                                                                                }]);
                 Tracks=[
                         {                        
                             mintimestamp=DateTime.Now;

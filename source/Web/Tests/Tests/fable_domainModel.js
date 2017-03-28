@@ -4,11 +4,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 import { setType } from "fable-core/Symbol";
 import _Symbol from "fable-core/Symbol";
-import { Option, makeGeneric, compareRecords, equalsRecords } from "fable-core/Util";
-import { where, ofArray, append } from "fable-core/List";
+import { Option, compare, makeGeneric, compareRecords, equalsRecords } from "fable-core/Util";
+import { where, ofArray, append, mapIndexed } from "fable-core/List";
 import List from "fable-core/List";
-import { utcNow } from "fable-core/Date";
-import { exists } from "fable-core/Seq";
+import { exists, findIndex, item } from "fable-core/Seq";
+import { utcNow, op_Subtraction } from "fable-core/Date";
 export var TrackingJob = function () {
     function TrackingJob(identifier, marker, subscription, latitude, longitude, utcTimestamp, updatePositionOnMap, observe) {
         _classCallCheck(this, TrackingJob);
@@ -94,12 +94,17 @@ export var Track = function () {
 }();
 setType("Fable_domainModel.Track", Track);
 export var TrackingPoint = function () {
-    function TrackingPoint(latitude, longitude, timestamputc) {
+    function TrackingPoint(latitude, longitude, timestamputc, speed, distanceCovered, distance, index, elevation) {
         _classCallCheck(this, TrackingPoint);
 
         this.latitude = latitude;
         this.longitude = longitude;
         this.timestamputc = timestamputc;
+        this.speed = speed;
+        this.distanceCovered = distanceCovered;
+        this.distance = distance;
+        this.index = index;
+        this.elevation = elevation;
     }
 
     _createClass(TrackingPoint, [{
@@ -111,7 +116,12 @@ export var TrackingPoint = function () {
                 properties: {
                     latitude: "number",
                     longitude: "number",
-                    timestamputc: Date
+                    timestamputc: Date,
+                    speed: "number",
+                    distanceCovered: "number",
+                    distance: "number",
+                    index: "number",
+                    elevation: "number"
                 }
             };
         }
@@ -130,6 +140,18 @@ export var TrackingPoint = function () {
     return TrackingPoint;
 }();
 setType("Fable_domainModel.TrackingPoint", TrackingPoint);
+export function toRad(x) {
+    return x * 3.141592653589793 / 180;
+}
+export function distance(lat1, lon1, lat2, lon2) {
+    var R = 6371;
+    var dLat = toRad(lat2 - lat1);
+    var dLon = toRad(lon2 - lon1);
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    var d = R * c;
+    return d * 1000;
+}
 export var TrackVisualization = function () {
     _createClass(TrackVisualization, [{
         key: _Symbol.reflection,
@@ -154,14 +176,59 @@ export var TrackVisualization = function () {
     }
 
     _createClass(TrackVisualization, [{
-        key: "TrackName",
-        get: function () {
-            return this.name;
+        key: "totalDistanceInMeters",
+        value: function () {
+            return item(this.Points.length - 1, this.Points).distanceCovered;
+        }
+    }, {
+        key: "getIndexOfNearestPoint",
+        value: function (distanceInMeters) {
+            return findIndex(function (p) {
+                return p.distanceCovered >= distanceInMeters;
+            }, this.Points);
+        }
+    }, {
+        key: "getGeoPointFromElevationDataIndex",
+        value: function (index) {
+            var meters = index / this.Points.length * this.totalDistanceInMeters();
+            var markerPointIndex = this.getIndexOfNearestPoint(meters);
+            var geoPoint = this.getPointAt(markerPointIndex);
+            return geoPoint;
+        }
+    }, {
+        key: "getPointAt",
+        value: function (index) {
+            return item(index, this.Points);
         }
     }, {
         key: "Points",
         get: function () {
             return this.points;
+        }
+    }, {
+        key: "TrackName",
+        get: function () {
+            return this.name;
+        }
+    }], [{
+        key: "calculate",
+        value: function (points) {
+            return mapIndexed(function (i, p) {
+                if (i === 0) {
+                    var speed = 0;
+                    var distanceCovered = 0;
+                    return new TrackingPoint(p.latitude, p.longitude, p.timestamputc, speed, distanceCovered, p.distance, i, p.elevation);
+                } else {
+                    var distanceBetween = distance(item(i - 1, points).latitude, item(i - 1, points).longitude, p.latitude, p.longitude);
+                    var timespan = op_Subtraction(p.timestamputc, item(i - 1, points).timestamputc);
+
+                    var _speed = compare(timespan, 0) > 0 ? distanceBetween / (timespan / 1000) : 0;
+
+                    var _distanceCovered = item(i - 1, points).distance + distanceBetween;
+
+                    return new TrackingPoint(p.latitude, p.longitude, p.timestamputc, _speed, _distanceCovered, distanceBetween, i, p.elevation);
+                }
+            }, points);
         }
     }]);
 
@@ -175,9 +242,6 @@ export var TrackingService = function () {
             return {
                 type: "Fable_domainModel.TrackingService",
                 properties: {
-                    Tracks: makeGeneric(List, {
-                        T: Track
-                    }),
                     observedTrackingJobs: makeGeneric(List, {
                         T: TrackingJob
                     }),
@@ -192,7 +256,6 @@ export var TrackingService = function () {
 
         this["ownTrackingJob@"] = new TrackingJob("", "", "", 0, 0, utcNow(), true, true);
         this["observedTrackingJobs@"] = new List();
-        this["Tracks@"] = new List();
     }
 
     _createClass(TrackingService, [{
@@ -233,14 +296,6 @@ export var TrackingService = function () {
         },
         set: function (v) {
             this["observedTrackingJobs@"] = v;
-        }
-    }, {
-        key: "Tracks",
-        get: function () {
-            return this["Tracks@"];
-        },
-        set: function (v) {
-            this["Tracks@"] = v;
         }
     }]);
 

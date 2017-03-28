@@ -13,6 +13,7 @@
   "devDependencies": {
     "copy-webpack-plugin": "^4.0.1",
     "fable-compiler": "^0.7.34",
+    "fable-import-d3": "0.0.4",
     "fable-import-fetch": "^0.2.4",
     "fable-plugins-nunit": "^0.0.3",
     "fable-react": "^0.8.5",
@@ -28,6 +29,7 @@
   },
   "dependencies": {
     "core-js": "^2.4.1",
+    "d3": "^3.5.17",
     "fable-core": "^0.7.29",
     "fable-powerpack": "0.0.19",
     "fable-react": "^0.8.0",

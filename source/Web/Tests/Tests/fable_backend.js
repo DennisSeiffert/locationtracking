@@ -134,7 +134,13 @@ export function loadTrackingPoints(start, end, trackName, dispatch) {
                 if (_arg1.ok) {
                     return _arg1.json().then(function (_arg2) {
                         var trackingPoints = Array.from(map(function (t) {
-                            return new TrackingPoint(t.latitude, t.longitude, parse(toString(t.timestamputc.date)));
+                            var latitude = t.latitude;
+                            var longitude = t.longitude;
+                            var timestamputc = parse(toString(t.timestamputc.date));
+                            var speed = 0;
+                            var elevation = 0;
+                            var distance = 0;
+                            return new TrackingPoint(latitude, longitude, timestamputc, speed, 0, distance, 0, elevation);
                         }, _arg2.trackingpoints));
 
                         (function (arg00) {
