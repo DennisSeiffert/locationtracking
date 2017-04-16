@@ -23,6 +23,7 @@ open Fable.Helpers.ReduxThunk
 type [<Pojo>] NavigationViewState = 
     { 
         trackingIdentifier: string
+        observationIdentifier : string
         SelectedTrack : string
         beginDateTimeLocal : DateTime
         endDateTimeLocal : DateTime
@@ -34,7 +35,8 @@ type [<Pojo>] ModelViewProps = {
     onBeginTracking : string -> unit
     onStopTracking : string -> unit
     onLoadTrackingPoints : DateTime * DateTime * string -> unit
-    onClearTrackingPoints : unit -> unit
+    onClearTrackingPoints : unit -> unit  
+    onObserve : string -> unit   
     Tracks : Track List
 }
 
@@ -52,6 +54,7 @@ type NavigationView(props) =
     do base.setInitState({ 
                             trackingIdentifier = ""
                             SelectedTrack = ""
+                            observationIdentifier = ""
                             beginDateTimeLocal = DateTime.Now
                             endDateTimeLocal = DateTime.Now
                             VisualizeRecordedTracks = "Visualize Recorded Tracks"        
@@ -67,36 +70,33 @@ type NavigationView(props) =
 
     member this.onBeginDateTimeLocalChanged(e: React.SyntheticEvent) = 
         this.setState(
-            { 
-                trackingIdentifier = this.state.trackingIdentifier
-                SelectedTrack = this.state.SelectedTrack
-                beginDateTimeLocal = unbox e.target?value
-                endDateTimeLocal = this.state.endDateTimeLocal
-                VisualizeRecordedTracks = this.state.VisualizeRecordedTracks                
+            { this.state with
+                beginDateTimeLocal = unbox e.target?value                
             })
 
     member this.onEndDateTimeLocalChanged(e: React.SyntheticEvent) = 
         this.setState(
-            { 
-                trackingIdentifier = this.state.trackingIdentifier
-                SelectedTrack = this.state.SelectedTrack
-                beginDateTimeLocal = this.state.beginDateTimeLocal
-                endDateTimeLocal = unbox e.target?value
-                VisualizeRecordedTracks = this.state.VisualizeRecordedTracks                
+            { this.state with                
+                endDateTimeLocal = unbox e.target?value                
             })
 
     member this.onTrackSelected(e: React.FormEvent) =
         let selectedTrackName = unbox e.target?value
         let selectedTrack = this.props.Tracks |> List.find (fun i -> i.name = selectedTrackName)
+        e.stopPropagation()
         this.setState(
-            { 
-                trackingIdentifier = this.state.trackingIdentifier
+            { this.state with                
                 SelectedTrack = selectedTrack.name
-                beginDateTimeLocal = selectedTrack.mintimestamp
+                beginDateTimeLocal = selectedTrack.mintimestamp                
                 endDateTimeLocal = selectedTrack.maxtimestamp
-                VisualizeRecordedTracks = this.state.VisualizeRecordedTracks                
-            })
-        e.preventDefault()
+            })        
+
+
+    member this.onObservationIdentifierChanged (e: React.SyntheticEvent) = 
+        this.setState({this.state with observationIdentifier = string (e.target?value) })
+
+    member this.onObserve(e: React.SyntheticEvent) = 
+        this.props.onObserve this.state.observationIdentifier
 
     member this.onLoadTrackingPoints(_) =
         this.props.onLoadTrackingPoints(this.state.beginDateTimeLocal, this.state.endDateTimeLocal, this.state.SelectedTrack)
@@ -176,13 +176,13 @@ type NavigationView(props) =
                                                R.div [ ClassName "container-fluid" ] [ 
                                                    R.div [ ClassName "row" ] [ 
                                                        R.label [ ] [ unbox "from" ]
-                                                       R.input [ Type "datetime-local"
+                                                       R.input [ Type "datetime"
                                                                  Value (U2.Case1(this.state.beginDateTimeLocal.ToString()))
                                                                  OnChange this.onBeginDateTimeLocalChanged ] [ ]
                                                    ]
                                                    R.div [ ClassName "row" ] [ 
                                                        R.label [ ] [ unbox "until" ]
-                                                       R.input [ Type "datetime-local"
+                                                       R.input [ Type "datetime"
                                                                  Value (U2.Case1(this.state.endDateTimeLocal.ToString()))
                                                                  OnChange this.onEndDateTimeLocalChanged ] [ ]
                                                    ]
@@ -201,43 +201,30 @@ type NavigationView(props) =
                                            ]
                                        ]
                                     ]
-                                    //         <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                                    //         Visualize Recorded Tracks <span class="caret"></span>
-                                    //         </a>
-                                    //         <ul class="dropdown-menu">
-                                    //             <li>
-                                    //                 <div class="container-fluid">
-                                    //                     <div class="row">
-                                    //                         <label>from</label>
-                                    //                         <input type="datetime-local" data-bind="value : beginDate" />
-                                    //                     </div>
-                                    //                     <div class="row">
-                                    //                         <label>until</label>
-                                    //                         <input type="datetime-local" data-bind="value : endDate" />
-                                    //                     </div>
-                                    //                     <div class="row">
-                                    //                         <!--<label>Tracking Id</label>-->
-                                    //                         <select id="trackSelection" data-bind="options: tracksMetadata,
-                                    //                             optionsText: 'name',
-                                    //                             value: selectedTrack,
-                                    //                             optionsCaption: 'Choose...'"></select>
-                                    //                         <!--<div class="dropdown">
-                                    //                             <button class="btn dropdown-toggle" type="button" data-toggle="dropdown">Tracking Id
-                                    //                                 <span class="caret"></span></button>
-                                    //                             <ul class="dropdown-menu" role="menu" data-bind="foreach: tracksMetadata">
-                                    //                                 <li>
-                                    //                                     <a role="menuitem" tabindex="-1" href="#" data-bind="text: name, click: $parent.selectedTrack"></a>
-                                    //                                 </li>
-                                    //                             </ul>
-                                    //                         </div>-->
-                                    //                     </div>
-                                    //                     <div class="row">
-                                    //                         <button onclick="loadTrackingPoints()">Load Track Points</button>
-                                    //                     </div>
-                                    //                 </div>
-                                    //             </li>
-                                    //         </ul>
-                                    //     </li>
+                                    R.li [ Role "presentation"; ClassName "dropdown"] [
+                                        R.a [ClassName "dropdown-toggle"; DataToggle "dropdown"; Href "#";
+                                                         Role "button"; AriaHasPopup "true"; AriaExpanded "false"] [
+                                                            R.label [ ] [ unbox "Observation" ] //<span class="caret"></span>
+                                                         ]                                                                                        
+                                        R.ul [ClassName "dropdown-menu"] [
+                                                R.li [] [
+                                                    R.div [] [
+                                                        R.div [ClassName "container-fluid"] [
+                                                            R.div [ClassName "row"] [
+                                                                R.label[] [unbox "observe by identifer:"]
+                                                                R.input [Type "text"
+                                                                         Value  (U2.Case1(this.state.observationIdentifier))
+                                                                         OnChange this.onObservationIdentifierChanged][]
+                                                            ]
+                                                            R.div [ClassName "row"] [
+                                                                R.button [OnClick this.onObserve ] [unbox "Observe"]
+                                                            ]                                                            
+                                                        ]
+                                                    ]
+                                                ]
+                                            ]             
+                                                                                                                        
+                                    ]                                    
                                 ]
                         ]
                     ]
@@ -288,6 +275,7 @@ let private mapDispatchToProps (dispatch : ReactRedux.Dispatcher) ownprops =
         onLoadTracks = fun () -> dispatch <| asThunk (Backend.getAllTracks)   
         onLoadTrackingPoints = fun(start, ``end``, trackName) -> dispatch <| asThunk (Backend.loadTrackingPoints(start, ``end``, trackName))
         onClearTrackingPoints = fun () -> dispatch(Commands.ClearTrackingPoints)
+        onObserve = fun observationIdentifier -> dispatch(Commands.Observe observationIdentifier)
     }
 
 let private setDefaultProps (ownprops : ModelViewProps) =

@@ -7,11 +7,84 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 import { setType } from "fable-core/Symbol";
 import _Symbol from "fable-core/Symbol";
 import { toString, defaultArg, compareRecords, equalsRecords } from "fable-core/Util";
-import { map, iterate } from "fable-core/Seq";
+import { map, iterate, mapIndexed } from "fable-core/Seq";
+import { TrackingPoint, Track, ElevationPoint } from "./fable_domainModel";
 import { postRecord, fetch as _fetch } from "fable-powerpack/Fetch";
-import { TrackingPoint, Track } from "./fable_domainModel";
 import { parse } from "fable-core/Date";
 import { PromiseImpl } from "fable-powerpack/Promise";
+import * as parse_latest_js from "../parse-latest.js";
+export var GoogleMapPoint = function () {
+    function GoogleMapPoint(latitude, longitude) {
+        _classCallCheck(this, GoogleMapPoint);
+
+        this.Latitude = latitude;
+        this.Longitude = longitude;
+    }
+
+    _createClass(GoogleMapPoint, [{
+        key: _Symbol.reflection,
+        value: function () {
+            return {
+                type: "Backend.GoogleMapPoint",
+                interfaces: ["FSharpRecord", "System.IEquatable", "System.IComparable"],
+                properties: {
+                    Latitude: "number",
+                    Longitude: "number"
+                }
+            };
+        }
+    }, {
+        key: "Equals",
+        value: function (other) {
+            return equalsRecords(this, other);
+        }
+    }, {
+        key: "CompareTo",
+        value: function (other) {
+            return compareRecords(this, other);
+        }
+    }]);
+
+    return GoogleMapPoint;
+}();
+setType("Backend.GoogleMapPoint", GoogleMapPoint);
+export function loadElevationData(points, dispatch) {
+    var googleMapPoints = points.map(function (p) {
+        var point = new google.maps.LatLng(p.latitude, p.longitude);
+        return point;
+    });
+    new google.maps.ElevationService().getElevationAlongPath({
+        path: googleMapPoints,
+        samples: 256
+    }, function (elevations, message) {
+        if (message === "OK") {
+            var elevationPoints = Array.from(mapIndexed(function (index, ep) {
+                return new ElevationPoint(index, ep.elevation);
+            }, elevations));
+
+            (function (arg00) {
+                dispatch(arg00);
+            })({
+                type: "ReceivedElevationPoints",
+                Item: elevationPoints
+            });
+        } else {
+            (function (arg00) {
+                dispatch(arg00);
+            })({
+                type: "ReceivedElevationPoints",
+                Item: []
+            });
+
+            (function (arg00) {
+                dispatch(arg00);
+            })({
+                type: "ShowError",
+                Item: "Cannot load elevation points."
+            });
+        }
+    });
+}
 export var ms = function () {
     function ms() {
         _classCallCheck(this, ms);
@@ -147,9 +220,11 @@ export function loadTrackingPoints(start, end, trackName, dispatch) {
                             dispatch(arg00);
                         })({
                             type: "ReceivedTrack",
-                            Item: trackingPoints
+                            Item1: trackName,
+                            Item2: trackingPoints
                         });
 
+                        loadElevationData(trackingPoints, dispatch);
                         return Promise.resolve();
                     });
                 } else {
@@ -160,4 +235,68 @@ export function loadTrackingPoints(start, end, trackName, dispatch) {
         });
     }(PromiseImpl.promise).then(function () {});
 }
+export function loadLocalStorage(key) {
+    return defaultArg(localStorage.getItem(key), null, function ($var1) {
+        return function (value) {
+            return value;
+        }(function (arg00) {
+            return JSON.parse(arg00);
+        }($var1));
+    });
+}
+export function saveToLocalStorage(key, data) {
+    localStorage.setItem(key, JSON.stringify(data));
+}
+export function loadLocationTracker(key) {
+    return loadLocalStorage(key);
+}
+export function saveLocationTracker(locationTracker) {
+    saveToLocalStorage(locationTracker.Visualization.TrackName, locationTracker);
+}
+export var Parse = parse_latest_js;
+export var LocationService = function () {
+    _createClass(LocationService, [{
+        key: _Symbol.reflection,
+        value: function () {
+            return {
+                type: "Backend.LocationService",
+                interfaces: ["Fable_domainModel.ILocationQuery"],
+                properties: {}
+            };
+        }
+    }]);
+
+    function LocationService() {
+        _classCallCheck(this, LocationService);
+
+        Parse.initialize("myAppId", "unused");
+        Parse.serverURL = "/parse";
+    }
+
+    _createClass(LocationService, [{
+        key: "Subscribe",
+        value: function (job, onShowPosition) {
+            var parseQuery = new Parse.Query('Posts');
+            parseQuery.equalTo("name", job.identifier);
+            job.subscription = parseQuery.subscribe();
+            job.subscription.on("create", function (position) {
+                var name = toString(position.get("name"));
+                var latitude = position.get("latitude");
+                var longitude = position.get("longitude");
+                var timestamp = parse(toString(position.get("timestamputc")));
+                onShowPosition(name)(latitude)(longitude)(timestamp);
+            });
+        }
+    }, {
+        key: "UnSubscribe",
+        value: function (job) {
+            if (!(job.subscription == null)) {
+                job.subscription.unsubscribe();
+            }
+        }
+    }]);
+
+    return LocationService;
+}();
+setType("Backend.LocationService", LocationService);
 //# sourceMappingURL=fable_backend.js.map

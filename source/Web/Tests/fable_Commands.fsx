@@ -11,11 +11,14 @@ open Fable.Core
 type [<Pojo>] Commands = 
     | BeginTracking of string
     | StopTracking of string
+    | Observe of string    
     | LoadTrackingPoints of DateTime * DateTime * string
     | ClearTrackingPoints 
-    | ReceivedTrack of TrackingPoint[]
+    | ReceivedTrack of string * TrackingPoint[]
     | ReceivedTracks of Track[]
     | LoadingTracks
+    | ShowElevationMarker of TrackingPoint
     | ShowError of string
-    | HideError 
+    | HideError     
+    | ReceivedElevationPoints of ElevationPoint[]
     interface Fable.Import.ReactRedux.IDispatchable        

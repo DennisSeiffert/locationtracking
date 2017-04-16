@@ -3,13 +3,17 @@ open System
 type TrackingJob = {
     identifier : string;
     marker : string;
-    subscription : string;
+    mutable subscription : obj;
     latitude : double;
     longitude : double;
     utcTimestamp : DateTime;
     updatePositionOnMap : bool;
     observe : bool; 
 }
+
+type ILocationQuery =
+    abstract member Subscribe: TrackingJob -> (string -> double -> double -> DateTime -> unit) -> unit
+    abstract member UnSubscribe : TrackingJob -> unit
 
 type Track = {
     mintimestamp : DateTime;
@@ -28,6 +32,11 @@ type TrackingPoint = {
    elevation : double;      
 }
 
+type ElevationPoint = {
+    index : int
+    elevation : double
+}
+
 let toRad x =
     x * Math.PI / 180.0
 
@@ -44,14 +53,21 @@ let distance lat1 lon1 lat2 lon2 =
 
 
 type TrackVisualization(name : string, points : TrackingPoint List) =         
+    member val ElevationPoints : ElevationPoint[] = Array.empty with get, set
     member this.Points = points     
     member this.TrackName = name
+    
 
     member this.totalDistanceInMeters () = 
         this.Points.[this.Points.Length - 1].distanceCovered;
 
+    member this.AssignElevationPoints elevationPoints = 
+        this.ElevationPoints <- elevationPoints        
+
     member this.getIndexOfNearestPoint (distanceInMeters) =   
-        this.Points |> List.findIndex (fun (p) -> p.distanceCovered >= distanceInMeters)
+        match this.Points |> List.tryFindIndex (fun (p) -> p.distanceCovered >= distanceInMeters) with
+            | Some index -> index
+            | None -> this.Points.Length - 1
 
     member this.getGeoPointFromElevationDataIndex (index : int) =
         let meters = (double index / double this.Points.Length) * this.totalDistanceInMeters();
@@ -64,6 +80,7 @@ type TrackVisualization(name : string, points : TrackingPoint List) =
         this.Points.[index]    
 
     static member  calculate points =
+        let mutable totalDistance = 0.0        
         points
         |> List.mapi (fun i p ->
                         match i with
@@ -74,18 +91,21 @@ type TrackVisualization(name : string, points : TrackingPoint List) =
                             let speed = if timespan > TimeSpan.Zero then
                                             distanceBetween / (timespan.TotalMilliseconds / 1000.0)
                                         else 
-                                            0.0                                        
+                                            0.0
+                            totalDistance <- totalDistance + distanceBetween                         
                             {p with
                                 speed = speed
                                 distance = distanceBetween
-                                distanceCovered = points.[i - 1].distance + distanceBetween
+                                distanceCovered = totalDistance
                                 index = i
                             }
                        )                             
      
 
 
-type TrackingService() = 
+type TrackingService(locationQuery : ILocationQuery) = 
+    member this.LocationQuery : ILocationQuery = locationQuery
+
     member val ownTrackingJob = {            
             identifier = String.Empty;
             marker = String.Empty;
@@ -97,7 +117,7 @@ type TrackingService() =
             observe = true;}
     member val observedTrackingJobs : TrackingJob List = List.Empty with get, set    
     
-    member this.CreateTrackingJob(name, latitude, longitude) =
+    member this.CreateTrackingJob name latitude longitude =
         {            
             identifier = name;
             marker = String.Empty;
@@ -109,10 +129,16 @@ type TrackingService() =
             observe = true;        
         }
     
-    member this.AddTrackingJob(job, onObserveChanged) =
+    member this.AddTrackingJob job =                                    
         if not(this.ContainsTrackingJob(job.identifier)) then
-            this.observedTrackingJobs <- this.observedTrackingJobs @ [job]
-    
+            this.LocationQuery.Subscribe job this.OnPositionChanged
+            this.observedTrackingJobs <- this.observedTrackingJobs @ [job]    
+        ignore
+
+    member this.OnPositionChanged name latitude longitude timestamputc = 
+
+        ignore()
+
     member this.DeleteTrackingJob(job) =
         this.observedTrackingJobs <- List.where (fun j -> j <> job) this.observedTrackingJobs    
     

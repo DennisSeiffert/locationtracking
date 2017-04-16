@@ -4,10 +4,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 import { setType } from "fable-core/Symbol";
 import _Symbol from "fable-core/Symbol";
-import { Option, compare, makeGeneric, compareRecords, equalsRecords } from "fable-core/Util";
+import { Option, Interface, compare, makeGeneric, Array as _Array, compareRecords, equalsRecords, Any } from "fable-core/Util";
 import { where, ofArray, append, mapIndexed } from "fable-core/List";
 import List from "fable-core/List";
-import { exists, findIndex, item } from "fable-core/Seq";
+import { exists, tryFindIndex, item } from "fable-core/Seq";
 import { utcNow, op_Subtraction } from "fable-core/Date";
 export var TrackingJob = function () {
     function TrackingJob(identifier, marker, subscription, latitude, longitude, utcTimestamp, updatePositionOnMap, observe) {
@@ -28,11 +28,11 @@ export var TrackingJob = function () {
         value: function () {
             return {
                 type: "Fable_domainModel.TrackingJob",
-                interfaces: ["FSharpRecord", "System.IEquatable", "System.IComparable"],
+                interfaces: ["FSharpRecord", "System.IEquatable"],
                 properties: {
                     identifier: "string",
                     marker: "string",
-                    subscription: "string",
+                    subscription: Any,
                     latitude: "number",
                     longitude: "number",
                     utcTimestamp: Date,
@@ -45,11 +45,6 @@ export var TrackingJob = function () {
         key: "Equals",
         value: function (other) {
             return equalsRecords(this, other);
-        }
-    }, {
-        key: "CompareTo",
-        value: function (other) {
-            return compareRecords(this, other);
         }
     }]);
 
@@ -140,6 +135,41 @@ export var TrackingPoint = function () {
     return TrackingPoint;
 }();
 setType("Fable_domainModel.TrackingPoint", TrackingPoint);
+export var ElevationPoint = function () {
+    function ElevationPoint(index, elevation) {
+        _classCallCheck(this, ElevationPoint);
+
+        this.index = index;
+        this.elevation = elevation;
+    }
+
+    _createClass(ElevationPoint, [{
+        key: _Symbol.reflection,
+        value: function () {
+            return {
+                type: "Fable_domainModel.ElevationPoint",
+                interfaces: ["FSharpRecord", "System.IEquatable", "System.IComparable"],
+                properties: {
+                    index: "number",
+                    elevation: "number"
+                }
+            };
+        }
+    }, {
+        key: "Equals",
+        value: function (other) {
+            return equalsRecords(this, other);
+        }
+    }, {
+        key: "CompareTo",
+        value: function (other) {
+            return compareRecords(this, other);
+        }
+    }]);
+
+    return ElevationPoint;
+}();
+setType("Fable_domainModel.ElevationPoint", ElevationPoint);
 export function toRad(x) {
     return x * 3.141592653589793 / 180;
 }
@@ -159,6 +189,7 @@ export var TrackVisualization = function () {
             return {
                 type: "Fable_domainModel.TrackVisualization",
                 properties: {
+                    ElevationPoints: _Array(ElevationPoint),
                     Points: makeGeneric(List, {
                         T: TrackingPoint
                     }),
@@ -173,6 +204,7 @@ export var TrackVisualization = function () {
 
         this.name = name;
         this.points = points;
+        this["ElevationPoints@"] = new Array(0);
     }
 
     _createClass(TrackVisualization, [{
@@ -181,11 +213,22 @@ export var TrackVisualization = function () {
             return item(this.Points.length - 1, this.Points).distanceCovered;
         }
     }, {
+        key: "AssignElevationPoints",
+        value: function (elevationPoints) {
+            this.ElevationPoints = elevationPoints;
+        }
+    }, {
         key: "getIndexOfNearestPoint",
         value: function (distanceInMeters) {
-            return findIndex(function (p) {
+            var matchValue = tryFindIndex(function (p) {
                 return p.distanceCovered >= distanceInMeters;
             }, this.Points);
+
+            if (matchValue == null) {
+                return this.Points.length - 1;
+            } else {
+                return matchValue;
+            }
         }
     }, {
         key: "getGeoPointFromElevationDataIndex",
@@ -201,6 +244,14 @@ export var TrackVisualization = function () {
             return item(index, this.Points);
         }
     }, {
+        key: "ElevationPoints",
+        get: function () {
+            return this["ElevationPoints@"];
+        },
+        set: function (v) {
+            this["ElevationPoints@"] = v;
+        }
+    }, {
         key: "Points",
         get: function () {
             return this.points;
@@ -213,6 +264,7 @@ export var TrackVisualization = function () {
     }], [{
         key: "calculate",
         value: function (points) {
+            var totalDistance = 0;
             return mapIndexed(function (i, p) {
                 if (i === 0) {
                     var speed = 0;
@@ -224,9 +276,8 @@ export var TrackVisualization = function () {
 
                     var _speed = compare(timespan, 0) > 0 ? distanceBetween / (timespan / 1000) : 0;
 
-                    var _distanceCovered = item(i - 1, points).distance + distanceBetween;
-
-                    return new TrackingPoint(p.latitude, p.longitude, p.timestamputc, _speed, _distanceCovered, distanceBetween, i, p.elevation);
+                    totalDistance = totalDistance + distanceBetween;
+                    return new TrackingPoint(p.latitude, p.longitude, p.timestamputc, _speed, totalDistance, distanceBetween, i, p.elevation);
                 }
             }, points);
         }
@@ -242,6 +293,7 @@ export var TrackingService = function () {
             return {
                 type: "Fable_domainModel.TrackingService",
                 properties: {
+                    LocationQuery: Interface("Fable_domainModel.ILocationQuery"),
                     observedTrackingJobs: makeGeneric(List, {
                         T: TrackingJob
                     }),
@@ -251,9 +303,10 @@ export var TrackingService = function () {
         }
     }]);
 
-    function TrackingService() {
+    function TrackingService(locationQuery) {
         _classCallCheck(this, TrackingService);
 
+        this.locationQuery = locationQuery;
         this["ownTrackingJob@"] = new TrackingJob("", "", "", 0, 0, utcNow(), true, true);
         this["observedTrackingJobs@"] = new List();
     }
@@ -265,11 +318,36 @@ export var TrackingService = function () {
         }
     }, {
         key: "AddTrackingJob",
-        value: function (job, onObserveChanged) {
+        value: function (job) {
+            var _this = this;
+
             if (!this.ContainsTrackingJob(job.identifier)) {
+                (function () {
+                    var objectArg = _this.LocationQuery;
+                    return function (arg00) {
+                        return function (arg10) {
+                            objectArg.Subscribe(arg00, arg10);
+                        };
+                    };
+                })()(job)(function (arg00) {
+                    return function (arg10) {
+                        return function (arg20) {
+                            return function (arg30) {
+                                _this.OnPositionChanged(arg00, arg10, arg20, arg30);
+                            };
+                        };
+                    };
+                });
                 this.observedTrackingJobs = append(this.observedTrackingJobs, ofArray([job]));
             }
+
+            return function (value) {
+                value;
+            };
         }
+    }, {
+        key: "OnPositionChanged",
+        value: function (name, latitude, longitude, timestamputc) {}
     }, {
         key: "DeleteTrackingJob",
         value: function (job) {
@@ -283,6 +361,11 @@ export var TrackingService = function () {
             return exists(function (j) {
                 return j.identifier === name;
             }, this.observedTrackingJobs);
+        }
+    }, {
+        key: "LocationQuery",
+        get: function () {
+            return this.locationQuery;
         }
     }, {
         key: "ownTrackingJob",

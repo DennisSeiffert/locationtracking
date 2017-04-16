@@ -12,6 +12,7 @@
   "license": "ISC",
   "devDependencies": {
     "copy-webpack-plugin": "^4.0.1",
+    "extract-text-webpack-plugin": "^2.1.0",
     "fable-compiler": "^0.7.34",
     "fable-import-d3": "0.0.4",
     "fable-import-fetch": "^0.2.4",

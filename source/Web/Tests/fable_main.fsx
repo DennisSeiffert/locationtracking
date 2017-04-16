@@ -34,43 +34,59 @@ open R.Props
 
 
 //Node.require.Invoke("core-js") |> ignore        
+           
+
 
 let createApp initialState =              
         R.div [ ClassName "site-wrapper"] [ 
             R.div [ ClassName "site-wrapper-inner"] [ 
                 R.div [ ClassName "cover-container"] [                     
                     createNavigationViewComponent()
-                    //createMapViewComponent()
+                    createMapViewComponent()
                     createElevationViewComponent()
                 ]
             ]            
         ]
 
 
-let reducer (state: LocationTracker) = function
+let reducer (domainModel: LocationTracker) = function
     | BeginTracking identifer ->
-        state
+        domainModel
     | StopTracking identifier -> 
-        state
+        domainModel
+    | Observe identifier -> 
+        domainModel.TrackingService.AddTrackingJob (domainModel.TrackingService.CreateTrackingJob identifier 0.0 0.0) |> ignore
+        domainModel
     | LoadTrackingPoints (beginDate, endDate, selectedTrack) -> 
-        state
+        { domainModel with Visualization = new TrackVisualization(selectedTrack, List.Empty)}
     | ClearTrackingPoints ->
-        { state with Visualization = new TrackVisualization(String.Empty, List.Empty)}
-    | ReceivedTrack trackingPoints ->
-        { state with Visualization = new TrackVisualization(String.Empty, List.ofArray trackingPoints)}
+        { domainModel with Visualization = new TrackVisualization(String.Empty, List.Empty)}
+    | ReceivedTrack (trackName, trackingPoints) ->
+        let aggregatedPoints = TrackVisualization.calculate (List.ofArray trackingPoints)
+        { domainModel with Visualization = new TrackVisualization(trackName, aggregatedPoints)}
     | LoadingTracks ->
-        state        
+        domainModel        
     | ReceivedTracks tracks ->
-        { state with Tracks = List.ofArray tracks }
+        { domainModel with Tracks = List.ofArray tracks }
+    | ShowElevationMarker point ->
+        domainModel    
+    | ReceivedElevationPoints points ->
+        domainModel.Visualization.AssignElevationPoints points
+        domainModel
     | ShowError error ->
-        { state with Error = Some error }
+        { domainModel with Error = Some error }
     | HideError ->
-        { state with Error = None } 
+        { domainModel with Error = None } 
+
+let reducerWithLocalStorage (domainModel: LocationTracker) command =
+    let dm = reducer domainModel command
+    Backend.saveLocationTracker dm 
+    dm  
                                                
 let start() = 
     let initialStoreState = 
             {
-                TrackingService= new TrackingService(); 
+                TrackingService= new TrackingService(new Backend.LocationService()); 
                 Visualization=new TrackVisualization(name=String.Empty, points = TrackVisualization.calculate [{
                                                                                     latitude = 8.9
                                                                                     longitude = 5.9
@@ -105,9 +121,10 @@ let start() =
                        ];
                 Error = None
             }
-    
+    initialStoreState.Visualization.AssignElevationPoints [| {index = 0; elevation = 0.0;};|]
+   
     let middleware = Redux.applyMiddleware ReduxThunk.middleware
-    let store = createStore reducer initialStoreState (Some middleware)
+    let store = createStore reducerWithLocalStorage initialStoreState (Some middleware)
     let provider = createProvider store (R.fn createApp (obj()) [])
     ReactDom.render(provider, Browser.document.getElementsByClassName("main").[0]) |> ignore
 

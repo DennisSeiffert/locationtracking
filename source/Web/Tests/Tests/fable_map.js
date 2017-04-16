@@ -10,10 +10,10 @@ import { setType } from "fable-core/Symbol";
 import _Symbol from "fable-core/Symbol";
 import { Any, equals, Interface, extendInfo, compareRecords, equalsRecords } from "fable-core/Util";
 import { createElement, Component } from "react";
-import { map as map_1 } from "fable-core/List";
+import { reverse, map as map_1 } from "fable-core/List";
 import List from "fable-core/List";
-import { LocationTracker, TrackVisualization } from "./fable_domainModel";
 import { createConnector, withStateMapper, withProps, buildComponent } from "fable-reactredux/Fable.Helpers.ReactRedux";
+import { LocationTracker } from "./fable_domainModel";
 export var GeoOptions = function () {
     function GeoOptions(enableHighAccuracy, maximumAge, timeout) {
         _classCallCheck(this, GeoOptions);
@@ -110,7 +110,8 @@ export var MapView = function (_Component) {
 
         this.state = {
             map: null,
-            polyLineOfTrack: null
+            polyLineOfTrack: null,
+            needsAnUpdate: true
         };
         _this["mapHolder@"] = createElement("div", {
             className: "jumbotron",
@@ -138,40 +139,60 @@ export var MapView = function (_Component) {
             } else {}
         }
     }, {
-        key: "showTrack",
-        value: function () {
+        key: "componentWillReceiveProps",
+        value: function (nextProps) {
             var _this2 = this;
 
-            if (!(this.props.Track.Points.tail == null)) {
+            if (!equals(this.state.map, null)) {
+                this.setState(function () {
+                    var inputRecord = _this2.state;
+                    var needsAnUpdate = true;
+                    return {
+                        map: inputRecord.map,
+                        polyLineOfTrack: inputRecord.polyLineOfTrack,
+                        needsAnUpdate: needsAnUpdate
+                    };
+                }());
+            }
+        }
+    }, {
+        key: "showTrack",
+        value: function () {
+            var _this3 = this;
+
+            if (this.state.needsAnUpdate ? !(this.props.Track.tail == null) : false) {
                 (function () {
+                    if (!equals(_this3.state.polyLineOfTrack, null)) {
+                        _this3.state.polyLineOfTrack.setMap(null);
+                    }
+
                     var bounds = new google.maps.LatLngBounds();
                     var googleMapPoints = map_1(function (p) {
                         var point = new google.maps.LatLng(p.latitude, p.longitude);
                         bounds.extend(point);
                         return point;
-                    }, _this2.props.Track.Points);
+                    }, reverse(_this3.props.Track));
                     var polyLine = new google.maps.Polyline({
                         path: Array.from(googleMapPoints),
                         strokeColor: "#FF00AA",
                         strokeOpacity: .7,
                         strokeWeight: 4
                     });
-                    polyLine.setMap(_this2.state.map);
+                    polyLine.setMap(_this3.state.map);
 
-                    _this2.state.map.fitBounds(bounds);
+                    _this3.state.map.fitBounds(bounds);
 
-                    _this2.setState(function () {
-                        var inputRecord = _this2.state;
+                    _this3.setState(function () {
+                        var inputRecord = _this3.state;
                         var polyLineOfTrack = polyLine;
+                        var needsAnUpdate = false;
                         return {
                             map: inputRecord.map,
-                            polyLineOfTrack: polyLineOfTrack
+                            polyLineOfTrack: polyLineOfTrack,
+                            needsAnUpdate: needsAnUpdate
                         };
                     }());
                 })();
-            } else if (!equals(this.state.polyLineOfTrack, null)) {
-                this.state.polyLineOfTrack.setMap(null);
-                this.state.map.clear();
             }
         }
     }, {
@@ -190,7 +211,8 @@ export var MapView = function (_Component) {
             var map = new google.maps.Map(document.getElementsByClassName("jumbotron")[0], options);
             this.setState({
                 map: map,
-                polyLineOfTrack: null
+                polyLineOfTrack: null,
+                needsAnUpdate: true
             });
         }
     }, {
@@ -211,13 +233,13 @@ setType("Fable_map.MapView", MapView);
 
 function mapStateToProps(state, ownprops) {
     return {
-        Track: state.Visualization
+        Track: state.Visualization.Points
     };
 }
 
 function setDefaultProps(ownprops) {
     return {
-        Track: new TrackVisualization("", new List())
+        Track: new List()
     };
 }
 

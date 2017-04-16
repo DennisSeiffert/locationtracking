@@ -50,15 +50,16 @@ let GoogleMap(mapHolder:obj) (options:obj) : obj =
 
 
 type [<Pojo>] MapViewModel  =
-    { Track : TrackVisualization }
+    { Track : List<TrackingPoint> }
 
-type [<Pojo>] MapState = { map : obj option; polyLineOfTrack : obj option}
+type [<Pojo>] MapState = { map : obj option; polyLineOfTrack : obj option; needsAnUpdate : bool}
 
 type MapView(props) =
     inherit React.Component<MapViewModel, MapState>(props)
     do base.setInitState({ 
                             map = None  
-                            polyLineOfTrack = None     
+                            polyLineOfTrack = None
+                            needsAnUpdate = true
                         })    
     member val mapHolder = R.div [ ClassName "jumbotron" 
                                    Style [
@@ -76,22 +77,27 @@ type MapView(props) =
             | Some map -> this.showTrack()
             | _ -> ignore() 
 
-    member this.showTrack() =         
-        if not(List.isEmpty this.props.Track.Points) then
+    member this.componentWillReceiveProps(nextProps) = 
+        if this.state.map <> None then 
+            this.setState({ this.state with needsAnUpdate = true })
+
+    member this.showTrack() =     
+        if this.state.needsAnUpdate && not(List.isEmpty this.props.Track) then
+            if this.state.polyLineOfTrack <> None then
+                this.state.polyLineOfTrack?setMap(null) |> ignore
+
             let bounds = GooglePointBounds()
             let googleMapPoints = List.map (fun p -> 
                                                     let point = LatLng p.latitude p.longitude
                                                     bounds?extend(point) |> ignore                                                
                                                     point
-                                                ) this.props.Track.Points 
+                                                ) (this.props.Track |> List.rev)
             
             let polyLine = GooglePolyline(Array.ofList googleMapPoints)            
             polyLine?setMap(this.state.map) |> ignore
             this.state.map?fitBounds(bounds) |> ignore
-            this.setState({ this.state with polyLineOfTrack = Some polyLine })
-        else if this.state.polyLineOfTrack <> None then
-            this.state.polyLineOfTrack?setMap(null) |> ignore
-            this.state.map?clear() |> ignore
+            this.setState({ this.state with polyLineOfTrack = Some polyLine
+                                            needsAnUpdate = false })        
         ()
         
         
@@ -141,14 +147,14 @@ type MapView(props) =
                             ]
 
         let map = GoogleMap (Browser.document.getElementsByClassName("jumbotron").[0]) (options)
-        this.setState({map = Some map; polyLineOfTrack = None })
+        this.setState({map = Some map; polyLineOfTrack = None; needsAnUpdate = true })
     
     member this.render () =                 
         this.mapHolder
 
 let private mapStateToProps (state : LocationTracker) (ownprops : MapViewModel) =
     { ownprops with
-        Track = state.Visualization        
+        Track = state.Visualization.Points        
     }
 // let private mapDispatchToProps (dispatch : ReactRedux.Dispatcher) ownprops =
 //     { ownprops with
@@ -158,7 +164,7 @@ let private mapStateToProps (state : LocationTracker) (ownprops : MapViewModel) 
 
 let private setDefaultProps (ownprops : MapViewModel) =
     { ownprops with
-         Track = new TrackVisualization(String.Empty, List.Empty) }         
+         Track = List.Empty }         
 
 let createMapViewComponent =
     createConnector ()

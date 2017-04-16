@@ -41,13 +41,19 @@ export var NavigationView = function (_Component) {
 
         var _this = _possibleConstructorReturn(this, (NavigationView.__proto__ || Object.getPrototypeOf(NavigationView)).call(this, props));
 
-        this.state = {
-            trackingIdentifier: "",
-            SelectedTrack: "",
-            beginDateTimeLocal: now(),
-            endDateTimeLocal: now(),
-            VisualizeRecordedTracks: "Visualize Recorded Tracks"
-        };
+        this.state = function () {
+            var trackingIdentifier = "";
+            var SelectedTrack = "";
+            return {
+                trackingIdentifier: trackingIdentifier,
+                observationIdentifier: "",
+                SelectedTrack: SelectedTrack,
+                beginDateTimeLocal: now(),
+                endDateTimeLocal: now(),
+                VisualizeRecordedTracks: "Visualize Recorded Tracks"
+            };
+        }();
+
         return _this;
     }
 
@@ -69,40 +75,83 @@ export var NavigationView = function (_Component) {
     }, {
         key: "onBeginDateTimeLocalChanged",
         value: function (e) {
-            this.setState({
-                trackingIdentifier: this.state.trackingIdentifier,
-                SelectedTrack: this.state.SelectedTrack,
-                beginDateTimeLocal: e.target.value,
-                endDateTimeLocal: this.state.endDateTimeLocal,
-                VisualizeRecordedTracks: this.state.VisualizeRecordedTracks
-            });
+            var _this2 = this;
+
+            this.setState(function () {
+                var inputRecord = _this2.state;
+                var beginDateTimeLocal = e.target.value;
+                return {
+                    trackingIdentifier: inputRecord.trackingIdentifier,
+                    observationIdentifier: inputRecord.observationIdentifier,
+                    SelectedTrack: inputRecord.SelectedTrack,
+                    beginDateTimeLocal: beginDateTimeLocal,
+                    endDateTimeLocal: inputRecord.endDateTimeLocal,
+                    VisualizeRecordedTracks: inputRecord.VisualizeRecordedTracks
+                };
+            }());
         }
     }, {
         key: "onEndDateTimeLocalChanged",
         value: function (e) {
-            this.setState({
-                trackingIdentifier: this.state.trackingIdentifier,
-                SelectedTrack: this.state.SelectedTrack,
-                beginDateTimeLocal: this.state.beginDateTimeLocal,
-                endDateTimeLocal: e.target.value,
-                VisualizeRecordedTracks: this.state.VisualizeRecordedTracks
-            });
+            var _this3 = this;
+
+            this.setState(function () {
+                var inputRecord = _this3.state;
+                var endDateTimeLocal = e.target.value;
+                return {
+                    trackingIdentifier: inputRecord.trackingIdentifier,
+                    observationIdentifier: inputRecord.observationIdentifier,
+                    SelectedTrack: inputRecord.SelectedTrack,
+                    beginDateTimeLocal: inputRecord.beginDateTimeLocal,
+                    endDateTimeLocal: endDateTimeLocal,
+                    VisualizeRecordedTracks: inputRecord.VisualizeRecordedTracks
+                };
+            }());
         }
     }, {
         key: "onTrackSelected",
         value: function (e) {
+            var _this4 = this;
+
             var selectedTrackName = e.target.value;
             var selectedTrack = find(function (i) {
                 return i.name === selectedTrackName;
             }, this.props.Tracks);
-            this.setState({
-                trackingIdentifier: this.state.trackingIdentifier,
-                SelectedTrack: selectedTrack.name,
-                beginDateTimeLocal: selectedTrack.mintimestamp,
-                endDateTimeLocal: selectedTrack.maxtimestamp,
-                VisualizeRecordedTracks: this.state.VisualizeRecordedTracks
-            });
-            e.preventDefault();
+            e.stopPropagation();
+            this.setState(function () {
+                var inputRecord = _this4.state;
+                return {
+                    trackingIdentifier: inputRecord.trackingIdentifier,
+                    observationIdentifier: inputRecord.observationIdentifier,
+                    SelectedTrack: selectedTrack.name,
+                    beginDateTimeLocal: selectedTrack.mintimestamp,
+                    endDateTimeLocal: selectedTrack.maxtimestamp,
+                    VisualizeRecordedTracks: inputRecord.VisualizeRecordedTracks
+                };
+            }());
+        }
+    }, {
+        key: "onObservationIdentifierChanged",
+        value: function (e) {
+            var _this5 = this;
+
+            this.setState(function () {
+                var inputRecord = _this5.state;
+                var observationIdentifier = toString(e.target.value);
+                return {
+                    trackingIdentifier: inputRecord.trackingIdentifier,
+                    observationIdentifier: observationIdentifier,
+                    SelectedTrack: inputRecord.SelectedTrack,
+                    beginDateTimeLocal: inputRecord.beginDateTimeLocal,
+                    endDateTimeLocal: inputRecord.endDateTimeLocal,
+                    VisualizeRecordedTracks: inputRecord.VisualizeRecordedTracks
+                };
+            }());
+        }
+    }, {
+        key: "onObserve",
+        value: function (e) {
+            this.props.onObserve(this.state.observationIdentifier);
         }
     }, {
         key: "onLoadTrackingPoints",
@@ -117,13 +166,13 @@ export var NavigationView = function (_Component) {
     }, {
         key: "getTrackSelection",
         value: function () {
-            var _this2 = this;
+            var _this6 = this;
 
             return createElement.apply(undefined, ["select", {
                 id: "trackSelection",
                 value: this.state.SelectedTrack,
                 onChange: function onChange(arg00) {
-                    _this2.onTrackSelected(arg00);
+                    _this6.onTrackSelected(arg00);
                 }
             }].concat(_toConsumableArray(map(function (t) {
                 return createElement("option", {
@@ -135,8 +184,9 @@ export var NavigationView = function (_Component) {
         key: "render",
         value: function () {
             var _createElement,
-                _this3 = this,
-                _createElement3;
+                _this7 = this,
+                _createElement3,
+                _createElement4;
 
             return createElement("div", {
                 className: "masthead clearfix"
@@ -174,12 +224,12 @@ export var NavigationView = function (_Component) {
                 className: "form-group"
             }, createElement("button", {
                 onClick: function onClick(arg00) {
-                    _this3.onBeginTracking(arg00);
+                    _this7.onBeginTracking(arg00);
                 },
                 className: "btn btn-default btn-succes active"
             }, "Track..."), createElement("button", {
                 onClick: function onClick(arg00) {
-                    _this3.onStopTracking(arg00);
+                    _this7.onStopTracking(arg00);
                 },
                 className: "btn btn-default btn-danger"
             }, "Stop Tracking")), createElement("div", {
@@ -206,18 +256,18 @@ export var NavigationView = function (_Component) {
             }, createElement("div", {
                 className: "row"
             }, createElement("label", {}, "from"), createElement("input", {
-                type: "datetime-local",
+                type: "datetime",
                 value: toString(this.state.beginDateTimeLocal),
                 onChange: function onChange(arg00) {
-                    _this3.onBeginDateTimeLocalChanged(arg00);
+                    _this7.onBeginDateTimeLocalChanged(arg00);
                 }
             })), createElement("div", {
                 className: "row"
             }, createElement("label", {}, "until"), createElement("input", {
-                type: "datetime-local",
+                type: "datetime",
                 value: toString(this.state.endDateTimeLocal),
                 onChange: function onChange(arg00) {
-                    _this3.onEndDateTimeLocalChanged(arg00);
+                    _this7.onEndDateTimeLocalChanged(arg00);
                 }
             })), createElement("div", {
                 className: "row"
@@ -225,13 +275,36 @@ export var NavigationView = function (_Component) {
                 className: "row"
             }, createElement("button", {
                 onClick: function onClick(arg00) {
-                    _this3.onLoadTrackingPoints(arg00);
+                    _this7.onLoadTrackingPoints(arg00);
                 }
             }, "Load Track Points"), createElement("button", {
                 onClick: function onClick(arg00) {
-                    _this3.onClearTrackingPoints(arg00);
+                    _this7.onClearTrackingPoints(arg00);
                 }
-            }, "Clear"))))))))))));
+            }, "Clear")))))), createElement("li", {
+                role: "presentation",
+                className: "dropdown"
+            }, createElement("a", (_createElement4 = {
+                className: "dropdown-toggle"
+            }, _defineProperty(_createElement4, "data-toggle", "dropdown"), _defineProperty(_createElement4, "href", "#"), _defineProperty(_createElement4, "role", "button"), _defineProperty(_createElement4, "aria-haspopup", "true"), _defineProperty(_createElement4, "aria-expanded", "false"), _createElement4), createElement("label", {}, "Observation")), createElement("ul", {
+                className: "dropdown-menu"
+            }, createElement("li", {}, createElement("div", {}, createElement("div", {
+                className: "container-fluid"
+            }, createElement("div", {
+                className: "row"
+            }, createElement("label", {}, "observe by identifer:"), createElement("input", {
+                type: "text",
+                value: this.state.observationIdentifier,
+                onChange: function onChange(arg00) {
+                    _this7.onObservationIdentifierChanged(arg00);
+                }
+            })), createElement("div", {
+                className: "row"
+            }, createElement("button", {
+                onClick: function onClick(arg00) {
+                    _this7.onObserve(arg00);
+                }
+            }, "Observe")))))))))))));
         }
     }]);
 
@@ -246,6 +319,7 @@ function mapStateToProps(state, ownprops) {
         onStopTracking: ownprops.onStopTracking,
         onLoadTrackingPoints: ownprops.onLoadTrackingPoints,
         onClearTrackingPoints: ownprops.onClearTrackingPoints,
+        onObserve: ownprops.onObserve,
         Tracks: state.Tracks
     };
 }
@@ -274,12 +348,22 @@ function mapDispatchToProps(dispatch, ownprops) {
         });
     };
 
+    var onObserve = function onObserve(observationIdentifier) {
+        (function (arg00) {
+            dispatch(arg00);
+        })({
+            type: "Observe",
+            Item: observationIdentifier
+        });
+    };
+
     return {
         onLoadTracks: onLoadTracks,
         onBeginTracking: ownprops.onBeginTracking,
         onStopTracking: ownprops.onStopTracking,
         onLoadTrackingPoints: onLoadTrackingPoints,
         onClearTrackingPoints: onClearTrackingPoints,
+        onObserve: onObserve,
         Tracks: ownprops.Tracks
     };
 }
@@ -292,6 +376,7 @@ function setDefaultProps(ownprops) {
         onStopTracking: ownprops.onStopTracking,
         onLoadTrackingPoints: ownprops.onLoadTrackingPoints,
         onClearTrackingPoints: ownprops.onClearTrackingPoints,
+        onObserve: ownprops.onObserve,
         Tracks: Tracks
     };
 }
