@@ -30,10 +30,15 @@ class Track:
                                                                                      self.trackingpoints[i])
 
     def calculateVelocities(self):
+        index = 0
         for i in range(1, len(self.trackingpoints)):
             timespan = (self.trackingpoints[i].timestamputc - self.trackingpoints[i-1].timestamputc).total_seconds()
-            if timespan > 0:
+            if timespan > 0 and timespan < 60 * 60:
                 self.trackingpoints[i].velocity = self.trackingpoints[i].distanceFromAncestor / timespan
+                self.trackingpoints[i].index = index
+                index = index + 1 
+            else:
+                index = 0               
 
 
 
