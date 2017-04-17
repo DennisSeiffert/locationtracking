@@ -113,9 +113,9 @@ type NavigationView(props) =
                             OnClick (fun mouseEvent -> mouseEvent.preventDefault()
                                                        mouseEvent.stopPropagation() |> ignore);                             
                             ][
-                    unbox this.state.SelectedTrack
+                    unbox (if String.IsNullOrEmpty(this.state.SelectedTrack) then "Select Track ..." else this.state.SelectedTrack)
                     R.span [ClassName "caret"][]
-                                                                                                                ]
+                ]
                 R.ul [ClassName "dropdown-menu sub-menu"; Style [Height "200px"; Overflow "Auto"; ] ]                    
                     (this.props.Tracks
                     |> List.map (fun t -> R.li [] [ 
@@ -162,36 +162,36 @@ type NavigationView(props) =
                             Id "bs-example-navbar-collapse-1"
                             ClassName "collapse navbar-collapse"] [ 
                                 R.ul [ ClassName "nav navbar-nav"] [ 
-                                    R.li [ ] [ 
-                                        R.form [ 
-                                            ClassName "form-horizontal"
-                                            Style [ 
-                                                MarginLeft "15px" 
-                                                MarginRight "15px"  ]] [ 
-                                                R.div [ ClassName "form-group" ] [ 
-                                                    R.button [ 
-                                                        OnClick this.onBeginTracking
-                                                        ClassName "btn btn-default btn-succes active" ] [ 
-                                                            unbox "Track..."
-                                                    ]
-                                                    R.button [ 
-                                                        OnClick this.onStopTracking
-                                                        ClassName "btn btn-default btn-danger" ] [ 
-                                                            unbox "Stop Tracking"
-                                                    ]
-                                                ]
-                                                R.div [ ClassName "form-group" ] [
-                                                    R.label [ ClassName "col-md-4  col-sm-4 col-xs-4 control-label" ] [ unbox "Tracking Id" ]
-                                                    R.div [ ClassName "col-md-8  col-sm-8 col-xs-11"; AriaLabel "..." ] [
-                                                        R.input [ 
-                                                            Type "text" 
-                                                            Id "trackIdentifier" 
-                                                            Value (U2.Case1 this.state.trackingIdentifier)
-                                                        ] []                                                    
-                                                    ]                                                    
-                                                ]
-                                        ]
-                                    ]
+                                    // R.li [ ] [ 
+                                    //     R.form [ 
+                                    //         ClassName "form-horizontal"
+                                    //         Style [ 
+                                    //             MarginLeft "15px" 
+                                    //             MarginRight "15px"  ]] [ 
+                                    //             R.div [ ClassName "form-group" ] [ 
+                                    //                 R.button [ 
+                                    //                     OnClick this.onBeginTracking
+                                    //                     ClassName "btn btn-default btn-succes active" ] [ 
+                                    //                         unbox "Track..."
+                                    //                 ]
+                                    //                 R.button [ 
+                                    //                     OnClick this.onStopTracking
+                                    //                     ClassName "btn btn-default btn-danger" ] [ 
+                                    //                         unbox "Stop Tracking"
+                                    //                 ]
+                                    //             ]
+                                    //             R.div [ ClassName "form-group" ] [
+                                    //                 R.label [ ClassName "col-md-4  col-sm-4 col-xs-4 control-label" ] [ unbox "Tracking Id" ]
+                                    //                 R.div [ ClassName "col-md-8  col-sm-8 col-xs-11"; AriaLabel "..." ] [
+                                    //                     R.input [ 
+                                    //                         Type "text" 
+                                    //                         Id "trackIdentifier" 
+                                    //                         Value (U2.Case1 this.state.trackingIdentifier)
+                                    //                     ] []                                                    
+                                    //                 ]                                                    
+                                    //             ]
+                                    //     ]
+                                    // ]
                                     R.li [ Role "presentation"; ClassName "dropdown" ] [ 
                                        R.a [ ClassName "dropdown-toggle"; DataToggle "dropdown"; Href "#"; Role "button"; 
                                              AriaHasPopup "true"; AriaExpanded "false"; OnClick (fun e -> 
@@ -226,9 +226,9 @@ type NavigationView(props) =
                                                            Type "file"
                                                            OnChange this.onSelectTrackingFiles
                                                            ] []
-                                                       R.button [ 
-                                                           OnClick this.onClearTrackingPoints
-                                                       ] [ unbox "Clear"]
+                                                    //    R.button [ 
+                                                    //        OnClick this.onClearTrackingPoints
+                                                    //    ] [ unbox "Clear"]
                                                    ]
                                                ]
                                            ]

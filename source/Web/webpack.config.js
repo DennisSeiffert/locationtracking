@@ -47,7 +47,8 @@ var cfg = {
             { from : 'parse-latest.js'} ,
             { from : './node_modules/bootstrap/dist/js/bootstrap.min.js'} ,
             { from : './node_modules/bootstrap/dist/css/bootstrap.min.css'} ,
-                       
+            { from : './node_modules/bootstrap-notify/bootstrap-notify.min.js'} ,  
+            { from : './node_modules/jquery/dist/jquery.min.js'} ,                        
       ]),
       new ExtractTextPlugin('styles.css')
   ],

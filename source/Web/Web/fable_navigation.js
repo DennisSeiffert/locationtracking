@@ -16,6 +16,7 @@ import _Symbol from "fable-core/Symbol";
 import { Any, toString, extendInfo } from "fable-core/Util";
 import { now } from "fable-core/Date";
 import { find } from "fable-core/Seq";
+import { isNullOrEmpty } from "fable-core/String";
 import { map } from "fable-core/List";
 import List from "fable-core/List";
 import { asThunk } from "fable-reduxthunk/Fable.Helpers.ReactRedux.ReduxThunk";
@@ -183,7 +184,7 @@ export var NavigationView = function (_Component) {
             }, _defineProperty(_createElement, "data-toggle", "dropdown"), _defineProperty(_createElement, "onClick", function (mouseEvent) {
                 mouseEvent.preventDefault();
                 mouseEvent.stopPropagation();
-            }), _createElement), this.state.SelectedTrack, createElement("span", {
+            }), _createElement), isNullOrEmpty(this.state.SelectedTrack) ? "Select Track ..." : this.state.SelectedTrack, createElement("span", {
                 className: "caret"
             })), createElement.apply(undefined, ["ul", {
                 className: "dropdown-menu sub-menu",
@@ -204,9 +205,9 @@ export var NavigationView = function (_Component) {
         key: "render",
         value: function () {
             var _createElement2,
+                _createElement3,
                 _this7 = this,
-                _createElement4,
-                _createElement5;
+                _createElement4;
 
             return createElement("div", {
                 className: "masthead clearfix"
@@ -234,43 +235,15 @@ export var NavigationView = function (_Component) {
                 className: "collapse navbar-collapse"
             }, createElement("ul", {
                 className: "nav navbar-nav"
-            }, createElement("li", {}, createElement("form", {
-                className: "form-horizontal",
-                style: {
-                    marginLeft: "15px",
-                    marginRight: "15px"
-                }
-            }, createElement("div", {
-                className: "form-group"
-            }, createElement("button", {
-                onClick: function onClick(arg00) {
-                    _this7.onBeginTracking(arg00);
-                },
-                className: "btn btn-default btn-succes active"
-            }, "Track..."), createElement("button", {
-                onClick: function onClick(arg00) {
-                    _this7.onStopTracking(arg00);
-                },
-                className: "btn btn-default btn-danger"
-            }, "Stop Tracking")), createElement("div", {
-                className: "form-group"
-            }, createElement("label", {
-                className: "col-md-4  col-sm-4 col-xs-4 control-label"
-            }, "Tracking Id"), createElement("div", _defineProperty({
-                className: "col-md-8  col-sm-8 col-xs-11"
-            }, "aria-label", "..."), createElement("input", {
-                type: "text",
-                id: "trackIdentifier",
-                value: this.state.trackingIdentifier
-            }))))), createElement("li", {
+            }, createElement("li", {
                 role: "presentation",
                 className: "dropdown"
-            }, createElement("a", (_createElement4 = {
+            }, createElement("a", (_createElement3 = {
                 className: "dropdown-toggle"
-            }, _defineProperty(_createElement4, "data-toggle", "dropdown"), _defineProperty(_createElement4, "href", "#"), _defineProperty(_createElement4, "role", "button"), _defineProperty(_createElement4, "aria-haspopup", "true"), _defineProperty(_createElement4, "aria-expanded", "false"), _defineProperty(_createElement4, "onClick", function (e) {
+            }, _defineProperty(_createElement3, "data-toggle", "dropdown"), _defineProperty(_createElement3, "href", "#"), _defineProperty(_createElement3, "role", "button"), _defineProperty(_createElement3, "aria-haspopup", "true"), _defineProperty(_createElement3, "aria-expanded", "false"), _defineProperty(_createElement3, "onClick", function (e) {
                 e.stopPropagation();
                 e.preventDefault();
-            }), _createElement4), this.state.VisualizeRecordedTracks, createElement("span", {
+            }), _createElement3), this.state.VisualizeRecordedTracks, createElement("span", {
                 className: "caret"
             })), createElement("ul", {
                 className: "dropdown-menu"
@@ -285,16 +258,12 @@ export var NavigationView = function (_Component) {
                 onChange: function onChange(arg00) {
                     _this7.onSelectTrackingFiles(arg00);
                 }
-            }), createElement("button", {
-                onClick: function onClick(arg00) {
-                    _this7.onClearTrackingPoints(arg00);
-                }
-            }, "Clear")))))), createElement("li", {
+            })))))), createElement("li", {
                 role: "presentation",
                 className: "dropdown"
-            }, createElement("a", (_createElement5 = {
+            }, createElement("a", (_createElement4 = {
                 className: "dropdown-toggle"
-            }, _defineProperty(_createElement5, "data-toggle", "dropdown"), _defineProperty(_createElement5, "href", "#"), _defineProperty(_createElement5, "role", "button"), _defineProperty(_createElement5, "aria-haspopup", "true"), _defineProperty(_createElement5, "aria-expanded", "false"), _createElement5), createElement("label", {}, "Observation")), createElement("ul", {
+            }, _defineProperty(_createElement4, "data-toggle", "dropdown"), _defineProperty(_createElement4, "href", "#"), _defineProperty(_createElement4, "role", "button"), _defineProperty(_createElement4, "aria-haspopup", "true"), _defineProperty(_createElement4, "aria-expanded", "false"), _createElement4), createElement("label", {}, "Observation")), createElement("ul", {
                 className: "dropdown-menu"
             }, createElement("li", {}, createElement("div", {}, createElement("div", {
                 className: "container-fluid"
