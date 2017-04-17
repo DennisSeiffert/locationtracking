@@ -22,7 +22,7 @@ def jsonSerializing(obj):
     if isinstance(obj, Track.Track):
         return {"name": obj.name, "trackingpoints" : map(jsonSerializing, obj.trackingpoints)}
     if isinstance(obj, TrackingPoint.TrackingPoint):
-        return {"latitude": obj.latitude, "longitude": obj.longitude, "timestamputc" : jsonSerializing(obj.timestamputc)}
+        return {"latitude": obj.latitude, "longitude": obj.longitude, "timestamputc" : jsonSerializing(obj.timestamputc), "index" : obj.index}
     return json_util.default(obj)
 
 def update_tracks():
