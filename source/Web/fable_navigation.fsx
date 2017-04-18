@@ -52,6 +52,9 @@ type AdditionalHtmlAttr =
     |[<CompiledName("aria-expanded")>]AriaExpanded of string
     interface IHTMLProp
 
+let buildUniqueIdentifier t =
+    String.Join("", t.name, t.mintimestamp.ToString())
+
 type NavigationView(props) =
     inherit React.Component<ModelViewProps, NavigationViewState>(props)      
     do base.setInitState({ 
@@ -89,7 +92,7 @@ type NavigationView(props) =
 
     member this.onTrackSelected(e: React.SyntheticEvent) =
         let selectedTrackName = unbox e.currentTarget?value
-        let selectedTrack = this.props.Tracks |> List.find (fun i -> i.name = selectedTrackName)        
+        let selectedTrack = this.props.Tracks |> List.find (fun i -> buildUniqueIdentifier i = selectedTrackName)        
         this.setState(
             { this.state with                
                 SelectedTrack = selectedTrack.name
@@ -124,7 +127,7 @@ type NavigationView(props) =
                 // ]
                 // R.ul [ClassName "dropdown-menu sub-menu"; Style [Height "200px"; Overflow "Auto"; ] ]                    
                     (this.props.Tracks
-                    |> List.map (fun t -> R.button [ClassName "list-group-item"; OnClick this.onTrackSelected; Value (U2.Case1 t.name)][
+                    |> List.map (fun t -> R.button [ClassName "list-group-item"; OnClick this.onTrackSelected; Value (U2.Case1 (buildUniqueIdentifier t))][
                                                     R.h4 [] [unbox t.name]
                                                     R.h6 [] [unbox(t.mintimestamp.ToString())]
                                                     R.h6 [] [unbox(t.maxtimestamp.ToString())]                                                                                                

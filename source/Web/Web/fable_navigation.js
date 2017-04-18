@@ -11,10 +11,11 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 import jquery from "jquery";
+import { join } from "fable-core/String";
+import { Any, extendInfo, toString } from "fable-core/Util";
 import { createElement, Component } from "react";
 import { setType } from "fable-core/Symbol";
 import _Symbol from "fable-core/Symbol";
-import { Any, toString, extendInfo } from "fable-core/Util";
 import { now } from "fable-core/Date";
 import { find } from "fable-core/Seq";
 import { map } from "fable-core/List";
@@ -24,6 +25,9 @@ import { parseTrackingPointsFromGpx, loadTrackingPoints, getAllTracks } from "./
 import { createConnector, withStateMapper, withDispatchMapper, withProps, buildComponent } from "fable-reactredux/Fable.Helpers.ReactRedux";
 import { LocationTracker } from "./fable_domainModel";
 export var jq = jquery;
+export function buildUniqueIdentifier(t) {
+    return join("", t.name, toString(t.mintimestamp));
+}
 export var NavigationView = function (_Component) {
     _inherits(NavigationView, _Component);
 
@@ -123,7 +127,7 @@ export var NavigationView = function (_Component) {
 
             var selectedTrackName = e.currentTarget.value;
             var selectedTrack = find(function (i) {
-                return i.name === selectedTrackName;
+                return buildUniqueIdentifier(i) === selectedTrackName;
             }, this.props.Tracks);
             this.setState(function () {
                 var inputRecord = _this4.state;
@@ -188,7 +192,7 @@ export var NavigationView = function (_Component) {
                     onClick: function onClick(arg00) {
                         _this6.onTrackSelected(arg00);
                     },
-                    value: t.name
+                    value: buildUniqueIdentifier(t)
                 }, createElement("h4", {}, t.name), createElement("h6", {}, toString(t.mintimestamp)), createElement("h6", {}, toString(t.maxtimestamp)));
             }, this.props.Tracks))));
         }
