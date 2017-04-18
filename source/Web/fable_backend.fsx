@@ -99,10 +99,17 @@ let getAllTracks (dispatch : ReactRedux.Dispatcher) =
                 ]                
         if response.Ok then
             let! tracks = response.json<obj array> ()
-            tracks |> Array.map (fun i -> { 
-                                            mintimestamp=DateTime.Parse(string i?mintimestamputc?date);
-                                            maxtimestamp = DateTime.Parse(string i?maxtimestamputc?date); 
-                                            name = string i?name }) |> Commands.ReceivedTracks |> dispatch
+            tracks 
+            |> Array.map (fun i -> 
+                                    let ranges = box i?ranges :?> list<list<obj>>
+                                    ranges |> List.map (fun r -> 
+                                            { 
+                                            mintimestamp= DateTime.Parse(string r.[0]?date);
+                                            maxtimestamp = DateTime.Parse(string r.[1]?date); 
+                                            name = string i?name }))                                             
+            |> List.concat
+            |> Array.ofList
+            |> Commands.ReceivedTracks |> dispatch
         else
             dispatchShowError dispatch None "Could not fetch tracks from server!"
     }
@@ -124,7 +131,7 @@ let loadTrackingPoints (start, ``end``,  trackName) (dispatch : ReactRedux.Dispa
                                                                                                 elevation = 0.0
                                                                                                 distance = 0.0
                                                                                                 distanceCovered = 0.0
-                                                                                                index = (box t?index) :?> int
+                                                                                                index = 0
                                                                                             })        
             dispatch (Commands.ReceivedTrack(trackName, trackingPoints))
 

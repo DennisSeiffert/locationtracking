@@ -7,9 +7,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 import { setType } from "fable-core/Symbol";
 import _Symbol from "fable-core/Symbol";
 import { toString, defaultArg, compareRecords, equalsRecords } from "fable-core/Util";
-import { map, iterate, mapIndexed } from "fable-core/Seq";
+import { item, map, iterate, mapIndexed } from "fable-core/Seq";
 import { TrackingPoint, Track, ElevationPoint } from "./fable_domainModel";
 import { postRecord, fetch as _fetch } from "fable-powerpack/Fetch";
+import { map as map_1, concat } from "fable-core/List";
 import { parse } from "fable-core/Date";
 import { PromiseImpl } from "fable-powerpack/Promise";
 import * as gpx_parse_browser_js from "../node_modules/gpx-parse/dist/gpx-parse-browser.js";
@@ -184,9 +185,12 @@ export function getAllTracks(dispatch) {
                             dispatch(arg00);
                         })({
                             type: "ReceivedTracks",
-                            Item: Array.from(map(function (i) {
-                                return new Track(parse(toString(i.mintimestamputc.date)), parse(toString(i.maxtimestamputc.date)), toString(i.name));
-                            }, _arg2))
+                            Item: Array.from(concat(Array.from(map(function (i) {
+                                var ranges = i.ranges;
+                                return map_1(function (r) {
+                                    return new Track(parse(toString(item(0, r).date)), parse(toString(item(1, r).date)), toString(i.name));
+                                }, ranges);
+                            }, _arg2))))
                         });
 
                         return Promise.resolve();
@@ -214,7 +218,7 @@ export function loadTrackingPoints(start, end, trackName, dispatch) {
                             var speed = 0;
                             var elevation = 0;
                             var distance = 0;
-                            return new TrackingPoint(latitude, longitude, timestamputc, speed, 0, distance, t.index, elevation);
+                            return new TrackingPoint(latitude, longitude, timestamputc, speed, 0, distance, 0, elevation);
                         }, _arg2.trackingpoints));
 
                         (function (arg00) {
@@ -305,12 +309,12 @@ export function parseTrackingPointsFromGpx(filenames, dispatch) {
     }(PromiseImpl.promise).then(function () {});
 }
 export function loadLocalStorage(key) {
-    return defaultArg(localStorage.getItem(key), null, function ($var1) {
+    return defaultArg(localStorage.getItem(key), null, function ($var19) {
         return function (value) {
             return value;
         }(function (arg00) {
             return JSON.parse(arg00);
-        }($var1));
+        }($var19));
     });
 }
 export function saveToLocalStorage(key, data) {

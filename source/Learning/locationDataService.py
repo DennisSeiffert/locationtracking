@@ -22,7 +22,9 @@ def jsonSerializing(obj):
     if isinstance(obj, Track.Track):
         return {"name": obj.name, "trackingpoints" : map(jsonSerializing, obj.trackingpoints)}
     if isinstance(obj, TrackingPoint.TrackingPoint):
-        return {"latitude": obj.latitude, "longitude": obj.longitude, "timestamputc" : jsonSerializing(obj.timestamputc), "index" : obj.index}
+        return {"latitude": obj.latitude, "longitude": obj.longitude, "timestamputc" : jsonSerializing(obj.timestamputc)}
+    if isinstance(obj, list):
+        return map(jsonSerializing, obj)
     return json_util.default(obj)
 
 def update_tracks():
@@ -33,7 +35,8 @@ def options_trackIds():
     tracks = TrackRepository.getTracks()
     trackIds = map(lambda t: {"name":t.name,
                               "mintimestamputc" : jsonSerializing(t.mintimestamputc),
-                              "maxtimestamputc" : jsonSerializing(t.maxtimestamputc) },
+                              "maxtimestamputc" : jsonSerializing(t.maxtimestamputc),
+                              "ranges" : jsonSerializing(t.ranges)},
                    tracks)
     return flask.Response(json.dumps(trackIds, indent=None), mimetype="application/json")
 

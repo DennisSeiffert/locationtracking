@@ -11,6 +11,7 @@ class Track:
         self.trackingpoints = trackingpoints
         self.mintimestamputc = datetime.utcnow()
         self.maxtimestamputc = datetime.utcnow()
+        self.ranges = []
         self.sort()
         self.calculateDateRange()
         self.calculateDistances()
@@ -29,17 +30,18 @@ class Track:
             self.trackingpoints[i].distanceFromAncestor = calculateDistanceInBetween(self.trackingpoints[i - 1],
                                                                                      self.trackingpoints[i])
 
-    def calculateVelocities(self):
-        index = 0
+    def calculateVelocities(self):        
+        minRangeTimestamp = datetime.utcnow()
         for i in range(1, len(self.trackingpoints)):
             timespan = (self.trackingpoints[i].timestamputc - self.trackingpoints[i-1].timestamputc).total_seconds()
-            if timespan > 0 and timespan < 60 * 60:
-                self.trackingpoints[i].velocity = self.trackingpoints[i].distanceFromAncestor / timespan
-                self.trackingpoints[i].index = index
-                index = index + 1 
-            else:
-                index = 0               
-
+            minRangeTimestamp = min([minRangeTimestamp, self.trackingpoints[i-1].timestamputc])
+            if timespan > 0.0 and timespan < 3600.0:
+                self.trackingpoints[i].velocity = self.trackingpoints[i].distanceFromAncestor / timespan                                
+            elif timespan > 3600.0:
+                self.ranges.append([minRangeTimestamp, self.trackingpoints[i-1].timestamputc])
+                minRangeTimestamp = self.trackingpoints[i].timestamputc
+        if len(self.trackingpoints) > 0:
+            self.ranges.append([minRangeTimestamp, self.trackingpoints[len(self.trackingpoints) - 1].timestamputc])
 
 
     def sort(self):
