@@ -20,6 +20,8 @@ open R.Props
 open Fable.Helpers.ReactRedux
 open Fable.Helpers.ReduxThunk
 
+let jq = importDefault<obj> "jquery"
+
 type [<Pojo>] NavigationViewState = 
     { 
         trackingIdentifier: string
@@ -93,7 +95,11 @@ type NavigationView(props) =
                 SelectedTrack = selectedTrack.name
                 beginDateTimeLocal = selectedTrack.mintimestamp                
                 endDateTimeLocal = selectedTrack.maxtimestamp
-            })        
+            })
+        let children = jq $ (e.currentTarget?parentNode?children) 
+        children?removeClass("active") |> ignore
+        let selectedbutton = jq $ (e.currentTarget) 
+        selectedbutton?addClass("active") |> ignore 
         this.props.onLoadTrackingPoints(selectedTrack.mintimestamp, selectedTrack.maxtimestamp, selectedTrack.name)
 
     member this.onObservationIdentifierChanged (e: React.SyntheticEvent) = 

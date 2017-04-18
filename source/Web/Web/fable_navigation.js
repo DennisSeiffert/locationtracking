@@ -10,6 +10,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+import jquery from "jquery";
 import { createElement, Component } from "react";
 import { setType } from "fable-core/Symbol";
 import _Symbol from "fable-core/Symbol";
@@ -22,6 +23,7 @@ import { asThunk } from "fable-reduxthunk/Fable.Helpers.ReactRedux.ReduxThunk";
 import { parseTrackingPointsFromGpx, loadTrackingPoints, getAllTracks } from "./fable_backend";
 import { createConnector, withStateMapper, withDispatchMapper, withProps, buildComponent } from "fable-reactredux/Fable.Helpers.ReactRedux";
 import { LocationTracker } from "./fable_domainModel";
+export var jq = jquery;
 export var NavigationView = function (_Component) {
     _inherits(NavigationView, _Component);
 
@@ -134,6 +136,10 @@ export var NavigationView = function (_Component) {
                     VisualizeRecordedTracks: inputRecord.VisualizeRecordedTracks
                 };
             }());
+            var children = jq(e.currentTarget.parentNode.children);
+            children.removeClass("active");
+            var selectedbutton = jq(e.currentTarget);
+            selectedbutton.addClass("active");
             this.props.onLoadTrackingPoints([selectedTrack.mintimestamp, selectedTrack.maxtimestamp, selectedTrack.name]);
         }
     }, {
