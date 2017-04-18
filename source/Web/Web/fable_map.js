@@ -8,10 +8,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 import { setType } from "fable-core/Symbol";
 import _Symbol from "fable-core/Symbol";
-import { Any, equals, Interface, extendInfo, compareRecords, equalsRecords } from "fable-core/Util";
+import { Any, toString, equals, Interface, extendInfo, compareRecords, equalsRecords } from "fable-core/Util";
 import { createElement, Component } from "react";
 import { reverse, map as map_1 } from "fable-core/List";
 import List from "fable-core/List";
+import { tryFind } from "fable-core/Seq";
 import { createConnector, withStateMapper, withProps, buildComponent } from "fable-reactredux/Fable.Helpers.ReactRedux";
 import { LocationTracker } from "./fable_domainModel";
 export var GeoOptions = function () {
@@ -146,11 +147,23 @@ export var MapView = function (_Component) {
 
             if (!equals(this.state.map, null)) {
                 var markers = map_1(function (i) {
-                    return new google.maps.Marker({
-                        position: new google.maps.LatLng(i.latitude, i.longitude),
-                        map: _this2.state.map,
-                        title: i.identifier
-                    });
+                    {
+                        _this2.state.map.panTo(new google.maps.LatLng(i.latitude, i.longitude));
+                    }
+                    var matchValue = tryFind(function (e) {
+                        return toString(e.identifier) === i.identifier;
+                    }, _this2.state.markers);
+
+                    if (matchValue == null) {
+                        return new google.maps.Marker({
+                            position: new google.maps.LatLng(i.latitude, i.longitude),
+                            map: _this2.state.map,
+                            title: i.identifier
+                        });
+                    } else {
+                        matchValue.setPosition(new google.maps.LatLng(i.latitude, i.longitude));
+                        return matchValue;
+                    }
                 }, nextProps.ObservedTrackingJobs);
                 this.setState(function () {
                     var inputRecord = _this2.state;
