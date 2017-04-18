@@ -1,8 +1,8 @@
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -16,7 +16,6 @@ import _Symbol from "fable-core/Symbol";
 import { Any, toString, extendInfo } from "fable-core/Util";
 import { now } from "fable-core/Date";
 import { find } from "fable-core/Seq";
-import { isNullOrEmpty } from "fable-core/String";
 import { map } from "fable-core/List";
 import List from "fable-core/List";
 import { asThunk } from "fable-reduxthunk/Fable.Helpers.ReactRedux.ReduxThunk";
@@ -120,7 +119,7 @@ export var NavigationView = function (_Component) {
         value: function (e) {
             var _this4 = this;
 
-            var selectedTrackName = e.target.text;
+            var selectedTrackName = e.currentTarget.value;
             var selectedTrack = find(function (i) {
                 return i.name === selectedTrackName;
             }, this.props.Tracks);
@@ -173,41 +172,27 @@ export var NavigationView = function (_Component) {
     }, {
         key: "getTrackSelection",
         value: function () {
-            var _createElement,
-                _this6 = this;
+            var _this6 = this;
 
-            return createElement("div", {
-                className: "dropdown"
-            }, createElement("a", (_createElement = {
-                className: "dropdown-toggle",
-                href: "#"
-            }, _defineProperty(_createElement, "data-toggle", "dropdown"), _defineProperty(_createElement, "onClick", function (mouseEvent) {
-                mouseEvent.preventDefault();
-                mouseEvent.stopPropagation();
-            }), _createElement), isNullOrEmpty(this.state.SelectedTrack) ? "Select Track ..." : this.state.SelectedTrack, createElement("span", {
-                className: "caret"
-            })), createElement.apply(undefined, ["ul", {
-                className: "dropdown-menu sub-menu",
-                style: {
-                    height: "200px",
-                    overflow: "Auto"
-                }
+            return createElement.apply(undefined, ["div", {
+                className: "list-group track-selection-list"
             }].concat(_toConsumableArray(map(function (t) {
-                return createElement("li", {}, createElement("div", {}, createElement("a", {
+                return createElement("button", {
+                    className: "list-group-item",
                     onClick: function onClick(arg00) {
                         _this6.onTrackSelected(arg00);
                     },
                     value: t.name
-                }, t.name), createElement("h6", {}, toString(t.mintimestamp)), createElement("h6", {}, toString(t.maxtimestamp))));
-            }, this.props.Tracks)))));
+                }, createElement("h4", {}, t.name), createElement("h6", {}, toString(t.mintimestamp)), createElement("h6", {}, toString(t.maxtimestamp)));
+            }, this.props.Tracks))));
         }
     }, {
         key: "render",
         value: function () {
-            var _createElement2,
-                _createElement3,
+            var _createElement,
+                _createElement2,
                 _this7 = this,
-                _createElement4;
+                _createElement3;
 
             return createElement("div", {
                 className: "masthead clearfix"
@@ -219,10 +204,10 @@ export var NavigationView = function (_Component) {
                 className: "container-fluid"
             }, createElement("div", {
                 className: "navbar-header"
-            }, createElement("button", (_createElement2 = {
+            }, createElement("button", (_createElement = {
                 type: "button",
                 className: "navbar-toggle collapsed"
-            }, _defineProperty(_createElement2, "data-toggle", "collapse"), _defineProperty(_createElement2, "data-target", "#bs-example-navbar-collapse-1"), _createElement2), createElement("span", {
+            }, _defineProperty(_createElement, "data-toggle", "collapse"), _defineProperty(_createElement, "data-target", "#bs-example-navbar-collapse-1"), _createElement), createElement("span", {
                 className: "sr-only"
             }), createElement("span", {
                 className: "icon-bar"
@@ -238,12 +223,12 @@ export var NavigationView = function (_Component) {
             }, createElement("li", {
                 role: "presentation",
                 className: "dropdown"
-            }, createElement("a", (_createElement3 = {
+            }, createElement("a", (_createElement2 = {
                 className: "dropdown-toggle"
-            }, _defineProperty(_createElement3, "data-toggle", "dropdown"), _defineProperty(_createElement3, "href", "#"), _defineProperty(_createElement3, "role", "button"), _defineProperty(_createElement3, "aria-haspopup", "true"), _defineProperty(_createElement3, "aria-expanded", "false"), _defineProperty(_createElement3, "onClick", function (e) {
+            }, _defineProperty(_createElement2, "data-toggle", "dropdown"), _defineProperty(_createElement2, "href", "#"), _defineProperty(_createElement2, "role", "button"), _defineProperty(_createElement2, "aria-haspopup", "true"), _defineProperty(_createElement2, "aria-expanded", "false"), _defineProperty(_createElement2, "onClick", function (e) {
                 e.stopPropagation();
                 e.preventDefault();
-            }), _createElement3), this.state.VisualizeRecordedTracks, createElement("span", {
+            }), _createElement2), this.state.VisualizeRecordedTracks, createElement("span", {
                 className: "caret"
             })), createElement("ul", {
                 className: "dropdown-menu"
@@ -261,9 +246,9 @@ export var NavigationView = function (_Component) {
             })))))), createElement("li", {
                 role: "presentation",
                 className: "dropdown"
-            }, createElement("a", (_createElement4 = {
+            }, createElement("a", (_createElement3 = {
                 className: "dropdown-toggle"
-            }, _defineProperty(_createElement4, "data-toggle", "dropdown"), _defineProperty(_createElement4, "href", "#"), _defineProperty(_createElement4, "role", "button"), _defineProperty(_createElement4, "aria-haspopup", "true"), _defineProperty(_createElement4, "aria-expanded", "false"), _createElement4), createElement("label", {}, "Observation")), createElement("ul", {
+            }, _defineProperty(_createElement3, "data-toggle", "dropdown"), _defineProperty(_createElement3, "href", "#"), _defineProperty(_createElement3, "role", "button"), _defineProperty(_createElement3, "aria-haspopup", "true"), _defineProperty(_createElement3, "aria-expanded", "false"), _createElement3), createElement("label", {}, "Observation")), createElement("ul", {
                 className: "dropdown-menu"
             }, createElement("li", {}, createElement("div", {}, createElement("div", {
                 className: "container-fluid"

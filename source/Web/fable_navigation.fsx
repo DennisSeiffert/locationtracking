@@ -86,7 +86,7 @@ type NavigationView(props) =
         this.props.onImportTrackingFiles(result :?> Browser.File[])
 
     member this.onTrackSelected(e: React.SyntheticEvent) =
-        let selectedTrackName = unbox e.target?text
+        let selectedTrackName = unbox e.currentTarget?value
         let selectedTrack = this.props.Tracks |> List.find (fun i -> i.name = selectedTrackName)        
         this.setState(
             { this.state with                
@@ -108,25 +108,22 @@ type NavigationView(props) =
     member this.onClearTrackingPoints(_) = 
         this.props.onClearTrackingPoints()
     member this.getTrackSelection() = 
-        R.div [ClassName "dropdown"][
-                R.a [ClassName "dropdown-toggle"; Href "#"; DataToggle "dropdown";
-                            OnClick (fun mouseEvent -> mouseEvent.preventDefault()
-                                                       mouseEvent.stopPropagation() |> ignore);                             
-                            ][
-                    unbox (if String.IsNullOrEmpty(this.state.SelectedTrack) then "Select Track ..." else this.state.SelectedTrack)
-                    R.span [ClassName "caret"][]
-                ]
-                R.ul [ClassName "dropdown-menu sub-menu"; Style [Height "200px"; Overflow "Auto"; ] ]                    
+        R.div [ClassName "list-group track-selection-list"]
+                // R.a [ClassName "list-group-item"; Href "#"; DataToggle "dropdown";
+                //             OnClick (fun mouseEvent -> mouseEvent.preventDefault()
+                //                                        mouseEvent.stopPropagation() |> ignore);                             
+                //             ][
+                //     unbox (if String.IsNullOrEmpty(this.state.SelectedTrack) then "Select Track ..." else this.state.SelectedTrack)
+                //     R.span [ClassName "caret"][]
+                // ]
+                // R.ul [ClassName "dropdown-menu sub-menu"; Style [Height "200px"; Overflow "Auto"; ] ]                    
                     (this.props.Tracks
-                    |> List.map (fun t -> R.li [] [ 
-                                                R.div [] [
-                                                    R.a [OnClick this.onTrackSelected; Value (U2.Case1 t.name)][unbox t.name]
+                    |> List.map (fun t -> R.button [ClassName "list-group-item"; OnClick this.onTrackSelected; Value (U2.Case1 t.name)][
+                                                    R.h4 [] [unbox t.name]
                                                     R.h6 [] [unbox(t.mintimestamp.ToString())]
-                                                    R.h6 [] [unbox(t.maxtimestamp.ToString())]                                                
-                                                
-                                                ]
-                                            ]))                
-        ]
+                                                    R.h6 [] [unbox(t.maxtimestamp.ToString())]                                                                                                
+                                                ]        
+                    ))                                
   
 
         // R.select [ 

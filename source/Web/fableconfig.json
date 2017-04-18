@@ -1,7 +1,7 @@
 {
     "projFile": "./fable_main.fsx",        
     "sourceMaps": true,
-    "plugins": ["node_modules/fable-plugins-nunit/Fable.Plugins.NUnit.dll"],
+    // "plugins": ["node_modules/fable-plugins-nunit/Fable.Plugins.NUnit.dll"],
     // "rollup": {
     //     "dest": "./bundle.js",
     //     "external": ["react", "react-dom", "redux"],
