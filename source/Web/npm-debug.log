@@ -1,0 +1,45 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/bin/node', '/usr/local/bin/npm', 'run', 'build' ]
+2 info using npm@4.0.5
+3 info using node@v7.4.0
+4 verbose run-script [ 'prebuild', 'build', 'postbuild' ]
+5 info lifecycle fabletests@1.0.0~prebuild: fabletests@1.0.0
+6 silly lifecycle fabletests@1.0.0~prebuild: no script for prebuild, continuing
+7 info lifecycle fabletests@1.0.0~build: fabletests@1.0.0
+8 verbose lifecycle fabletests@1.0.0~build: unsafe-perm in lifecycle true
+9 verbose lifecycle fabletests@1.0.0~build: PATH: /usr/local/lib/node_modules/npm/bin/node-gyp-bin:/commondata/Programming/Repositories/LocationTracker/source/Web/node_modules/.bin:/home/dennis/.dnx/runtimes/dnx-mono.1.0.0-rc1-update1/bin:/home/dennis/.dnx/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/dennis/bin:/usr/local/java/jdk1.7.0_51/bin:/home/dennis/bin:/usr/local/java/jre1.7.0_51/bin:/usr/local/go/bin:/snap/bin:/home/dennis/bin:/usr/local/java/jdk1.7.0_51/bin:/home/dennis/bin:/usr/local/java/jre1.7.0_51/bin:/usr/local/go/bin:/usr/local/cuda-7.5/lib64:/usr/local/cuda-7.5/extras/CUPTI/lib64:/usr/local/lib:/usr/local/cuda-7.5/lib64:/usr/local/cuda-7.5/extras/CUPTI/lib64:/usr/local/lib
+10 verbose lifecycle fabletests@1.0.0~build: CWD: /commondata/Programming/Repositories/LocationTracker/source/Web
+11 silly lifecycle fabletests@1.0.0~build: Args: [ '-c', 'node ./node_modules/fable-compiler' ]
+12 silly lifecycle fabletests@1.0.0~build: Returned: code: 1  signal: null
+13 info lifecycle fabletests@1.0.0~build: Failed to exec build script
+14 verbose stack Error: fabletests@1.0.0 build: `node ./node_modules/fable-compiler`
+14 verbose stack Exit status 1
+14 verbose stack     at EventEmitter.<anonymous> (/usr/local/lib/node_modules/npm/lib/utils/lifecycle.js:279:16)
+14 verbose stack     at emitTwo (events.js:106:13)
+14 verbose stack     at EventEmitter.emit (events.js:191:7)
+14 verbose stack     at ChildProcess.<anonymous> (/usr/local/lib/node_modules/npm/lib/utils/spawn.js:40:14)
+14 verbose stack     at emitTwo (events.js:106:13)
+14 verbose stack     at ChildProcess.emit (events.js:191:7)
+14 verbose stack     at maybeClose (internal/child_process.js:885:16)
+14 verbose stack     at Process.ChildProcess._handle.onexit (internal/child_process.js:226:5)
+15 verbose pkgid fabletests@1.0.0
+16 verbose cwd /commondata/Programming/Repositories/LocationTracker/source/Web
+17 error Linux 4.4.0-72-generic
+18 error argv "/usr/local/bin/node" "/usr/local/bin/npm" "run" "build"
+19 error node v7.4.0
+20 error npm  v4.0.5
+21 error code ELIFECYCLE
+22 error fabletests@1.0.0 build: `node ./node_modules/fable-compiler`
+22 error Exit status 1
+23 error Failed at the fabletests@1.0.0 build script 'node ./node_modules/fable-compiler'.
+23 error Make sure you have the latest version of node.js and npm installed.
+23 error If you do, this is most likely a problem with the fabletests package,
+23 error not with npm itself.
+23 error Tell the author that this fails on your system:
+23 error     node ./node_modules/fable-compiler
+23 error You can get information on how to open an issue for this project with:
+23 error     npm bugs fabletests
+23 error Or if that isn't available, you can get their info via:
+23 error     npm owner ls fabletests
+23 error There is likely additional logging output above.
+24 verbose exit [ 1, true ]

@@ -18,7 +18,8 @@ open Fable_map
 open Fable_elevation
 #load "fable_toastNotifications.fsx"
 open Fable_toastNotifications
-
+#load "fable_domainModelTests.fsx"
+open Fable_domainModelTests
 
 
 open Fable.Core

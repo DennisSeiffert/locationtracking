@@ -81,7 +81,7 @@ type TrackVisualization(name : string, points : TrackingPoint List) =
         points
         |> List.mapi (fun i p ->
                         match i with
-                        | 0 -> {p with speed = 0.0; distanceCovered = 0.0; index = i }
+                        | 0 -> {p with speed = 0.0; distanceCovered = 0.0; }
                         | _ ->  
                             let distanceBetween = distance points.[i - 1].latitude points.[i - 1].longitude p.latitude p.longitude
                             let timespan = p.timestamputc - points.[i - 1].timestamputc
@@ -93,8 +93,7 @@ type TrackVisualization(name : string, points : TrackingPoint List) =
                             {p with
                                 speed = speed
                                 distance = distanceBetween
-                                distanceCovered = totalDistance
-                                index = i
+                                distanceCovered = totalDistance                                
                             }
                        )                             
      

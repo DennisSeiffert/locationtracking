@@ -124,7 +124,7 @@ let loadTrackingPoints (start, ``end``,  trackName) (dispatch : ReactRedux.Dispa
                                                                                                 elevation = 0.0
                                                                                                 distance = 0.0
                                                                                                 distanceCovered = 0.0
-                                                                                                index = 0
+                                                                                                index = (box t?index) :?> int
                                                                                             })        
             dispatch (Commands.ReceivedTrack(trackName, trackingPoints))
 

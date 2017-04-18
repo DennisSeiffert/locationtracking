@@ -214,7 +214,7 @@ export function loadTrackingPoints(start, end, trackName, dispatch) {
                             var speed = 0;
                             var elevation = 0;
                             var distance = 0;
-                            return new TrackingPoint(latitude, longitude, timestamputc, speed, 0, distance, 0, elevation);
+                            return new TrackingPoint(latitude, longitude, timestamputc, speed, 0, distance, t.index, elevation);
                         }, _arg2.trackingpoints));
 
                         (function (arg00) {
@@ -305,12 +305,12 @@ export function parseTrackingPointsFromGpx(filenames, dispatch) {
     }(PromiseImpl.promise).then(function () {});
 }
 export function loadLocalStorage(key) {
-    return defaultArg(localStorage.getItem(key), null, function ($var1) {
+    return defaultArg(localStorage.getItem(key), null, function ($var6) {
         return function (value) {
             return value;
         }(function (arg00) {
             return JSON.parse(arg00);
-        }($var1));
+        }($var6));
     });
 }
 export function saveToLocalStorage(key, data) {

@@ -263,7 +263,7 @@ export var TrackVisualization = function () {
                 if (i === 0) {
                     var speed = 0;
                     var distanceCovered = 0;
-                    return new TrackingPoint(p.latitude, p.longitude, p.timestamputc, speed, distanceCovered, p.distance, i, p.elevation);
+                    return new TrackingPoint(p.latitude, p.longitude, p.timestamputc, speed, distanceCovered, p.distance, p.index, p.elevation);
                 } else {
                     var distanceBetween = distance(item(i - 1, points).latitude, item(i - 1, points).longitude, p.latitude, p.longitude);
                     var timespan = op_Subtraction(p.timestamputc, item(i - 1, points).timestamputc);
@@ -271,7 +271,7 @@ export var TrackVisualization = function () {
                     var _speed = compare(timespan, 0) > 0 ? distanceBetween / (timespan / 1000) : 0;
 
                     totalDistance = totalDistance + distanceBetween;
-                    return new TrackingPoint(p.latitude, p.longitude, p.timestamputc, _speed, totalDistance, distanceBetween, i, p.elevation);
+                    return new TrackingPoint(p.latitude, p.longitude, p.timestamputc, _speed, totalDistance, distanceBetween, p.index, p.elevation);
                 }
             }, points);
         }
