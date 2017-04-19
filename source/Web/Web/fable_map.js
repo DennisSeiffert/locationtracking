@@ -138,7 +138,6 @@ export var MapView = function (_Component) {
 
             if (matchValue != null) {
                 this.showTrack();
-                this.showMarkers();
             } else {}
         }
     }, {

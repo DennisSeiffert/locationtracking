@@ -82,7 +82,7 @@ type MapView(props) =
         match this.state.map with    
             | Some map -> 
                     this.showTrack()
-                    this.showMarkers()
+                    //this.showMarkers()
             | _ -> ignore() 
 
     member this.componentWillReceiveProps(nextProps : MapViewModel) = 

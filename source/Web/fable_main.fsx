@@ -149,47 +149,53 @@ let onPositionChanged identifier latitude longitude timestamputc =
     store.Value.dispatch(Commands.ObservationPositionUpdated(identifier, latitude, longitude, timestamputc))    
 
 let start() = 
-    let initialStoreState = 
-            {
-                TrackingService= new TrackingService(new Backend.LocationService(Browser.window.location.origin), onPositionChanged); 
-                Visualization=new TrackVisualization(name=String.Empty, points = TrackVisualization.calculate [{
-                                                                                    latitude = 8.9
-                                                                                    longitude = 5.9
-                                                                                    timestamputc = DateTime.Now
-                                                                                    speed = 34.9
-                                                                                    distanceCovered = 0.0
-                                                                                    distance = 32300.9
-                                                                                    index = 0
-                                                                                    elevation = 320.3
-                                                                                };
-                                                                                {
-                                                                                    latitude = 9.9
-                                                                                    longitude = 5.9
-                                                                                    timestamputc = DateTime.Now
-                                                                                    speed = 34.9
-                                                                                    distanceCovered = 0.0
-                                                                                    distance = 32300.9
-                                                                                    index = 1
-                                                                                    elevation = 32.3
-                                                                                }]);
-                Tracks=[
-                        {                        
-                            mintimestamp=DateTime.Now;
-                            maxtimestamp=DateTime.Now.AddDays(1.0);
-                            name="first Track"
-                        };
-                        {
-                            mintimestamp=DateTime.Now;
-                            maxtimestamp=DateTime.Now.AddDays(2.0);
-                            name="second Track"
-                        }
-                       ];
-                Error = None
-                Info = None
-            }
-    initialStoreState.Visualization.AssignElevationPoints [| {index = 0; elevation = 0.0;};|]        
+    let initialStoreState = None // Backend.loadLocationTracker
+
+    let storeState = match initialStoreState with
+                        | Some x -> { x with 
+                                        TrackingService= new TrackingService(new Backend.LocationService(Browser.window.location.origin), onPositionChanged); 
+                                        Visualization=new TrackVisualization(name=x.Visualization.TrackName, points = x.Visualization.Points); 
+                                    }
+                        | None -> {
+                                    TrackingService= new TrackingService(new Backend.LocationService(Browser.window.location.origin), onPositionChanged); 
+                                    Visualization=new TrackVisualization(name=String.Empty, points = TrackVisualization.calculate [{
+                                                                                                        latitude = 8.9
+                                                                                                        longitude = 5.9
+                                                                                                        timestamputc = DateTime.Now
+                                                                                                        speed = 34.9
+                                                                                                        distanceCovered = 0.0
+                                                                                                        distance = 32300.9
+                                                                                                        index = 0
+                                                                                                        elevation = 320.3
+                                                                                                    };
+                                                                                                    {
+                                                                                                        latitude = 9.9
+                                                                                                        longitude = 5.9
+                                                                                                        timestamputc = DateTime.Now
+                                                                                                        speed = 34.9
+                                                                                                        distanceCovered = 0.0
+                                                                                                        distance = 32300.9
+                                                                                                        index = 1
+                                                                                                        elevation = 32.3
+                                                                                                    }]);
+                                    Tracks=[
+                                            {                        
+                                                mintimestamp=DateTime.Now;
+                                                maxtimestamp=DateTime.Now.AddDays(1.0);
+                                                name="first Track"
+                                            };
+                                            {
+                                                mintimestamp=DateTime.Now;
+                                                maxtimestamp=DateTime.Now.AddDays(2.0);
+                                                name="second Track"
+                                            }
+                                           ];
+                                    Error = None
+                                    Info = None
+                                }                   
+    storeState.Visualization.AssignElevationPoints [| {index = 0; elevation = 0.0;};|]        
     let middleware = Redux.applyMiddleware ReduxThunk.middleware
-    store <- Some (createStore reducerWithLocalStorage initialStoreState (Some middleware))
+    store <- Some (createStore reducerWithLocalStorage storeState (Some middleware))
     let provider = createProvider store.Value (R.fn createApp (obj()) [])
     ReactDom.render(provider, Browser.document.getElementsByClassName("main").[0]) |> ignore        
     //registerBroadcastReceiver(store.dispatch)

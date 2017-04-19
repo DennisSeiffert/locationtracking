@@ -179,11 +179,11 @@ let loadLocalStorage<'T> key =
         |> Option.map (JS.JSON.parse >> unbox<'T>)
 let saveToLocalStorage key (data: 'T) =
         Browser.localStorage.setItem(key, JS.JSON.stringify data)
-let loadLocationTracker key = 
-    loadLocalStorage<LocationTracker> key
+let loadLocationTracker = 
+    loadLocalStorage<LocationTracker> "DomainModel"
 
 let saveLocationTracker locationTracker =     
-       saveToLocalStorage locationTracker.Visualization.TrackName locationTracker
+       saveToLocalStorage "DomainModel" locationTracker
 
 
 [<Emit("new Parse.Query('Posts')")>]

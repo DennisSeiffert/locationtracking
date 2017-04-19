@@ -309,22 +309,20 @@ export function parseTrackingPointsFromGpx(filenames, dispatch) {
     }(PromiseImpl.promise).then(function () {});
 }
 export function loadLocalStorage(key) {
-    return defaultArg(localStorage.getItem(key), null, function ($var35) {
+    return defaultArg(localStorage.getItem(key), null, function ($var36) {
         return function (value) {
             return value;
         }(function (arg00) {
             return JSON.parse(arg00);
-        }($var35));
+        }($var36));
     });
 }
 export function saveToLocalStorage(key, data) {
     localStorage.setItem(key, JSON.stringify(data));
 }
-export function loadLocationTracker(key) {
-    return loadLocalStorage(key);
-}
+export var loadLocationTracker = loadLocalStorage("DomainModel");
 export function saveLocationTracker(locationTracker) {
-    saveToLocalStorage(locationTracker.Visualization.TrackName, locationTracker);
+    saveToLocalStorage("DomainModel", locationTracker);
 }
 export var Parse = parse_latest_js;
 export var LocationService = function () {

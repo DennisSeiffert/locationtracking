@@ -36,9 +36,6 @@ type [<Pojo>] MainViewProps = {
 type ToastNotifications(props) = 
     inherit React.Component<MainViewProps, obj>(props)
 
-    // member this.componentDidUpdate prevProps prevState =                 
-    //     this.render()
-
     member this.render () = 
         if this.props.Error <> None then
             postNotification this.props.Error.Value
