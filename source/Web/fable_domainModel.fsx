@@ -2,10 +2,10 @@ open System
 
 type TrackingJob = {
     identifier : string;    
-    mutable subscription : obj;
+    mutable subscription : obj option;
     latitude : double;
     longitude : double;
-    utcTimestamp : DateTime;         
+    utcTimestamp : DateTime;             
 }
 
 type ILocationQuery =
@@ -99,47 +99,61 @@ type TrackVisualization(name : string, points : TrackingPoint List) =
      
 
 
-type TrackingService(locationQuery : ILocationQuery) = 
+type TrackingService(locationQuery : ILocationQuery, onPositionChanged) = 
     member this.LocationQuery : ILocationQuery = locationQuery
+    member this.OnPositionChanged : string -> double -> double -> DateTime -> unit = onPositionChanged
 
     member val ownTrackingJob = {            
             identifier = String.Empty;            
-            subscription = String.Empty;
+            subscription = None;
             latitude = 0.0;
             longitude = 0.0;
-            utcTimestamp = DateTime.UtcNow;                        
+            utcTimestamp = DateTime.UtcNow;                
             }
     member val observedTrackingJobs : TrackingJob List = List.Empty with get, set    
     
     member this.CreateTrackingJob name latitude longitude =
         {            
             identifier = name;            
-            subscription = String.Empty;
+            subscription = None;
             latitude = latitude;
             longitude = longitude;
-            utcTimestamp = DateTime.UtcNow;                           
+            utcTimestamp = DateTime.UtcNow;            
         }
     
-    member this.AddTrackingJob job =                                    
-        if not(this.ContainsTrackingJob(job.identifier)) then
-            this.LocationQuery.Subscribe job this.OnPositionChanged
-            this.observedTrackingJobs <- this.observedTrackingJobs @ [job]    
-        ignore
+    member this.Track identifier =                                    
+        let job = if not(this.ContainsTrackingJob(identifier)) then 
+                    let newJob = this.CreateTrackingJob identifier 0.0 0.0           
+                    this.observedTrackingJobs <- this.observedTrackingJobs @ [newJob]       
+                    newJob
+                  else
+                    this.observedTrackingJobs.[this.IndexOf identifier]
+        if job.subscription.IsNone then                 
+            this.LocationQuery.Subscribe job (fun identifier latitude longitude timestamputc ->
+                                                     this.UpdateCoordinates identifier latitude longitude timestamputc
+                                                     this.OnPositionChanged identifier latitude longitude timestamputc
+                                                     )
 
-    member this.OnPositionChanged name latitude longitude timestamputc = 
+    member this.UpdateCoordinates name latitude longitude timestamputc =     
         this.observedTrackingJobs <- this.observedTrackingJobs |> List.map (fun i -> 
                                                                     if i.identifier = name then 
                                                                         {i with 
                                                                             latitude = latitude
                                                                             longitude = longitude
                                                                             utcTimestamp = timestamputc}
-                                                                    else i)        
+                                                                    else i)                                                                      
         ignore()
 
     member this.IndexOf name = 
         List.findIndex (fun j -> j.identifier = name) this.observedTrackingJobs
 
+    member this.ReleaseTrack identifier =
+        let job = this.observedTrackingJobs.[this.IndexOf identifier]
+        this.LocationQuery.UnSubscribe(job)
+        job.subscription <- None
+
     member this.DeleteTrackingJob(job) =
+        this.LocationQuery.UnSubscribe(job)
         this.observedTrackingJobs <- List.where (fun j -> j <> job) this.observedTrackingJobs    
     
     member this.ContainsTrackingJob(name) =
@@ -152,6 +166,7 @@ type LocationTracker = {
     Visualization : TrackVisualization
     Tracks : Track List
     Error : string option
+    Info : string option
 }
     
     

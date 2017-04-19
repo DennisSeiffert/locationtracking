@@ -11,7 +11,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 import jquery from "jquery";
-import { join } from "fable-core/String";
+import { format, join } from "fable-core/String";
 import { Any, extendInfo, toString } from "fable-core/Util";
 import { createElement, Component } from "react";
 import { setType } from "fable-core/Symbol";
@@ -170,6 +170,22 @@ export var NavigationView = function (_Component) {
             this.props.onObserve(this.state.observationIdentifier);
         }
     }, {
+        key: "onObservationChecked",
+        value: function (e) {
+            var selectedIdentifier = toString(e.target.value);
+            var trackingJob = find(function (o) {
+                return o.identifier === selectedIdentifier;
+            }, this.props.Observed);
+
+            if (function () {
+                return trackingJob.subscription == null;
+            }(null)) {
+                this.props.onObserve(selectedIdentifier);
+            } else {
+                this.props.onUnobserve(selectedIdentifier);
+            }
+        }
+    }, {
         key: "onLoadTrackingPoints",
         value: function (_arg4) {
             this.props.onLoadTrackingPoints([this.state.beginDateTimeLocal, this.state.endDateTimeLocal, this.state.SelectedTrack]);
@@ -197,11 +213,33 @@ export var NavigationView = function (_Component) {
             }, this.props.Tracks))));
         }
     }, {
+        key: "getObservedList",
+        value: function () {
+            var _this7 = this;
+
+            return createElement.apply(undefined, ["div", {
+                className: "list-group observed-list"
+            }].concat(_toConsumableArray(map(function (t) {
+                return createElement("div", {
+                    className: "list-group-item"
+                }, createElement("h4", {}, t.identifier), createElement("input", {
+                    type: "checkbox",
+                    onChange: function onChange(arg00) {
+                        _this7.onObservationChecked(arg00);
+                    },
+                    value: t.identifier,
+                    checked: function () {
+                        return t.subscription != null;
+                    }(null)
+                }), createElement("span", {}, "observation active"), createElement("label", {}, "last updated at:" + toString(t.utcTimestamp)), createElement("label", {}, format("last known position: ({0},{1})", t.latitude, t.longitude)));
+            }, this.props.Observed))));
+        }
+    }, {
         key: "render",
         value: function () {
             var _createElement,
                 _createElement2,
-                _this7 = this,
+                _this8 = this,
                 _createElement3;
 
             return createElement("div", {
@@ -251,7 +289,7 @@ export var NavigationView = function (_Component) {
             }, createElement("input", {
                 type: "file",
                 onChange: function onChange(arg00) {
-                    _this7.onSelectTrackingFiles(arg00);
+                    _this8.onSelectTrackingFiles(arg00);
                 }
             })))))), createElement("li", {
                 role: "presentation",
@@ -259,22 +297,27 @@ export var NavigationView = function (_Component) {
             }, createElement("a", (_createElement3 = {
                 className: "dropdown-toggle"
             }, _defineProperty(_createElement3, "data-toggle", "dropdown"), _defineProperty(_createElement3, "href", "#"), _defineProperty(_createElement3, "role", "button"), _defineProperty(_createElement3, "aria-haspopup", "true"), _defineProperty(_createElement3, "aria-expanded", "false"), _createElement3), createElement("label", {}, "Observation")), createElement("ul", {
-                className: "dropdown-menu"
+                className: "dropdown-menu",
+                style: {
+                    minWidth: "250px"
+                }
             }, createElement("li", {}, createElement("div", {}, createElement("div", {
                 className: "container-fluid"
             }, createElement("div", {
                 className: "row"
-            }, createElement("label", {}, "observe by identifer:"), createElement("input", {
+            }, this.getObservedList()), createElement("div", {
+                className: "row"
+            }, createElement("label", {}, "observe by identifier:"), createElement("input", {
                 type: "text",
                 value: this.state.observationIdentifier,
                 onChange: function onChange(arg00) {
-                    _this7.onObservationIdentifierChanged(arg00);
+                    _this8.onObservationIdentifierChanged(arg00);
                 }
             })), createElement("div", {
                 className: "row"
             }, createElement("button", {
                 onClick: function onClick(arg00) {
-                    _this7.onObserve(arg00);
+                    _this8.onObserve(arg00);
                 }
             }, "Observe")))))))))))));
         }
@@ -285,6 +328,7 @@ export var NavigationView = function (_Component) {
 setType("Fable_navigation.NavigationView", NavigationView);
 
 function mapStateToProps(state, ownprops) {
+    var Observed = state.TrackingService.observedTrackingJobs;
     return {
         onLoadTracks: ownprops.onLoadTracks,
         onBeginTracking: ownprops.onBeginTracking,
@@ -292,8 +336,10 @@ function mapStateToProps(state, ownprops) {
         onLoadTrackingPoints: ownprops.onLoadTrackingPoints,
         onClearTrackingPoints: ownprops.onClearTrackingPoints,
         onObserve: ownprops.onObserve,
+        onUnobserve: ownprops.onUnobserve,
         onImportTrackingFiles: ownprops.onImportTrackingFiles,
-        Tracks: state.Tracks
+        Tracks: state.Tracks,
+        Observed: Observed
     };
 }
 
@@ -330,6 +376,15 @@ function mapDispatchToProps(dispatch, ownprops) {
         });
     };
 
+    var onUnobserve = function onUnobserve(observationIdentifier) {
+        (function (arg00) {
+            dispatch(arg00);
+        })({
+            type: "Unobserve",
+            Item: observationIdentifier
+        });
+    };
+
     var onImportTrackingFiles = function onImportTrackingFiles(filenames) {
         dispatch(asThunk(function (dispatch_1) {
             return parseTrackingPointsFromGpx(filenames, dispatch_1);
@@ -343,8 +398,10 @@ function mapDispatchToProps(dispatch, ownprops) {
         onLoadTrackingPoints: onLoadTrackingPoints,
         onClearTrackingPoints: onClearTrackingPoints,
         onObserve: onObserve,
+        onUnobserve: onUnobserve,
         onImportTrackingFiles: onImportTrackingFiles,
-        Tracks: ownprops.Tracks
+        Tracks: ownprops.Tracks,
+        Observed: ownprops.Observed
     };
 }
 
@@ -357,8 +414,10 @@ function setDefaultProps(ownprops) {
         onLoadTrackingPoints: ownprops.onLoadTrackingPoints,
         onClearTrackingPoints: ownprops.onClearTrackingPoints,
         onObserve: ownprops.onObserve,
+        onUnobserve: ownprops.onUnobserve,
         onImportTrackingFiles: ownprops.onImportTrackingFiles,
-        Tracks: Tracks
+        Tracks: Tracks,
+        Observed: ownprops.Observed
     };
 }
 

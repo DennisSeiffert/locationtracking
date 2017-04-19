@@ -80,20 +80,26 @@ type MapView(props) =
 
     member this.componentDidUpdate(prevState, actualState) =
         match this.state.map with    
-            | Some map -> this.showTrack()
+            | Some map -> 
+                    this.showTrack()
+                    this.showMarkers()
             | _ -> ignore() 
 
     member this.componentWillReceiveProps(nextProps : MapViewModel) = 
         if this.state.map <> None then 
-            let markers = nextProps.ObservedTrackingJobs |> List.map (fun i ->
-                                                                this.state.map?panTo(LatLng i.latitude i.longitude) |> ignore
+            let markers = nextProps.ObservedTrackingJobs |> List.map (fun i ->                                                                
                                                                 match List.tryFind (fun e -> string e?identifier = i.identifier) this.state.markers with
-                                                                    | Some marker -> 
-                                                                        marker?setPosition(LatLng i.latitude i.longitude) |> ignore
-                                                                        marker
-                                                                    | None -> GoogleMarker(i.latitude, i.longitude, this.state.map, i.identifier))
+                                                                            | Some marker -> 
+                                                                                marker?setPosition(LatLng i.latitude i.longitude) |> ignore                                                                        
+                                                                                marker
+                                                                            | None -> GoogleMarker(i.latitude, i.longitude, this.state.map, i.identifier)                                                                
+                                                                )
             this.setState({ this.state with needsAnUpdate = true; markers = markers })
 
+    member this.showMarkers() = 
+        if this.state.needsAnUpdate && not(List.isEmpty this.state.markers) then
+            let firstmarker = this.state.markers.[0]
+            this.state.map?panTo(firstmarker?position) |> ignore
     member this.showTrack() =     
         if this.state.needsAnUpdate && not(List.isEmpty this.props.Track) then
             if this.state.polyLineOfTrack <> None then

@@ -35,15 +35,14 @@ export var ToastNotifications = function (_Component) {
     }
 
     _createClass(ToastNotifications, [{
-        key: "componentDidUpdate",
-        value: function (prevProps, prevState) {
-            return this.render();
-        }
-    }, {
         key: "render",
         value: function () {
             if (!equals(this.props.Error, null)) {
                 jQuery.notify(this.props.Error);
+            }
+
+            if (!equals(this.props.Info, null)) {
+                jQuery.notify(this.props.Info);
             }
 
             return createElement("div", {
@@ -59,7 +58,8 @@ setType("Fable_toastNotifications.ToastNotifications", ToastNotifications);
 
 function mapStateToProps(state, ownprops) {
     return {
-        Error: state.Error
+        Error: state.Error,
+        Info: state.Info
     };
 }
 

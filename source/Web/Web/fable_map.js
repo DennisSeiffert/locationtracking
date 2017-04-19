@@ -12,7 +12,7 @@ import { Any, toString, equals, Interface, extendInfo, compareRecords, equalsRec
 import { createElement, Component } from "react";
 import { reverse, map as map_1 } from "fable-core/List";
 import List from "fable-core/List";
-import { tryFind } from "fable-core/Seq";
+import { item, tryFind } from "fable-core/Seq";
 import { createConnector, withStateMapper, withProps, buildComponent } from "fable-reactredux/Fable.Helpers.ReactRedux";
 import { LocationTracker } from "./fable_domainModel";
 export var GeoOptions = function () {
@@ -138,6 +138,7 @@ export var MapView = function (_Component) {
 
             if (matchValue != null) {
                 this.showTrack();
+                this.showMarkers();
             } else {}
         }
     }, {
@@ -147,9 +148,6 @@ export var MapView = function (_Component) {
 
             if (!equals(this.state.map, null)) {
                 var markers = map_1(function (i) {
-                    {
-                        _this2.state.map.panTo(new google.maps.LatLng(i.latitude, i.longitude));
-                    }
                     var matchValue = tryFind(function (e) {
                         return toString(e.identifier) === i.identifier;
                     }, _this2.state.markers);
@@ -175,6 +173,14 @@ export var MapView = function (_Component) {
                         markers: markers
                     };
                 }());
+            }
+        }
+    }, {
+        key: "showMarkers",
+        value: function () {
+            if (this.state.needsAnUpdate ? !(this.state.markers.tail == null) : false) {
+                var firstmarker = item(0, this.state.markers);
+                this.state.map.panTo(firstmarker.position);
             }
         }
     }, {

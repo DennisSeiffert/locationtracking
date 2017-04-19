@@ -4,7 +4,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 import { setType } from "fable-core/Symbol";
 import _Symbol from "fable-core/Symbol";
-import { Option, Interface, compare, makeGeneric, Array as _Array, compareRecords, equalsRecords, Any } from "fable-core/Util";
+import { Interface, compare, makeGeneric, Array as _Array, compareRecords, equalsRecords, Any, Option } from "fable-core/Util";
 import { where, map, ofArray, append, mapIndexed } from "fable-core/List";
 import List from "fable-core/List";
 import { exists, findIndex, tryFindIndex, item } from "fable-core/Seq";
@@ -28,7 +28,7 @@ export var TrackingJob = function () {
                 interfaces: ["FSharpRecord", "System.IEquatable"],
                 properties: {
                     identifier: "string",
-                    subscription: Any,
+                    subscription: Option(Any),
                     latitude: "number",
                     longitude: "number",
                     utcTimestamp: Date
@@ -288,6 +288,7 @@ export var TrackingService = function () {
                 type: "Fable_domainModel.TrackingService",
                 properties: {
                     LocationQuery: Interface("Fable_domainModel.ILocationQuery"),
+                    OnPositionChanged: "function",
                     observedTrackingJobs: makeGeneric(List, {
                         T: TrackingJob
                     }),
@@ -297,25 +298,41 @@ export var TrackingService = function () {
         }
     }]);
 
-    function TrackingService(locationQuery) {
+    function TrackingService(locationQuery, onPositionChanged) {
         _classCallCheck(this, TrackingService);
 
         this.locationQuery = locationQuery;
-        this["ownTrackingJob@"] = new TrackingJob("", "", 0, 0, utcNow());
+        this.onPositionChanged = onPositionChanged;
+        this["ownTrackingJob@"] = new TrackingJob("", null, 0, 0, utcNow());
         this["observedTrackingJobs@"] = new List();
     }
 
     _createClass(TrackingService, [{
         key: "CreateTrackingJob",
         value: function (name, latitude, longitude) {
-            return new TrackingJob(name, "", latitude, longitude, utcNow());
+            return new TrackingJob(name, null, latitude, longitude, utcNow());
         }
     }, {
-        key: "AddTrackingJob",
-        value: function (job) {
+        key: "Track",
+        value: function (identifier) {
             var _this = this;
 
-            if (!this.ContainsTrackingJob(job.identifier)) {
+            var job = !this.ContainsTrackingJob(identifier) ? function () {
+                var newJob = function (arg00) {
+                    return function (arg10) {
+                        return function (arg20) {
+                            return _this.CreateTrackingJob(arg00, arg10, arg20);
+                        };
+                    };
+                }(identifier)(0)(0);
+
+                _this.observedTrackingJobs = append(_this.observedTrackingJobs, ofArray([newJob]));
+                return newJob;
+            }() : item(this.IndexOf(identifier), this.observedTrackingJobs);
+
+            if (function () {
+                return job.subscription == null;
+            }(null)) {
                 (function () {
                     var objectArg = _this.LocationQuery;
                     return function (arg00) {
@@ -323,24 +340,29 @@ export var TrackingService = function () {
                             objectArg.Subscribe(arg00, arg10);
                         };
                     };
-                })()(job)(function (arg00) {
-                    return function (arg10) {
-                        return function (arg20) {
-                            return function (arg30) {
-                                _this.OnPositionChanged(arg00, arg10, arg20, arg30);
+                })()(job)(function (identifier_1) {
+                    return function (latitude) {
+                        return function (longitude) {
+                            return function (timestamputc) {
+                                (function (arg00) {
+                                    return function (arg10) {
+                                        return function (arg20) {
+                                            return function (arg30) {
+                                                _this.UpdateCoordinates(arg00, arg10, arg20, arg30);
+                                            };
+                                        };
+                                    };
+                                })(identifier_1)(latitude)(longitude)(timestamputc);
+
+                                _this.OnPositionChanged(identifier_1)(latitude)(longitude)(timestamputc);
                             };
                         };
                     };
                 });
-                this.observedTrackingJobs = append(this.observedTrackingJobs, ofArray([job]));
             }
-
-            return function (value) {
-                value;
-            };
         }
     }, {
-        key: "OnPositionChanged",
+        key: "UpdateCoordinates",
         value: function (name, latitude, longitude, timestamputc) {
             this.observedTrackingJobs = map(function (i) {
                 if (i.identifier === name) {
@@ -358,8 +380,16 @@ export var TrackingService = function () {
             }, this.observedTrackingJobs);
         }
     }, {
+        key: "ReleaseTrack",
+        value: function (identifier) {
+            var job = item(this.IndexOf(identifier), this.observedTrackingJobs);
+            this.LocationQuery.UnSubscribe(job);
+            job.subscription = null;
+        }
+    }, {
         key: "DeleteTrackingJob",
         value: function (job) {
+            this.LocationQuery.UnSubscribe(job);
             this.observedTrackingJobs = where(function (j) {
                 return !j.Equals(job);
             }, this.observedTrackingJobs);
@@ -375,6 +405,11 @@ export var TrackingService = function () {
         key: "LocationQuery",
         get: function () {
             return this.locationQuery;
+        }
+    }, {
+        key: "OnPositionChanged",
+        get: function () {
+            return this.onPositionChanged;
         }
     }, {
         key: "ownTrackingJob",
@@ -395,13 +430,14 @@ export var TrackingService = function () {
 }();
 setType("Fable_domainModel.TrackingService", TrackingService);
 export var LocationTracker = function () {
-    function LocationTracker(trackingService, visualization, tracks, error) {
+    function LocationTracker(trackingService, visualization, tracks, error, info) {
         _classCallCheck(this, LocationTracker);
 
         this.TrackingService = trackingService;
         this.Visualization = visualization;
         this.Tracks = tracks;
         this.Error = error;
+        this.Info = info;
     }
 
     _createClass(LocationTracker, [{
@@ -416,7 +452,8 @@ export var LocationTracker = function () {
                     Tracks: makeGeneric(List, {
                         T: Track
                     }),
-                    Error: Option("string")
+                    Error: Option("string"),
+                    Info: Option("string")
                 }
             };
         }

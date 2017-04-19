@@ -38,9 +38,11 @@ type [<Pojo>] ModelViewProps = {
     onStopTracking : string -> unit
     onLoadTrackingPoints : DateTime * DateTime * string -> unit
     onClearTrackingPoints : unit -> unit  
-    onObserve : string -> unit
+    onObserve : string -> unit    
+    onUnobserve : string -> unit  
     onImportTrackingFiles : Browser.File[] -> unit   
     Tracks : Track List
+    Observed : TrackingJob List
 }
 
 [<KeyValueList>]
@@ -111,39 +113,44 @@ type NavigationView(props) =
     member this.onObserve(e: React.SyntheticEvent) = 
         this.props.onObserve this.state.observationIdentifier
 
+    member this.onObservationChecked(e: React.SyntheticEvent) = 
+        let selectedIdentifier = string (e.target?value)
+        let trackingJob = List.find (fun o -> o.identifier = selectedIdentifier) this.props.Observed
+        if trackingJob.subscription.IsNone then 
+            this.props.onObserve selectedIdentifier
+        else
+            this.props.onUnobserve selectedIdentifier
+        
     member this.onLoadTrackingPoints(_) =
         this.props.onLoadTrackingPoints(this.state.beginDateTimeLocal, this.state.endDateTimeLocal, this.state.SelectedTrack)
 
     member this.onClearTrackingPoints(_) = 
         this.props.onClearTrackingPoints()
     member this.getTrackSelection() = 
-        R.div [ClassName "list-group track-selection-list"]
-                // R.a [ClassName "list-group-item"; Href "#"; DataToggle "dropdown";
-                //             OnClick (fun mouseEvent -> mouseEvent.preventDefault()
-                //                                        mouseEvent.stopPropagation() |> ignore);                             
-                //             ][
-                //     unbox (if String.IsNullOrEmpty(this.state.SelectedTrack) then "Select Track ..." else this.state.SelectedTrack)
-                //     R.span [ClassName "caret"][]
-                // ]
-                // R.ul [ClassName "dropdown-menu sub-menu"; Style [Height "200px"; Overflow "Auto"; ] ]                    
+        R.div [ClassName "list-group track-selection-list"]               
                     (this.props.Tracks
                     |> List.map (fun t -> R.button [ClassName "list-group-item"; OnClick this.onTrackSelected; Value (U2.Case1 (buildUniqueIdentifier t))][
                                                     R.h4 [] [unbox t.name]
                                                     R.h6 [] [unbox(t.mintimestamp.ToString())]
                                                     R.h6 [] [unbox(t.maxtimestamp.ToString())]                                                                                                
                                                 ]        
-                    ))                                
-  
+                    ))        
 
-        // R.select [ 
-        //             Id "trackSelection"                                                           
-        //             Value (U2.Case1 this.state.SelectedTrack)
-        //             OnClick (fun mouseEvent -> mouseEvent.stopPropagation() |> ignore)
-        //             OnChange this.onTrackSelected                                                                                                                                          
-        //          ] (this.props.Tracks
-        //            |> List.map (fun t -> R.option [                                                    
-        //                                              Value (U2.Case1 t.name)
-        //                                            ] [ unbox t.name]))
+    member this.getObservedList() = 
+        R.div [ClassName "list-group observed-list"]                
+                    (this.props.Observed
+                    |> List.map (fun t -> R.div [ClassName "list-group-item";][
+                                                    R.h4 [] [unbox t.identifier; ]
+                                                    R.input [Type "checkbox"
+                                                             OnChange this.onObservationChecked
+                                                             Value (U2.Case1 t.identifier)
+                                                             Checked t.subscription.IsSome                                                                      
+                                                            ][ ]
+                                                    R.span [] [unbox "observation active"]
+                                                    R.label [] [unbox("last updated at:" + t.utcTimestamp.ToString())]
+                                                    R.label [] [unbox(String.Format("last known position: ({0},{1})", t.latitude, t.longitude))]
+                                                ]        
+                    ))                                
 
     member this.render () =
 
@@ -168,36 +175,6 @@ type NavigationView(props) =
                             Id "bs-example-navbar-collapse-1"
                             ClassName "collapse navbar-collapse"] [ 
                                 R.ul [ ClassName "nav navbar-nav"] [ 
-                                    // R.li [ ] [ 
-                                    //     R.form [ 
-                                    //         ClassName "form-horizontal"
-                                    //         Style [ 
-                                    //             MarginLeft "15px" 
-                                    //             MarginRight "15px"  ]] [ 
-                                    //             R.div [ ClassName "form-group" ] [ 
-                                    //                 R.button [ 
-                                    //                     OnClick this.onBeginTracking
-                                    //                     ClassName "btn btn-default btn-succes active" ] [ 
-                                    //                         unbox "Track..."
-                                    //                 ]
-                                    //                 R.button [ 
-                                    //                     OnClick this.onStopTracking
-                                    //                     ClassName "btn btn-default btn-danger" ] [ 
-                                    //                         unbox "Stop Tracking"
-                                    //                 ]
-                                    //             ]
-                                    //             R.div [ ClassName "form-group" ] [
-                                    //                 R.label [ ClassName "col-md-4  col-sm-4 col-xs-4 control-label" ] [ unbox "Tracking Id" ]
-                                    //                 R.div [ ClassName "col-md-8  col-sm-8 col-xs-11"; AriaLabel "..." ] [
-                                    //                     R.input [ 
-                                    //                         Type "text" 
-                                    //                         Id "trackIdentifier" 
-                                    //                         Value (U2.Case1 this.state.trackingIdentifier)
-                                    //                     ] []                                                    
-                                    //                 ]                                                    
-                                    //             ]
-                                    //     ]
-                                    // ]
                                     R.li [ Role "presentation"; ClassName "dropdown" ] [ 
                                        R.a [ ClassName "dropdown-toggle"; DataToggle "dropdown"; Href "#"; Role "button"; 
                                              AriaHasPopup "true"; AriaExpanded "false"; OnClick (fun e -> 
@@ -208,33 +185,15 @@ type NavigationView(props) =
                                        ]
                                        R.ul [ ClassName "dropdown-menu"] [ 
                                            R.li [] [ 
-                                               R.div [ ClassName "container-fluid" ] [ 
-                                                //    R.div [ ClassName "row" ] [ 
-                                                //        R.label [ ] [ unbox "from" ]
-                                                //        R.input [ Type "datetime"
-                                                //                  Value (U2.Case1(this.state.beginDateTimeLocal.ToString()))
-                                                //                  OnChange this.onBeginDateTimeLocalChanged ] [ ]
-                                                //    ]
-                                                //    R.div [ ClassName "row" ] [ 
-                                                //        R.label [ ] [ unbox "until" ]
-                                                //        R.input [ Type "datetime"
-                                                //                  Value (U2.Case1(this.state.endDateTimeLocal.ToString()))
-                                                //                  OnChange this.onEndDateTimeLocalChanged ] [ ]
-                                                //    ]
+                                               R.div [ ClassName "container-fluid" ] [                                                 
                                                    R.div [ ClassName "row" ] [ 
                                                        this.getTrackSelection()
                                                    ]
-                                                   R.div [ ClassName "row" ] [ 
-                                                    //    R.button [ 
-                                                    //        OnClick this.onLoadTrackingPoints
-                                                    //    ] [ unbox "Load Track Points"]
+                                                   R.div [ ClassName "row" ] [                                                     
                                                        R.input [ 
                                                            Type "file"
                                                            OnChange this.onSelectTrackingFiles
-                                                           ] []
-                                                    //    R.button [ 
-                                                    //        OnClick this.onClearTrackingPoints
-                                                    //    ] [ unbox "Clear"]
+                                                           ] []                                                    
                                                    ]
                                                ]
                                            ]
@@ -245,12 +204,15 @@ type NavigationView(props) =
                                                          Role "button"; AriaHasPopup "true"; AriaExpanded "false"] [
                                                             R.label [ ] [ unbox "Observation" ] //<span class="caret"></span>
                                                          ]                                                                                        
-                                        R.ul [ClassName "dropdown-menu"] [
+                                        R.ul [ClassName "dropdown-menu"; Style [MinWidth "250px"]] [
                                                 R.li [] [
                                                     R.div [] [
                                                         R.div [ClassName "container-fluid"] [
+                                                            R.div [ ClassName "row" ] [ 
+                                                               this.getObservedList()
+                                                            ]
                                                             R.div [ClassName "row"] [
-                                                                R.label[] [unbox "observe by identifer:"]
+                                                                R.label[] [unbox "observe by identifier:"]
                                                                 R.input [Type "text"
                                                                          Value  (U2.Case1(this.state.observationIdentifier))
                                                                          OnChange this.onObservationIdentifierChanged][]
@@ -306,7 +268,8 @@ type NavigationView(props) =
 
 let private mapStateToProps (state : LocationTracker) (ownprops : ModelViewProps) =
     { ownprops with
-        Tracks = state.Tracks        
+        Tracks = state.Tracks   
+        Observed = state.TrackingService.observedTrackingJobs     
     }
 
 let private mapDispatchToProps (dispatch : ReactRedux.Dispatcher) ownprops =
@@ -314,7 +277,8 @@ let private mapDispatchToProps (dispatch : ReactRedux.Dispatcher) ownprops =
         onLoadTracks = fun () -> dispatch <| asThunk (Backend.getAllTracks)   
         onLoadTrackingPoints = fun(start, ``end``, trackName) -> dispatch <| asThunk (Backend.loadTrackingPoints(start, ``end``, trackName))
         onClearTrackingPoints = fun () -> dispatch(Commands.ClearTrackingPoints)
-        onObserve = fun observationIdentifier -> dispatch(Commands.Observe observationIdentifier)
+        onObserve = fun observationIdentifier -> dispatch(Commands.Observe observationIdentifier)        
+        onUnobserve = fun observationIdentifier -> dispatch(Commands.Unobserve observationIdentifier)
         onImportTrackingFiles = fun filenames -> dispatch <| asThunk (Backend.parseTrackingPointsFromGpx filenames)
     }
 

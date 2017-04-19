@@ -30,22 +30,26 @@ let postNotification content = Toast.notify (content, None)
 
 type [<Pojo>] MainViewProps = {
     Error : string option
+    Info : string option
 }
 
 type ToastNotifications(props) = 
     inherit React.Component<MainViewProps, obj>(props)
 
-    member this.componentDidUpdate prevProps prevState =                 
-        this.render()
+    // member this.componentDidUpdate prevProps prevState =                 
+    //     this.render()
 
     member this.render () = 
         if this.props.Error <> None then
             postNotification this.props.Error.Value
+        if this.props.Info <> None then
+            postNotification this.props.Info.Value
         R.div [Id "notifications";  ClassName "toastNotifications"] []
 
 let private mapStateToProps (state : LocationTracker) (ownprops : MainViewProps) =
     { ownprops with
         Error = state.Error
+        Info = state.Info
     }    
 
 let createToastNotifications =

@@ -3,3 +3,9 @@
     width: 100%;
     overflow-y: auto;
 }
+
+.observed-list {
+    max-height: 300px;    
+    width: 100%;
+    overflow-y: auto;
+}

@@ -18,6 +18,8 @@ open Fable_map
 open Fable_elevation
 #load "fable_toastNotifications.fsx"
 open Fable_toastNotifications
+#load "fable_observationServiceWorker.fsx"
+open Fable_observationServiceWorker
 // #load "fable_domainModelTests.fsx"
 // open Fable_domainModelTests
 
@@ -49,14 +51,42 @@ let createApp initialState =
         ]
 
 
+type swOptions = {
+    scope : string
+}
+
+type swMessage = {
+    command : string
+    message : string
+}
+let subscribe(identifier) =
+    Browser.console.log("Requesting broadcast")    
+    if not(isNull(box Browser.navigator?serviceWorker?controller)) then
+        Browser.console.log("Sending message to service worker");
+        Browser.navigator?serviceWorker?controller?postMessage({
+                                                                command = "subscribe"
+                                                                message = identifier
+                                                            }) |> ignore        
+    else
+        Browser.console.log("Nove ServiceWorker")
+    
+    ignore()
+
 let reducer (domainModel: LocationTracker) = function
     | BeginTracking identifer ->
         domainModel
     | StopTracking identifier -> 
-        domainModel
-    | Observe identifier -> 
-        domainModel.TrackingService.AddTrackingJob (domainModel.TrackingService.CreateTrackingJob identifier 0.0 0.0) |> ignore
         domainModel        
+    | Unobserve identifier -> 
+        domainModel.TrackingService.ReleaseTrack identifier
+        //subscribe(identifier)
+        { domainModel with Info = Some "unsubscribed from position updates" }
+    | Observe identifier -> 
+        domainModel.TrackingService.Track identifier |> ignore        
+        { domainModel with Info = Some "subscribed to position updates" }
+    | ObservationPositionUpdated(identifier, latitude, longitude, timestamputc) ->
+        domainModel.TrackingService.UpdateCoordinates identifier latitude longitude timestamputc
+        domainModel       
     | LoadTrackingPoints (beginDate, endDate, selectedTrack) -> 
         { domainModel with Visualization = new TrackVisualization(selectedTrack, List.Empty)}
     | ClearTrackingPoints ->
@@ -75,6 +105,8 @@ let reducer (domainModel: LocationTracker) = function
         domainModel
     | ShowError error ->
         { domainModel with Error = Some error }
+    | ShowInfo info ->
+        { domainModel with Info = Some info }
     | HideError ->
         { domainModel with Error = None } 
 
@@ -85,11 +117,41 @@ let reducerWithLocalStorage (domainModel: LocationTracker) command =
         dm 
     with
     | _ -> {dm with Error = Some "error saving location data"}      
-                                               
+
+let registerObervationProviderServiceWorker () = 
+    if not(isNull(box Browser.navigator?serviceWorker)) then
+        Browser.console.log("ServiceWorkers supported")
+
+        Browser.navigator?serviceWorker?register("observationServiceWorkerPlain.js", {
+                scope = "./"
+            })
+            ?``then``(fun reg ->
+                Browser.console.log("ServiceWorker started", reg)
+            )
+            ?catch(fun error ->
+                Browser.console.log("Failed to register ServiceWorker", error);
+            ) |> ignore
+
+let registerBroadcastReceiver(dispatch) =
+    Browser.navigator?serviceWorker?onmessage <- fun(event) ->
+        Browser.console.log("Broadcasted SW : ", event?data) |> ignore
+
+        let data = event?data
+
+        if string data?command = "broadcastOnRequest" then
+            dispatch(Commands.ObservationPositionUpdated("subscribed to position updates", 0.0, 0.0, DateTime.UtcNow))
+            Browser.console.log("Broadcasted message from the ServiceWorker : ", data?message) |> ignore
+        ignore() |> ignore
+
+let mutable store : Redux.IStore<LocationTracker, Commands> option = None
+
+let onPositionChanged identifier latitude longitude timestamputc = 
+    store.Value.dispatch(Commands.ObservationPositionUpdated(identifier, latitude, longitude, timestamputc))    
+
 let start() = 
     let initialStoreState = 
             {
-                TrackingService= new TrackingService(new Backend.LocationService(Browser.window.location.origin)); 
+                TrackingService= new TrackingService(new Backend.LocationService(Browser.window.location.origin), onPositionChanged); 
                 Visualization=new TrackVisualization(name=String.Empty, points = TrackVisualization.calculate [{
                                                                                     latitude = 8.9
                                                                                     longitude = 5.9
@@ -123,12 +185,14 @@ let start() =
                         }
                        ];
                 Error = None
+                Info = None
             }
-    initialStoreState.Visualization.AssignElevationPoints [| {index = 0; elevation = 0.0;};|]
-   
+    initialStoreState.Visualization.AssignElevationPoints [| {index = 0; elevation = 0.0;};|]        
     let middleware = Redux.applyMiddleware ReduxThunk.middleware
-    let store = createStore reducerWithLocalStorage initialStoreState (Some middleware)
-    let provider = createProvider store (R.fn createApp (obj()) [])
-    ReactDom.render(provider, Browser.document.getElementsByClassName("main").[0]) |> ignore
+    store <- Some (createStore reducerWithLocalStorage initialStoreState (Some middleware))
+    let provider = createProvider store.Value (R.fn createApp (obj()) [])
+    ReactDom.render(provider, Browser.document.getElementsByClassName("main").[0]) |> ignore        
+    //registerBroadcastReceiver(store.dispatch)
 
+//registerObervationProviderServiceWorker()
 start()

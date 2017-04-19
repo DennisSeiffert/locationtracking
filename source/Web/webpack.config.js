@@ -10,7 +10,7 @@ var cfg = {
 	  "webpack-dev-server/client?http://localhost:8080",
       "./Web/fable_main.js"],
   output: {   
-     path : path.join(__dirname, "build"),
+     path : path.join(__dirname, "build"),     
      filename: "bundle.js"     
   },
   node: {
@@ -45,6 +45,8 @@ var cfg = {
             { from : 'elevationChart.css'},
             { from : 'bootstrap-extensions.css'},
             { from : 'parse-latest.js'} ,
+            { from : 'observationServiceWorkerPlain.js'} ,
+            { from : 'Web/fable_observationServiceWorker.js'} ,
             { from : './node_modules/bootstrap/dist/js/bootstrap.min.js'} ,
             { from : './node_modules/bootstrap/dist/css/bootstrap.min.css'} ,
             { from : './node_modules/bootstrap-notify/bootstrap-notify.min.js'} ,  

@@ -193,27 +193,27 @@ type [<Import("*","./parse-latest.js")>] Parse =
              static member initialize(appId : string, value : string): unit = jsNative
              static member serverURL with get(): string = jsNative and set(v: string): unit = jsNative
 
-type LocationService(host) =
+type LocationService (host) =    
     do Parse.initialize("myAppId", "unused")
-    do Parse.serverURL <- host+"/parse"
+    do Parse.serverURL <- host+"/parse"    
     
     interface ILocationQuery with 
         member this.Subscribe job onShowPosition = 
             let parseQuery = createParseQuery()
             parseQuery?equalTo("name", job.identifier) |> ignore
-            job.subscription <- parseQuery?subscribe()
-            job.subscription?on("create", fun position ->
+            let subscription = parseQuery?subscribe()
+            subscription?on("create", fun position ->
                 let name = string (position?get("name"))
                 let latitude = (position?get("latitude")) :?> double
                 let longitude = (position?get("longitude")) :?> double
                 let timestamp = DateTime.Parse (string (position?get("timestamputc")))
-                onShowPosition name latitude longitude timestamp) |> ignore
-            
+                onShowPosition name latitude longitude timestamp) |> ignore                
+            job.subscription <- Some subscription
             ignore()
             // if (observedTrackingJob.updatePositionOnMap()) then                
                 //showPosition(position.get("latitude"), position.get("longitude"), observedTrackingJob.marker)            
 
         member this.UnSubscribe job =             
-            if not(isNull job.subscription) then
-                job.subscription?unsubscribe() |> ignore
+            if job.subscription.IsSome then
+                job.subscription.Value?unsubscribe() |> ignore
             ignore()  

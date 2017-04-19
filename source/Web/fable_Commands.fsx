@@ -11,7 +11,9 @@ open Fable.Core
 type [<Pojo>] Commands = 
     | BeginTracking of string
     | StopTracking of string
-    | Observe of string    
+    | Observe of string
+    | Unobserve of string
+    | ObservationPositionUpdated of string * double * double * DateTime   
     | LoadTrackingPoints of DateTime * DateTime * string
     | ClearTrackingPoints 
     | ReceivedTrack of string * TrackingPoint[]
@@ -19,6 +21,7 @@ type [<Pojo>] Commands =
     | LoadingTracks
     | ShowElevationMarker of TrackingPoint
     | ShowError of string
+    | ShowInfo of string
     | HideError     
     | ReceivedElevationPoints of ElevationPoint[]
     interface Fable.Import.ReactRedux.IDispatchable        

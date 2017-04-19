@@ -309,12 +309,12 @@ export function parseTrackingPointsFromGpx(filenames, dispatch) {
     }(PromiseImpl.promise).then(function () {});
 }
 export function loadLocalStorage(key) {
-    return defaultArg(localStorage.getItem(key), null, function ($var19) {
+    return defaultArg(localStorage.getItem(key), null, function ($var35) {
         return function (value) {
             return value;
         }(function (arg00) {
             return JSON.parse(arg00);
-        }($var19));
+        }($var35));
     });
 }
 export function saveToLocalStorage(key, data) {
@@ -351,19 +351,22 @@ export var LocationService = function () {
         value: function (job, onShowPosition) {
             var parseQuery = new Parse.Query('Posts');
             parseQuery.equalTo("name", job.identifier);
-            job.subscription = parseQuery.subscribe();
-            job.subscription.on("create", function (position) {
+            var subscription = parseQuery.subscribe();
+            subscription.on("create", function (position) {
                 var name = toString(position.get("name"));
                 var latitude = position.get("latitude");
                 var longitude = position.get("longitude");
                 var timestamp = parse(toString(position.get("timestamputc")));
                 onShowPosition(name)(latitude)(longitude)(timestamp);
             });
+            job.subscription = subscription;
         }
     }, {
         key: "UnSubscribe",
         value: function (job) {
-            if (!(job.subscription == null)) {
+            if (function () {
+                return job.subscription != null;
+            }(null)) {
                 job.subscription.unsubscribe();
             }
         }
