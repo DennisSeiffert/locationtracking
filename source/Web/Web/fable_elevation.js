@@ -152,8 +152,9 @@ export var ElevationChart = function (_Component) {
             var xPos = xy[0];
             var yPos = xy[1];
             var dimensions = this.updateDimensions(window.innerWidth);
-            this.state.speedMarker.attr("x1", xPos).attr("y1", yPos).attr("x2", dimensions.xAxisWidth).attr("y2", yPos).classed("visible", true);
-            this.state.elevationMarker.attr("x1", 0).attr("y1", yPos).attr("x2", xPos).attr("y2", yPos).classed("visible", true);
+            this.state.speedMarker.attr("x1", 0).attr("y1", yPos).attr("x2", dimensions.xAxisWidth).attr("y2", yPos).classed("visible", true);
+            var xPosWithinGraph = (xPos < dimensions.xAxisWidth ? xPos : dimensions.xAxisWidth) > dimensions.leftAxisSpace ? xPos < dimensions.xAxisWidth ? xPos : dimensions.xAxisWidth : dimensions.leftAxisSpace;
+            this.state.elevationMarker.attr("x1", xPosWithinGraph).attr("y1", 0).attr("x2", xPosWithinGraph).attr("y2", dimensions.chartHeight).classed("visible", true);
         }
     }, {
         key: "getGeoPointFromElevationDataIndex",
@@ -173,8 +174,8 @@ export var ElevationChart = function (_Component) {
         value: function (state, xAxisWidth, chartHeight) {
             var axes = state.chartWrapper.append("g");
             axes.append("g").attr("class", "x axis").attr("transform", format("translate(0, {0})", String(chartHeight))).call(state.xAxis);
-            axes.append("g").attr("class", "y axis").call(state.yAxis).append("text").attr("transform", "rotate(-90)").attr("y", 6).attr("dy", ".71em").style("text-anchor", "end").text("Elevation (m)");
-            return axes.append("g").attr("class", "ySpeed axis").attr("transform", format("translate({0}, 0)", xAxisWidth)).call(state.ySpeedAxis).append("text").attr("transform", "rotate(-90)").attr("y", 70).style("text-anchor", "end").text("Speed (km/h)");
+            axes.append("g").attr("class", "y axis").call(state.yAxis).append("text").attr("y", -10).attr("x", 60).style("text-anchor", "end").text("Elevation (m)");
+            return axes.append("g").attr("class", "ySpeed axis").attr("transform", format("translate({0}, 0)", xAxisWidth)).call(state.ySpeedAxis).append("text").attr("y", -10).attr("x", 30).style("text-anchor", "end").text("Speed (km/h)");
         }
     }, {
         key: "drawPaths",
@@ -305,7 +306,7 @@ export var ElevationChart = function (_Component) {
         key: "updateDimensions",
         value: function (winWidth) {
             var dimensions = new ChartDimension(new Margin(20, 40, 40, 40), winWidth - 40, 300, 40, 0, 0, 0);
-            var xAxisWidth = dimensions.svgWidth - dimensions.margin.left - dimensions.margin.right - dimensions.leftAxisSpace;
+            var xAxisWidth = dimensions.svgWidth - dimensions.margin.left - dimensions.margin.right;
             var chartWidth = dimensions.svgWidth - dimensions.margin.left - dimensions.margin.right;
             var chartHeight = dimensions.svgHeight - dimensions.margin.top - dimensions.margin.bottom;
             return new ChartDimension(dimensions.margin, dimensions.svgWidth, dimensions.svgHeight, dimensions.leftAxisSpace, chartWidth, chartHeight, xAxisWidth);

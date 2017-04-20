@@ -89,18 +89,19 @@ type ElevationChart(props) =
         let dimensions = this.updateDimensions(Browser.window.innerWidth)
 
         this.state.speedMarker
-          .attr("x1", xPos)
+          .attr("x1", 0)
           .attr("y1", yPos)
           .attr("x2", dimensions.xAxisWidth)
           .attr("y2", yPos)
           .classed("visible", true)
         |> ignore
 
+        let xPosWithinGraph = Math.Max(Math.Min(xPos, dimensions.xAxisWidth), dimensions.leftAxisSpace)
         this.state.elevationMarker
-          .attr("x1", 0)
-          .attr("y1", yPos)
-          .attr("x2", xPos)
-          .attr("y2", yPos)
+          .attr("x1", xPosWithinGraph)
+          .attr("y1", 0)
+          .attr("x2", xPosWithinGraph)
+          .attr("y2", dimensions.chartHeight)
           .classed("visible", true)
         |> ignore
   
@@ -128,9 +129,10 @@ type ElevationChart(props) =
           .attr("class", box "y axis")
           .call(state.yAxis)
           .append("text")
-          .attr("transform", box "rotate(-90)")
-          .attr("y", 6)
-          .attr("dy", box ".71em")
+          //.attr("transform", box "rotate(-90)")
+          .attr("y", -10)
+          .attr("x", 60)
+          //.attr("dy", box ".71em")
           .style("text-anchor", D3.Primitive.Case2 "end")
           .text("Elevation (m)") |> ignore
 
@@ -139,8 +141,9 @@ type ElevationChart(props) =
           .attr("transform", String.Format("translate({0}, 0)", xAxisWidth))
           .call(state.ySpeedAxis)
           .append("text")
-          .attr("transform", "rotate(-90)")
-          .attr("y", 70)
+          //.attr("transform", "rotate(-90)")
+          .attr("y", -10)
+          .attr("x", 30)
           .style("text-anchor", "end")
           .text("Speed (km/h)")          
 
@@ -288,10 +291,7 @@ type ElevationChart(props) =
         let axes = this.addAxes(state, dimensions.xAxisWidth, dimensions.chartHeight)
         this.drawPaths(state, dimensions) |> ignore
 
-        this.setState(state)
-        // Browser.window.addEventListener("resize",fun () ->
-        //                                              this.renderChart()
-        //                                              EventListenerOrEventListenerObject.Case1)  
+        this.setState(state) 
 
  
     member this.updateDimensions (winWidth : double) =
@@ -304,7 +304,7 @@ type ElevationChart(props) =
           chartHeight = 0.0
           xAxisWidth = 0.0        
         }
-        let xAxisWidth = dimensions.svgWidth - dimensions.margin.left - dimensions.margin.right - dimensions.leftAxisSpace
+        let xAxisWidth = dimensions.svgWidth - dimensions.margin.left - dimensions.margin.right //- dimensions.leftAxisSpace
         {dimensions with 
                 chartWidth = dimensions.svgWidth - dimensions.margin.left - dimensions.margin.right
                 chartHeight = dimensions.svgHeight - dimensions.margin.top - dimensions.margin.bottom

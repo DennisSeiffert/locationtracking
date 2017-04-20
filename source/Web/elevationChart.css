@@ -24,7 +24,7 @@
 }
 
 .elevationmarker {
-    stroke: brown;
+    stroke: red;
     stroke-width: 1px;
     fill: none;
     display: none;
