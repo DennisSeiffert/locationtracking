@@ -148,7 +148,7 @@ export var MapView = function (_Component) {
             if (!equals(this.state.map, null)) {
                 var markers = map_1(function (i) {
                     var matchValue = tryFind(function (e) {
-                        return toString(e.identifier) === i.identifier;
+                        return toString(e.title) === i.identifier;
                     }, _this2.state.markers);
 
                     if (matchValue == null) {

@@ -74,7 +74,7 @@ type ElevationChart(props) =
         this.renderChart()
 
     member this.onMouseOverHandler(index) =
-        let geoPoint = this.props.CurrentTrack.getGeoPointFromElevationDataIndex index
+        let geoPoint = this.props.CurrentTrack.getGeoPointFromElevationDataIndex(index, this.props.CurrentTrack.ElevationPoints.Length) 
         this.props.OnShowElevationMarker geoPoint
         ignore()
         // if this.props.CurrentTrack.hasElevationMarker() then 
@@ -151,30 +151,32 @@ type ElevationChart(props) =
         state.y.range([|dimensions.chartHeight; 0.0|]) |> ignore
         state.ySpeed.range([|dimensions.chartHeight; 0.0|]) |> ignore
 
-        let maxXValue = this.toKm(this.props.CurrentTrack.totalDistanceInMeters())                            
+        let maxXValue = this.toKm(this.props.CurrentTrack.totalDistanceInMeters())  
+        let totalElevationPoints = this.props.CurrentTrack.ElevationPoints.Length                          
         state.x.domain([|0.0; maxXValue |]) |> ignore 
         state.y.domain([|0.0; this.props.CurrentTrack.ElevationPoints |> Array.map (fun (d) -> d.elevation) |> Array.max |]) |> ignore
         state.ySpeed.domain([|0.0; this.props.CurrentTrack.Points |> List.map (fun (d) -> d.speed * 3.6) |> List.max |]) |> ignore
         let bars = state.chartWrapper.selectAll(".elevationbar").data(this.props.CurrentTrack.ElevationPoints)
         bars?attr("x",Func<_,_,_,_>(fun data _ _ ->
-                                                  state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index).distanceCovered))
+                                                  state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered))
                                     ))
                                     ?attr("y",Func<_,_,_,_>( fun data _ _ -> state.y.Invoke(data.elevation)))
                                     ?attr("width",Func<_,_,_,_>( fun data _ _ ->
-                                                      Math.Min(state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1).distanceCovered)), state.x.range().[1]) -
-                                                      state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index).distanceCovered))
+                                                      let widthInPixel = Math.Min(state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)), state.x.range().[1]) -
+                                                                            state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered))
+                                                      widthInPixel
                                     ))                                                                    
                                     ?attr("height",Func<_,_,_,_>( fun data i j -> dimensions.chartHeight - state.y.Invoke(data.elevation))) |> ignore
         bars?enter()
             ?append("rect")                        
                                     ?attr("class", "elevationbar")
                                     ?attr("x",Func<_,_,_,_>(fun data _ _ ->
-                                                  state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index).distanceCovered))
+                                                  state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered))
                                     ))
                                     ?attr("y",Func<_,_,_,_>( fun data _ _ -> state.y.Invoke(data.elevation)))
                                     ?attr("width",Func<_,_,_,_>( fun data _ _ ->
-                                                      Math.Min(state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1).distanceCovered)), state.x.range().[1]) -
-                                                      state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index).distanceCovered))
+                                                      Math.Min(state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)), state.x.range().[1]) -
+                                                      state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index,totalElevationPoints).distanceCovered))
                                     ))                                                                    
                                     ?attr("height",Func<_,_,_,_>( fun data i j -> dimensions.chartHeight - state.y.Invoke(data.elevation)))
                                     ?on("mouseover", fun data i j ->
@@ -191,34 +193,12 @@ type ElevationChart(props) =
         state.xAxis.scale(state.x)|> ignore
         state.yAxis.scale(state.y)|> ignore
         state.ySpeedAxis.scale(state.ySpeed)|> ignore
-        
-                    // |> fun d -> (unbox<D3.Selection.Update<ElevationPoint>> d).enter()
-                    // |> fun d -> d.append("rect")                        
-                    //                 .attr("class", "elevationbar")
-                    //                 .attr("x",Func<_,_,_,_>(fun data _ _ ->
-                    //                               state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index).distanceCovered))
-                    //                 ))
-                    //                 .attr("y",Func<_,_,_,_>( fun data _ _ -> state.y.Invoke(data.elevation)))
-                    //                 .attr("width",Func<_,_,_,_>( fun data _ _ ->
-                    //                                   Math.Min(state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1).distanceCovered)), state.x.range().[1]) -
-                    //                                   state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index).distanceCovered))
-                    //                 ))                                                                    
-                    //                 .attr("height",Func<_,_,_,_>( fun data i j -> chartHeight - state.y.Invoke(data.elevation)))
-                    //                 .on("mouseover", Func<_,_,_,_>( fun data i j ->
-                    //                                                 this.onMouseOverHandler(data.index) 
-                    //                                                 D3.Globals.select("#elevationbar").attr("fill", "").classed("active", true) |> ignore
-                    //                                                 box 0
-                    //                 ))
-                    //                 .on("mouseout",Func<_,_,_,_>( fun data _ _ ->                                                        
-                    //                                     D3.Globals.select("#elevationbar").attr("fill", "").classed("active", false) |> ignore
-                    //                                     box 0
-                    //                 ))
-                    // |> ignore
-        let lines = state.chartWrapper.selectAll(".line").data(Array.ofList this.props.CurrentTrack.Points)
+
+        let lines = state.chartWrapper.selectAll(".line").data([|0|])
         let line = D3.Svg.Globals.line<TrackingPoint>()
                         .x(fun d _ -> state.x.Invoke(this.toKm(d.distanceCovered)))
                         .y(fun d _ -> state.ySpeed.Invoke(d.speed * 3.6))
-                        .interpolate_monotone()  
+                        .interpolate_linear()  
         lines?attr("d", line.Invoke(Array.ofList this.props.CurrentTrack.Points)) |> ignore
         lines?enter()?append("path")?classed("line", true)        
       
@@ -279,6 +259,10 @@ type ElevationChart(props) =
                             .on("touchmove", fun data _ _ -> 
                                                     this.onTouchMove Browser.event 
                                                     box 0 )
+
+        Browser.window.addEventListener_resize (fun (e) -> this.renderChart()
+                                                           box 0
+                                               )
         let state =
             {        
                 svg = svg

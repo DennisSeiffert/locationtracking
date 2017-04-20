@@ -66,8 +66,8 @@ type TrackVisualization(name : string, points : TrackingPoint List) =
             | Some index -> index
             | None -> this.Points.Length - 1
 
-    member this.getGeoPointFromElevationDataIndex (index : int) =
-        let meters = (double index / double this.Points.Length) * this.totalDistanceInMeters();
+    member this.getGeoPointFromElevationDataIndex (index : int, totalElevationPoints) =
+        let meters = (double index / double totalElevationPoints) * this.totalDistanceInMeters();
         let markerPointIndex = this.getIndexOfNearestPoint(meters);
         let geoPoint = this.getPointAt(markerPointIndex);
         geoPoint;

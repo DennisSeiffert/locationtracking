@@ -142,7 +142,7 @@ export var ElevationChart = function (_Component) {
     }, {
         key: "onMouseOverHandler",
         value: function (index) {
-            var geoPoint = this.props.CurrentTrack.getGeoPointFromElevationDataIndex(index);
+            var geoPoint = this.props.CurrentTrack.getGeoPointFromElevationDataIndex(index, this.props.CurrentTrack.ElevationPoints.length);
             this.props.OnShowElevationMarker(geoPoint);
         }
     }, {
@@ -185,6 +185,7 @@ export var ElevationChart = function (_Component) {
             state.y.range(new Float64Array([dimensions.chartHeight, 0]));
             state.ySpeed.range(new Float64Array([dimensions.chartHeight, 0]));
             var maxXValue = this.toKm(this.props.CurrentTrack.totalDistanceInMeters());
+            var totalElevationPoints = this.props.CurrentTrack.ElevationPoints.length;
             state.x.domain(new Float64Array([0, maxXValue]));
             state.y.domain(new Float64Array([0, reduce(function (x, y) {
                 return Math.max(x, y);
@@ -198,20 +199,21 @@ export var ElevationChart = function (_Component) {
             }, this.props.CurrentTrack.Points))]));
             var bars = state.chartWrapper.selectAll(".elevationbar").data(this.props.CurrentTrack.ElevationPoints);
             bars.attr("x", function (data, _arg2, _arg1) {
-                return state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index).distanceCovered));
+                return state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered));
             }).attr("y", function (data, _arg4, _arg3) {
                 return state.y(data.elevation);
             }).attr("width", function (data, _arg6, _arg5) {
-                return (state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1).distanceCovered)) < state.x.range()[1] ? state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1).distanceCovered)) : state.x.range()[1]) - state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index).distanceCovered));
+                var widthInPixel = (state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)) < state.x.range()[1] ? state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)) : state.x.range()[1]) - state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered));
+                return widthInPixel;
             }).attr("height", function (data, i, j) {
                 return dimensions.chartHeight - state.y(data.elevation);
             });
             bars.enter().append("rect").attr("class", "elevationbar").attr("x", function (data, _arg8, _arg7) {
-                return state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index).distanceCovered));
+                return state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered));
             }).attr("y", function (data, _arg10, _arg9) {
                 return state.y(data.elevation);
             }).attr("width", function (data, _arg12, _arg11) {
-                return (state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1).distanceCovered)) < state.x.range()[1] ? state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1).distanceCovered)) : state.x.range()[1]) - state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index).distanceCovered));
+                return (state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)) < state.x.range()[1] ? state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)) : state.x.range()[1]) - state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered));
             }).attr("height", function (data, i, j) {
                 return dimensions.chartHeight - state.y(data.elevation);
             }).on("mouseover", function (data, i, j) {
@@ -225,12 +227,12 @@ export var ElevationChart = function (_Component) {
             state.xAxis.scale(state.x);
             state.yAxis.scale(state.y);
             state.ySpeedAxis.scale(state.ySpeed);
-            var lines = state.chartWrapper.selectAll(".line").data(Array.from(this.props.CurrentTrack.Points));
+            var lines = state.chartWrapper.selectAll(".line").data(new Int32Array([0]));
             var line = svg_1.line().x(function (d, _arg15) {
                 return state.x(_this2.toKm(d.distanceCovered));
             }).y(function (d, _arg16) {
                 return state.ySpeed(d.speed * 3.6);
-            }).interpolate('monotone');
+            }).interpolate('linear');
             lines.attr("d", line(Array.from(this.props.CurrentTrack.Points)));
             return lines.enter().append("path").classed("line", true);
         }
@@ -269,6 +271,11 @@ export var ElevationChart = function (_Component) {
             }, this.props.CurrentTrack.Points))]));
             var chartWrapper = svg.append("g").attr("transform", "translate(" + String(dimensions.margin.left) + "," + String(dimensions.margin.top) + ")").on("touchmove", function (data, _arg18, _arg17) {
                 _this3.onTouchMove(event);
+
+                return 0;
+            });
+            window.addEventListener('resize', function (e) {
+                _this3.renderChart();
 
                 return 0;
             });

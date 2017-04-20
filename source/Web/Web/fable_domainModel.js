@@ -226,8 +226,8 @@ export var TrackVisualization = function () {
         }
     }, {
         key: "getGeoPointFromElevationDataIndex",
-        value: function (index) {
-            var meters = index / this.Points.length * this.totalDistanceInMeters();
+        value: function (index, totalElevationPoints) {
+            var meters = index / totalElevationPoints * this.totalDistanceInMeters();
             var markerPointIndex = this.getIndexOfNearestPoint(meters);
             var geoPoint = this.getPointAt(markerPointIndex);
             return geoPoint;

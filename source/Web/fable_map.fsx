@@ -88,10 +88,10 @@ type MapView(props) =
     member this.componentWillReceiveProps(nextProps : MapViewModel) = 
         if this.state.map <> None then 
             let markers = nextProps.ObservedTrackingJobs |> List.map (fun i ->                                                                
-                                                                match List.tryFind (fun e -> string e?identifier = i.identifier) this.state.markers with
-                                                                            | Some marker -> 
+                                                                match List.tryFind (fun e -> string e?title = i.identifier) this.state.markers with
+                                                                            | Some marker ->                                                                                
                                                                                 marker?setPosition(LatLng i.latitude i.longitude) |> ignore                                                                        
-                                                                                marker
+                                                                                marker                                                                                
                                                                             | None -> GoogleMarker(i.latitude, i.longitude, this.state.map, i.identifier)                                                                
                                                                 )
             this.setState({ this.state with needsAnUpdate = true; markers = markers })
