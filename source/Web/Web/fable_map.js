@@ -13,8 +13,10 @@ import { createElement, Component } from "react";
 import { reverse, map as map_1 } from "fable-core/List";
 import List from "fable-core/List";
 import { item, tryFind } from "fable-core/Seq";
+import { format } from "fable-core/String";
+import { LocationTracker, TrackingPoint } from "./fable_domainModel";
+import { now } from "fable-core/Date";
 import { createConnector, withStateMapper, withProps, buildComponent } from "fable-reactredux/Fable.Helpers.ReactRedux";
-import { LocationTracker } from "./fable_domainModel";
 export var GeoOptions = function () {
     function GeoOptions(enableHighAccuracy, maximumAge, timeout) {
         _classCallCheck(this, GeoOptions);
@@ -113,7 +115,8 @@ export var MapView = function (_Component) {
             map: null,
             polyLineOfTrack: null,
             needsAnUpdate: true,
-            markers: new List()
+            markers: new List(),
+            trackMarker: null
         };
         _this["mapHolder@"] = createElement("div", {
             className: "jumbotron",
@@ -162,6 +165,14 @@ export var MapView = function (_Component) {
                         return matchValue;
                     }
                 }, nextProps.ObservedTrackingJobs);
+
+                if (function () {
+                    return nextProps.trackMarkerPosition != null;
+                }(null)) {
+                    this.state.trackMarker.setPosition(new google.maps.LatLng(nextProps.trackMarkerPosition.latitude, nextProps.trackMarkerPosition.longitude));
+                    this.state.trackMarker.title = format("{0} \xFC. N.N   {1} km/h ", nextProps.trackMarkerPosition.elevation, nextProps.trackMarkerPosition.speed * 3.6);
+                }
+
                 this.setState(function () {
                     var inputRecord = _this2.state;
                     var needsAnUpdate = true;
@@ -169,7 +180,8 @@ export var MapView = function (_Component) {
                         map: inputRecord.map,
                         polyLineOfTrack: inputRecord.polyLineOfTrack,
                         needsAnUpdate: needsAnUpdate,
-                        markers: markers
+                        markers: markers,
+                        trackMarker: inputRecord.trackMarker
                     };
                 }());
             }
@@ -217,7 +229,8 @@ export var MapView = function (_Component) {
                             map: inputRecord.map,
                             polyLineOfTrack: polyLineOfTrack,
                             needsAnUpdate: needsAnUpdate,
-                            markers: inputRecord.markers
+                            markers: inputRecord.markers,
+                            trackMarker: inputRecord.trackMarker
                         };
                     }());
                 })();
@@ -237,11 +250,17 @@ export var MapView = function (_Component) {
                 }
             };
             var map = new google.maps.Map(document.getElementsByClassName("jumbotron")[0], options);
+            var trackMarker = new google.maps.Marker({
+                position: new google.maps.LatLng(0, 0),
+                map: map,
+                title: "track marker"
+            });
             this.setState({
                 map: map,
                 polyLineOfTrack: null,
                 needsAnUpdate: true,
-                markers: new List()
+                markers: new List(),
+                trackMarker: trackMarker
             });
         }
     }, {
@@ -263,14 +282,16 @@ setType("Fable_map.MapView", MapView);
 function mapStateToProps(state, ownprops) {
     return {
         Track: state.Visualization.Points,
-        ObservedTrackingJobs: state.TrackingService.observedTrackingJobs
+        ObservedTrackingJobs: state.TrackingService.observedTrackingJobs,
+        trackMarkerPosition: state.Visualization.LastKnownPosition
     };
 }
 
 function setDefaultProps(ownprops) {
     return {
         Track: new List(),
-        ObservedTrackingJobs: new List()
+        ObservedTrackingJobs: new List(),
+        trackMarkerPosition: new TrackingPoint(9.9, 5.9, now(), 34.9, 0, 32300.9, 1, 32.3)
     };
 }
 

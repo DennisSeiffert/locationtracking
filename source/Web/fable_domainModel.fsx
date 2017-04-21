@@ -52,8 +52,13 @@ let distance lat1 lon1 lat2 lon2 =
 type TrackVisualization(name : string, points : TrackingPoint List) =         
     member val ElevationPoints : ElevationPoint[] = Array.empty with get, set
     member this.Points = points     
-    member this.TrackName = name
+    member this.TrackName = name 
+    member val LastKnownPosition : TrackingPoint option = None with get, set
+
     
+
+    member this.updateTrackMarker point = 
+        this.LastKnownPosition <- Some point
 
     member this.totalDistanceInMeters () = 
         this.Points.[this.Points.Length - 1].distanceCovered;

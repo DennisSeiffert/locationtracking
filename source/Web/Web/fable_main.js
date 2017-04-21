@@ -150,6 +150,7 @@ export function reducer(domainModel, _arg1) {
         var Tracks = ofArray(_arg1.Item);
         return new LocationTracker(domainModel.TrackingService, domainModel.Visualization, Tracks, domainModel.Error, domainModel.Info);
     } else if (_arg1.type === "ShowElevationMarker") {
+        domainModel.Visualization.updateTrackMarker(_arg1.Item);
         return domainModel;
     } else if (_arg1.type === "ReceivedElevationPoints") {
         domainModel.Visualization.AssignElevationPoints(_arg1.Item);

@@ -332,7 +332,14 @@ function mapStateToProps(state, ownprops) {
 }
 
 function mapDispatchToProps(dispatch, ownprops) {
-    var OnShowElevationMarker = function OnShowElevationMarker(trackingPoint) {};
+    var OnShowElevationMarker = function OnShowElevationMarker(trackingPoint) {
+        (function (arg00) {
+            dispatch(arg00);
+        })({
+            type: "ShowElevationMarker",
+            Item: trackingPoint
+        });
+    };
 
     return {
         CurrentTrack: ownprops.CurrentTrack,

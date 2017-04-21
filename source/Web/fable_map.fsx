@@ -55,9 +55,10 @@ let GoogleMap(mapHolder:obj) (options:obj) : obj =
 type [<Pojo>] MapViewModel  =
     { Track : List<TrackingPoint>
       ObservedTrackingJobs : List<TrackingJob>
+      trackMarkerPosition : TrackingPoint option
     }
 
-type [<Pojo>] MapState = { map : obj option; polyLineOfTrack : obj option; needsAnUpdate : bool; markers : List<obj>}
+type [<Pojo>] MapState = { map : obj option; polyLineOfTrack : obj option; needsAnUpdate : bool; markers : List<obj>; trackMarker : obj}
 
 type MapView(props) =
     inherit React.Component<MapViewModel, MapState>(props)
@@ -66,6 +67,7 @@ type MapView(props) =
                             polyLineOfTrack = None
                             needsAnUpdate = true
                             markers = List.Empty
+                            trackMarker = None
                         })    
     member val mapHolder = R.div [ ClassName "jumbotron" 
                                    Style [
@@ -94,6 +96,9 @@ type MapView(props) =
                                                                                 marker                                                                                
                                                                             | None -> GoogleMarker(i.latitude, i.longitude, this.state.map, i.identifier)                                                                
                                                                 )
+            if nextProps.trackMarkerPosition.IsSome then
+                this.state.trackMarker?setPosition(LatLng nextProps.trackMarkerPosition.Value.latitude nextProps.trackMarkerPosition.Value.longitude) |> ignore
+                this.state.trackMarker?title <- String.Format("{0} ü. N.N   {1} km/h ", nextProps.trackMarkerPosition.Value.elevation, nextProps.trackMarkerPosition.Value.speed *3.6) 
             this.setState({ this.state with needsAnUpdate = true; markers = markers })
 
     member this.showMarkers() = 
@@ -167,7 +172,8 @@ type MapView(props) =
                             ]
 
         let map = GoogleMap (Browser.document.getElementsByClassName("jumbotron").[0]) (options)
-        this.setState({map = Some map; polyLineOfTrack = None; needsAnUpdate = true; markers = List.Empty })
+        let trackMarker = GoogleMarker(0.0, 0.0, map, "track marker")
+        this.setState({map = Some map; polyLineOfTrack = None; needsAnUpdate = true; markers = List.Empty; trackMarker = trackMarker })
     
     member this.render () =                 
         this.mapHolder
@@ -175,7 +181,8 @@ type MapView(props) =
 let private mapStateToProps (state : LocationTracker) (ownprops : MapViewModel) =
     { ownprops with
         Track = state.Visualization.Points
-        ObservedTrackingJobs = state.TrackingService.observedTrackingJobs        
+        ObservedTrackingJobs = state.TrackingService.observedTrackingJobs   
+        trackMarkerPosition = state.Visualization.LastKnownPosition     
     }
 // let private mapDispatchToProps (dispatch : ReactRedux.Dispatcher) ownprops =
 //     { ownprops with
@@ -186,7 +193,17 @@ let private mapStateToProps (state : LocationTracker) (ownprops : MapViewModel) 
 let private setDefaultProps (ownprops : MapViewModel) =
     { ownprops with
          Track = List.Empty
-         ObservedTrackingJobs = List.Empty
+         ObservedTrackingJobs = List.Empty  
+         trackMarkerPosition = Some {
+                                    latitude = 9.9
+                                    longitude = 5.9
+                                    timestamputc = DateTime.Now
+                                    speed = 34.9
+                                    distanceCovered = 0.0
+                                    distance = 32300.9
+                                    index = 1
+                                    elevation = 32.3
+                               }       
     }         
 
 let createMapViewComponent =

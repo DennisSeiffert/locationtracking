@@ -98,8 +98,9 @@ let reducer (domainModel: LocationTracker) = function
         domainModel        
     | ReceivedTracks tracks ->
         { domainModel with Tracks = List.ofArray tracks }
-    | ShowElevationMarker point ->
-        domainModel    
+    | ShowElevationMarker point ->        
+        domainModel.Visualization.updateTrackMarker point |> ignore
+        domainModel
     | ReceivedElevationPoints points ->
         domainModel.Visualization.AssignElevationPoints points
         domainModel

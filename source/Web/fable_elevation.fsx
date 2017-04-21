@@ -104,6 +104,9 @@ type ElevationChart(props) =
           .attr("y2", dimensions.chartHeight)
           .classed("visible", true)
         |> ignore
+
+        // let geoPoint = this.props.CurrentTrack.getGeoPointFromElevationDataIndex(index, this.props.CurrentTrack.ElevationPoints.Length) 
+        // this.props.OnShowElevationMarker geoPoint
   
 
     member  this.getGeoPointFromElevationDataIndex(index) =   
@@ -320,8 +323,8 @@ let private mapStateToProps (state : LocationTracker) (ownprops : ElevationProps
     }
 let private mapDispatchToProps (dispatch : ReactRedux.Dispatcher) (ownprops: ElevationProps) =    
     { ownprops with        
-        OnShowElevationMarker = fun(trackingPoint) -> ignore()
-    }
+        OnShowElevationMarker = fun(trackingPoint) -> dispatch <| Commands.ShowElevationMarker trackingPoint
+    } 
 
 let private setDefaultProps (ownprops : ElevationProps) =
     { ownprops with

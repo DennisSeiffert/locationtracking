@@ -184,6 +184,7 @@ export var TrackVisualization = function () {
                 type: "Fable_domainModel.TrackVisualization",
                 properties: {
                     ElevationPoints: _Array(ElevationPoint),
+                    LastKnownPosition: Option(TrackingPoint),
                     Points: makeGeneric(List, {
                         T: TrackingPoint
                     }),
@@ -199,9 +200,15 @@ export var TrackVisualization = function () {
         this.name = name;
         this.points = points;
         this["ElevationPoints@"] = new Array(0);
+        this["LastKnownPosition@"] = null;
     }
 
     _createClass(TrackVisualization, [{
+        key: "updateTrackMarker",
+        value: function (point) {
+            this.LastKnownPosition = point;
+        }
+    }, {
         key: "totalDistanceInMeters",
         value: function () {
             return item(this.Points.length - 1, this.Points).distanceCovered;
@@ -254,6 +261,14 @@ export var TrackVisualization = function () {
         key: "TrackName",
         get: function () {
             return this.name;
+        }
+    }, {
+        key: "LastKnownPosition",
+        get: function () {
+            return this["LastKnownPosition@"];
+        },
+        set: function (v) {
+            this["LastKnownPosition@"] = v;
         }
     }], [{
         key: "calculate",
