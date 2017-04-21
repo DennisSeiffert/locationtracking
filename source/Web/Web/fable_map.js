@@ -170,7 +170,7 @@ export var MapView = function (_Component) {
                     return nextProps.trackMarkerPosition != null;
                 }(null)) {
                     this.state.trackMarker.setPosition(new google.maps.LatLng(nextProps.trackMarkerPosition.latitude, nextProps.trackMarkerPosition.longitude));
-                    this.state.trackMarker.title = format("{0} \xFC. N.N   {1} km/h ", nextProps.trackMarkerPosition.elevation, nextProps.trackMarkerPosition.speed * 3.6);
+                    this.state.trackMarker.title = format("{0} \xFC. N.N\n{1} km/h\n{2} km", nextProps.trackMarkerPosition.elevation, nextProps.trackMarkerPosition.speed * 3.6, nextProps.trackMarkerPosition.distanceCovered / 1000);
                 }
 
                 this.setState(function () {

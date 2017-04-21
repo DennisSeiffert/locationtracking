@@ -98,7 +98,10 @@ type MapView(props) =
                                                                 )
             if nextProps.trackMarkerPosition.IsSome then
                 this.state.trackMarker?setPosition(LatLng nextProps.trackMarkerPosition.Value.latitude nextProps.trackMarkerPosition.Value.longitude) |> ignore
-                this.state.trackMarker?title <- String.Format("{0} ü. N.N   {1} km/h ", nextProps.trackMarkerPosition.Value.elevation, nextProps.trackMarkerPosition.Value.speed *3.6) 
+                this.state.trackMarker?title <- String.Format("{0} ü. N.N\n{1} km/h\n{2} km", 
+                                                    nextProps.trackMarkerPosition.Value.elevation, 
+                                                    nextProps.trackMarkerPosition.Value.speed *3.6,
+                                                    nextProps.trackMarkerPosition.Value.distanceCovered / 1000.0) 
             this.setState({ this.state with needsAnUpdate = true; markers = markers })
 
     member this.showMarkers() = 
