@@ -90,6 +90,50 @@ export var GoogleMapPoint = function () {
     return GoogleMapPoint;
 }();
 setType("Fable_map.GoogleMapPoint", GoogleMapPoint);
+export var googleMapMarkerIcon = function () {
+    function googleMapMarkerIcon(path, fillColor, fillOpacity, scale, strokeColor, strokeWeight) {
+        _classCallCheck(this, googleMapMarkerIcon);
+
+        this.path = path;
+        this.fillColor = fillColor;
+        this.fillOpacity = fillOpacity;
+        this.scale = scale;
+        this.strokeColor = strokeColor;
+        this.strokeWeight = strokeWeight;
+    }
+
+    _createClass(googleMapMarkerIcon, [{
+        key: _Symbol.reflection,
+        value: function () {
+            return {
+                type: "Fable_map.googleMapMarkerIcon",
+                interfaces: ["FSharpRecord", "System.IEquatable", "System.IComparable"],
+                properties: {
+                    path: "string",
+                    fillColor: "string",
+                    fillOpacity: "number",
+                    scale: "number",
+                    strokeColor: "string",
+                    strokeWeight: "number"
+                }
+            };
+        }
+    }, {
+        key: "Equals",
+        value: function (other) {
+            return equalsRecords(this, other);
+        }
+    }, {
+        key: "CompareTo",
+        value: function (other) {
+            return compareRecords(this, other);
+        }
+    }]);
+
+    return googleMapMarkerIcon;
+}();
+setType("Fable_map.googleMapMarkerIcon", googleMapMarkerIcon);
+export var markerIcon = new googleMapMarkerIcon("M-18 -30.08C-18 -43.85 16.45 -55 58.95 -55C101.45 -55 135.9 -43.85 135.9 -30.08C135.9 -16.32 101.45 -5.16 58.96 -5.16C48.63 -5.16 38.78 -5.82 29.79 -7.01C27.89 -6.57 18.4 -4.37 1.31 -0.39L5.74 -12.09C-10.09 -19.37 -18 -25.37 -18 -30.08Z", "yellow", 0, 1, "black", 2);
 export var MapView = function (_Component) {
     _inherits(MapView, _Component);
 
@@ -158,7 +202,8 @@ export var MapView = function (_Component) {
                         return new google.maps.Marker({
                             position: new google.maps.LatLng(i.latitude, i.longitude),
                             map: _this2.state.map,
-                            title: i.identifier
+                            title: i.identifier,
+                            icon: markerIcon
                         });
                     } else {
                         matchValue.setPosition(new google.maps.LatLng(i.latitude, i.longitude));
@@ -253,7 +298,8 @@ export var MapView = function (_Component) {
             var trackMarker = new google.maps.Marker({
                 position: new google.maps.LatLng(0, 0),
                 map: map,
-                title: "track marker"
+                title: "track marker",
+                icon: markerIcon
             });
             this.setState({
                 map: map,
