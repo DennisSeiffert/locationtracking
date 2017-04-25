@@ -148,9 +148,34 @@ export var ElevationChart = function (_Component) {
     }, {
         key: "onTouchMove",
         value: function (e) {
+            var _this2 = this;
+
             var xy = d3.touches(e.target)[0];
             var xPos = xy[0];
             var yPos = xy[1];
+            (function (arg00) {
+                return function (arg10) {
+                    _this2.showMarker(arg00, arg10);
+                };
+            })(xPos)(yPos);
+        }
+    }, {
+        key: "onMouseMove",
+        value: function (e) {
+            var _this3 = this;
+
+            var dimensions = this.updateDimensions(window.innerWidth);
+            var xPos = e.x - dimensions.leftAxisSpace;
+            var yPos = e.y;
+            (function (arg00) {
+                return function (arg10) {
+                    _this3.showMarker(arg00, arg10);
+                };
+            })(xPos)(yPos);
+        }
+    }, {
+        key: "showMarker",
+        value: function (xPos, yPos) {
             var dimensions = this.updateDimensions(window.innerWidth);
             this.state.speedMarker.attr("x1", 0).attr("y1", yPos).attr("x2", dimensions.xAxisWidth).attr("y2", yPos).classed("visible", true);
             var xPosWithinGraph = (xPos < dimensions.xAxisWidth ? xPos : dimensions.xAxisWidth) > 0 ? xPos < dimensions.xAxisWidth ? xPos : dimensions.xAxisWidth : 0;
@@ -184,7 +209,7 @@ export var ElevationChart = function (_Component) {
     }, {
         key: "drawPaths",
         value: function (state, dimensions) {
-            var _this2 = this;
+            var _this4 = this;
 
             state.x.range(new Float64Array([0, dimensions.xAxisWidth]));
             state.y.range(new Float64Array([dimensions.chartHeight, 0]));
@@ -204,38 +229,34 @@ export var ElevationChart = function (_Component) {
             }, this.props.CurrentTrack.Points))]));
             var bars = state.chartWrapper.selectAll(".elevationbar").data(this.props.CurrentTrack.ElevationPoints);
             bars.attr("x", function (data, _arg2, _arg1) {
-                return state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered));
+                return state.x(_this4.toKm(_this4.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered));
             }).attr("y", function (data, _arg4, _arg3) {
                 return state.y(data.elevation);
             }).attr("width", function (data, _arg6, _arg5) {
-                var widthInPixel = (state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)) < state.x.range()[1] ? state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)) : state.x.range()[1]) - state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered));
+                var widthInPixel = (state.x(_this4.toKm(_this4.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)) < state.x.range()[1] ? state.x(_this4.toKm(_this4.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)) : state.x.range()[1]) - state.x(_this4.toKm(_this4.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered));
                 return widthInPixel;
             }).attr("height", function (data, i, j) {
                 return dimensions.chartHeight - state.y(data.elevation);
             });
-            bars.enter().append("rect").attr("class", "elevationbar").attr("x", function (data, _arg8, _arg7) {
-                return state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered));
-            }).attr("y", function (data, _arg10, _arg9) {
-                return state.y(data.elevation);
-            }).attr("width", function (data, _arg12, _arg11) {
-                return (state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)) < state.x.range()[1] ? state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)) : state.x.range()[1]) - state.x(_this2.toKm(_this2.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered));
-            }).attr("height", function (data, i, j) {
-                return dimensions.chartHeight - state.y(data.elevation);
-            }).on("mouseover", function (data, i, j) {
-                _this2.onMouseOverHandler(data.index);
-
-                return d3.select(event.currentTarget).attr("fill", "").classed("active", true);
-            }).on("mouseout", function (data, _arg14, _arg13) {
-                return d3.select(event.currentTarget).attr("fill", "").classed("active", false);
-            });
+            {
+                bars.enter().append("rect").attr("class", "elevationbar").attr("x", function (data, _arg8, _arg7) {
+                    return state.x(_this4.toKm(_this4.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered));
+                }).attr("y", function (data, _arg10, _arg9) {
+                    return state.y(data.elevation);
+                }).attr("width", function (data, _arg12, _arg11) {
+                    return (state.x(_this4.toKm(_this4.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)) < state.x.range()[1] ? state.x(_this4.toKm(_this4.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)) : state.x.range()[1]) - state.x(_this4.toKm(_this4.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered));
+                }).attr("height", function (data, i, j) {
+                    return dimensions.chartHeight - state.y(data.elevation);
+                });
+            }
             bars.exit().remove();
             state.xAxis.scale(state.x);
             state.yAxis.scale(state.y);
             state.ySpeedAxis.scale(state.ySpeed);
             var lines = state.chartWrapper.selectAll(".line").data(new Int32Array([0]));
-            var line = svg_1.line().x(function (d, _arg15) {
-                return state.x(_this2.toKm(d.distanceCovered));
-            }).y(function (d, _arg16) {
+            var line = svg_1.line().x(function (d, _arg13) {
+                return state.x(_this4.toKm(d.distanceCovered));
+            }).y(function (d, _arg14) {
                 return state.ySpeed(d.speed * 3.6);
             }).interpolate('linear');
             lines.attr("d", line(Array.from(this.props.CurrentTrack.Points)));
@@ -257,7 +278,7 @@ export var ElevationChart = function (_Component) {
     }, {
         key: "initializeChart",
         value: function () {
-            var _this3 = this;
+            var _this5 = this;
 
             var dimensions = this.updateDimensions(window.innerWidth);
             var svg = d3.select(".elevation_chart").append("svg").attr("width", dimensions.svgWidth).attr("height", dimensions.svgHeight);
@@ -274,19 +295,23 @@ export var ElevationChart = function (_Component) {
             }, map_1(function (d) {
                 return d.speed * 3.6;
             }, this.props.CurrentTrack.Points))]));
-            var chartWrapper = svg.append("g").attr("transform", "translate(" + String(dimensions.margin.left) + "," + String(dimensions.margin.top) + ")").on("touchmove", function (data, _arg18, _arg17) {
-                _this3.onTouchMove(event);
+            var chartWrapper = svg.append("g").attr("transform", "translate(" + String(dimensions.margin.left) + "," + String(dimensions.margin.top) + ")").on("touchmove", function (data, _arg16, _arg15) {
+                _this5.onTouchMove(event);
+
+                return 0;
+            }).on("mousemove", function (data, _arg18, _arg17) {
+                _this5.onMouseMove(event);
 
                 return 0;
             });
             window.addEventListener('resize', function (e) {
-                _this3.renderChart();
+                _this5.renderChart();
 
                 return 0;
             });
 
             var state = function () {
-                var touchScale_1 = scale.linear().domain(new Float64Array([0, dimensions.xAxisWidth])).range(new Float64Array([0, _this3.props.CurrentTrack.Points.length - 1])).clamp(true);
+                var touchScale_1 = scale.linear().domain(new Float64Array([0, dimensions.xAxisWidth])).range(new Float64Array([0, _this5.props.CurrentTrack.Points.length - 1])).clamp(true);
                 return {
                     x: x,
                     y: y,

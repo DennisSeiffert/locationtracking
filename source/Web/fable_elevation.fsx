@@ -86,6 +86,15 @@ type ElevationChart(props) =
         let xy = D3.Globals.touches(e.target).[0]
         let xPos = fst(xy)
         let yPos = snd(xy)
+        this.showMarker xPos yPos
+
+    member this.onMouseMove (e : Browser.Event) = 
+        let dimensions = this.updateDimensions(Browser.window.innerWidth)               
+        let xPos =  float (unbox e?x) - dimensions.leftAxisSpace
+        let yPos = float (unbox e?y)
+        this.showMarker xPos yPos
+
+    member this.showMarker xPos yPos =
         let dimensions = this.updateDimensions(Browser.window.innerWidth)
 
         this.state.speedMarker
@@ -187,13 +196,13 @@ type ElevationChart(props) =
                                                       state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index,totalElevationPoints).distanceCovered))
                                     ))                                                                    
                                     ?attr("height",Func<_,_,_,_>( fun data i j -> dimensions.chartHeight - state.y.Invoke(data.elevation)))
-                                    ?on("mouseover", fun data i j ->
-                                                                    this.onMouseOverHandler(data.index) 
-                                                                    D3.Globals.select(Browser.event.currentTarget).attr("fill","").classed("active", true)
-                                    )
-                                    ?on("mouseout",fun data _ _ ->                                                                                                                
-                                                        D3.Globals.select(Browser.event.currentTarget).attr("fill","").classed("active", false)
-                                    ) |> ignore
+                                    // ?on("mouseover", fun data i j ->
+                                    //                                 this.onMouseOverHandler(data.index) 
+                                    //                                 D3.Globals.select(Browser.event.currentTarget).attr("fill","").classed("active", true)
+                                    // )
+                                    // ?on("mouseout",fun data _ _ ->                                                                                                                
+                                    //                     D3.Globals.select(Browser.event.currentTarget).attr("fill","").classed("active", false)
+                                    // ) |> ignore
         bars?exit()?remove() |> ignore
 
          //update the axis and line
@@ -266,6 +275,9 @@ type ElevationChart(props) =
                             .attr("transform",  "translate(" + dimensions.margin.left.ToString() + "," + dimensions.margin.top.ToString() + ")")
                             .on("touchmove", fun data _ _ -> 
                                                     this.onTouchMove Browser.event 
+                                                    box 0 )
+                            .on("mousemove", fun data _ _ -> 
+                                                    this.onMouseMove Browser.event 
                                                     box 0 )
 
         Browser.window.addEventListener_resize (fun (e) -> this.renderChart()
