@@ -153,8 +153,12 @@ export var ElevationChart = function (_Component) {
             var yPos = xy[1];
             var dimensions = this.updateDimensions(window.innerWidth);
             this.state.speedMarker.attr("x1", 0).attr("y1", yPos).attr("x2", dimensions.xAxisWidth).attr("y2", yPos).classed("visible", true);
-            var xPosWithinGraph = (xPos < dimensions.xAxisWidth ? xPos : dimensions.xAxisWidth) > dimensions.leftAxisSpace ? xPos < dimensions.xAxisWidth ? xPos : dimensions.xAxisWidth : dimensions.leftAxisSpace;
+            var xPosWithinGraph = (xPos < dimensions.xAxisWidth ? xPos : dimensions.xAxisWidth) > 0 ? xPos < dimensions.xAxisWidth ? xPos : dimensions.xAxisWidth : 0;
             this.state.elevationMarker.attr("x1", xPosWithinGraph).attr("y1", 0).attr("x2", xPosWithinGraph).attr("y2", dimensions.chartHeight).classed("visible", true);
+            var distance = this.state.x.invert(xPosWithinGraph);
+            var geoPointIndex = this.props.CurrentTrack.getIndexOfNearestPoint(distance * 1000);
+            var geoPoint = this.props.CurrentTrack.getPointAt(geoPointIndex);
+            this.props.OnShowElevationMarker(geoPoint);
         }
     }, {
         key: "getGeoPointFromElevationDataIndex",

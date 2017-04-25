@@ -96,7 +96,7 @@ type ElevationChart(props) =
           .classed("visible", true)
         |> ignore
 
-        let xPosWithinGraph = Math.Max(Math.Min(xPos, dimensions.xAxisWidth), dimensions.leftAxisSpace)
+        let xPosWithinGraph = Math.Max(Math.Min(xPos, dimensions.xAxisWidth), 0.0)
         this.state.elevationMarker
           .attr("x1", xPosWithinGraph)
           .attr("y1", 0)
@@ -104,9 +104,11 @@ type ElevationChart(props) =
           .attr("y2", dimensions.chartHeight)
           .classed("visible", true)
         |> ignore
-
-        // let geoPoint = this.props.CurrentTrack.getGeoPointFromElevationDataIndex(index, this.props.CurrentTrack.ElevationPoints.Length) 
-        // this.props.OnShowElevationMarker geoPoint
+        
+        let distance = this.state.x.invert(xPosWithinGraph)
+        let geoPointIndex = this.props.CurrentTrack.getIndexOfNearestPoint(distance * 1000.0) 
+        let geoPoint = this.props.CurrentTrack.getPointAt(geoPointIndex)
+        this.props.OnShowElevationMarker geoPoint
   
 
     member  this.getGeoPointFromElevationDataIndex(index) =   
