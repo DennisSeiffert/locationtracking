@@ -55,14 +55,14 @@ type googleMapMarkerIcon = {
 
 let markerIcon = {
           path = "M-18 -30.08C-18 -43.85 16.45 -55 58.95 -55C101.45 -55 135.9 -43.85 135.9 -30.08C135.9 -16.32 101.45 -5.16 58.96 -5.16C48.63 -5.16 38.78 -5.82 29.79 -7.01C27.89 -6.57 18.4 -4.37 1.31 -0.39L5.74 -12.09C-10.09 -19.37 -18 -25.37 -18 -30.08Z"
-          fillColor = "yellow"
-          fillOpacity = 0.0
+          fillColor = "white"
+          fillOpacity = 0.4
           scale = 1
           strokeColor = "black"
           strokeWeight = 2
         }
 
-[<Emit("new google.maps.Marker({position: new google.maps.LatLng($0, $1),map:$2,title:$3, icon:$4})")>]
+[<Emit("new google.maps.Marker({position: new google.maps.LatLng($0, $1),map:$2,label:$3})")>]
 let GoogleMarker (latitude, longitude, map, identifier, markerIcon : googleMapMarkerIcon) : obj = jsNative
 
 [<Emit("new google.maps.Map($0, $1)")>]
@@ -116,10 +116,10 @@ type MapView(props) =
                                                                 )
             if nextProps.trackMarkerPosition.IsSome then
                 this.state.trackMarker?setPosition(LatLng nextProps.trackMarkerPosition.Value.latitude nextProps.trackMarkerPosition.Value.longitude) |> ignore
-                this.state.trackMarker?title <- String.Format("{0} ü. N.N\n{1} km/h\n{2} km", 
-                                                    nextProps.trackMarkerPosition.Value.elevation, 
-                                                    nextProps.trackMarkerPosition.Value.speed *3.6,
-                                                    nextProps.trackMarkerPosition.Value.distanceCovered / 1000.0) 
+                this.state.trackMarker?setLabel(String.Format("{0} ü. N.N\n{1} km/h\n{2} km", 
+                                                    Math.Round(nextProps.trackMarkerPosition.Value.elevation, 2), 
+                                                    Math.Round(nextProps.trackMarkerPosition.Value.speed *3.6, 2),
+                                                    Math.Round(nextProps.trackMarkerPosition.Value.distanceCovered / 1000.0), 1)) |> ignore
             this.setState({ this.state with needsAnUpdate = true; markers = markers })
 
     member this.showMarkers() = 

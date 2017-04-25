@@ -8,7 +8,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 import { setType } from "fable-core/Symbol";
 import _Symbol from "fable-core/Symbol";
-import { Any, toString, equals, Interface, extendInfo, compareRecords, equalsRecords } from "fable-core/Util";
+import { Any, round, toString, equals, Interface, extendInfo, compareRecords, equalsRecords } from "fable-core/Util";
 import { createElement, Component } from "react";
 import { reverse, map as map_1 } from "fable-core/List";
 import List from "fable-core/List";
@@ -133,7 +133,7 @@ export var googleMapMarkerIcon = function () {
     return googleMapMarkerIcon;
 }();
 setType("Fable_map.googleMapMarkerIcon", googleMapMarkerIcon);
-export var markerIcon = new googleMapMarkerIcon("M-18 -30.08C-18 -43.85 16.45 -55 58.95 -55C101.45 -55 135.9 -43.85 135.9 -30.08C135.9 -16.32 101.45 -5.16 58.96 -5.16C48.63 -5.16 38.78 -5.82 29.79 -7.01C27.89 -6.57 18.4 -4.37 1.31 -0.39L5.74 -12.09C-10.09 -19.37 -18 -25.37 -18 -30.08Z", "yellow", 0, 1, "black", 2);
+export var markerIcon = new googleMapMarkerIcon("M-18 -30.08C-18 -43.85 16.45 -55 58.95 -55C101.45 -55 135.9 -43.85 135.9 -30.08C135.9 -16.32 101.45 -5.16 58.96 -5.16C48.63 -5.16 38.78 -5.82 29.79 -7.01C27.89 -6.57 18.4 -4.37 1.31 -0.39L5.74 -12.09C-10.09 -19.37 -18 -25.37 -18 -30.08Z", "white", 0.4, 1, "black", 2);
 export var MapView = function (_Component) {
     _inherits(MapView, _Component);
 
@@ -202,8 +202,7 @@ export var MapView = function (_Component) {
                         return new google.maps.Marker({
                             position: new google.maps.LatLng(i.latitude, i.longitude),
                             map: _this2.state.map,
-                            title: i.identifier,
-                            icon: markerIcon
+                            label: i.identifier
                         });
                     } else {
                         matchValue.setPosition(new google.maps.LatLng(i.latitude, i.longitude));
@@ -215,7 +214,7 @@ export var MapView = function (_Component) {
                     return nextProps.trackMarkerPosition != null;
                 }(null)) {
                     this.state.trackMarker.setPosition(new google.maps.LatLng(nextProps.trackMarkerPosition.latitude, nextProps.trackMarkerPosition.longitude));
-                    this.state.trackMarker.title = format("{0} \xFC. N.N\n{1} km/h\n{2} km", nextProps.trackMarkerPosition.elevation, nextProps.trackMarkerPosition.speed * 3.6, nextProps.trackMarkerPosition.distanceCovered / 1000);
+                    this.state.trackMarker.setLabel(format("{0} \xFC. N.N\n{1} km/h\n{2} km", round(nextProps.trackMarkerPosition.elevation, 2), round(nextProps.trackMarkerPosition.speed * 3.6, 2), round(nextProps.trackMarkerPosition.distanceCovered / 1000), 1));
                 }
 
                 this.setState(function () {
@@ -298,8 +297,7 @@ export var MapView = function (_Component) {
             var trackMarker = new google.maps.Marker({
                 position: new google.maps.LatLng(0, 0),
                 map: map,
-                title: "track marker",
-                icon: markerIcon
+                label: "track marker"
             });
             this.setState({
                 map: map,
