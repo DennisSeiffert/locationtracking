@@ -240,39 +240,6 @@ type NavigationView(props) =
                 ]
             ]
         ]
-                        
-        // let className =
-        //     classNames(
-        //         createObj [
-        //             "completed" ==> this.props.todo.completed
-        //             "editing" ==> this.props.editing
-        //         ])
-        // // The React helper defines a simple DSL to build HTML elements.
-        // // For more info about transforming F# unions to JS option objects:
-        // // https://fable-compiler.github.io/docs/interacting.html#KeyValueList-attribute
-        // R.li [ ClassName className ] [
-        //     R.div [ ClassName "view" ] [
-        //         R.input [
-        //             ClassName "toggle"
-        //             Type "checkbox"
-        //             Checked this.props.todo.completed
-        //             OnChange this.props.onToggle  
-        //         ] []
-        //         R.label [ OnDoubleClick this.handleEdit ]
-        //                 [ unbox this.props.todo.title ]
-        //         R.button [
-        //             ClassName "destroy"
-        //             OnClick this.props.onDestroy ] [ ]
-        //     ]
-        //     R.input [
-        //         ClassName "edit"
-        //         Ref (fun x -> editField <- Some x)
-        //         Value (U2.Case1 this.state.editText)
-        //         OnBlur this.handleSubmit
-        //         OnChange this.handleChange
-        //         OnKeyDown this.handleKeyDown
-        //     ] []
-        // ]
 
 let private mapStateToProps (state : LocationTracker) (ownprops : ModelViewProps) =
     { ownprops with
