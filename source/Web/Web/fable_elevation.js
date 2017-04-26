@@ -238,17 +238,15 @@ export var ElevationChart = function (_Component) {
             }).attr("height", function (data, i, j) {
                 return dimensions.chartHeight - state.y(data.elevation);
             });
-            {
-                bars.enter().append("rect").attr("class", "elevationbar").attr("x", function (data, _arg8, _arg7) {
-                    return state.x(_this4.toKm(_this4.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered));
-                }).attr("y", function (data, _arg10, _arg9) {
-                    return state.y(data.elevation);
-                }).attr("width", function (data, _arg12, _arg11) {
-                    return (state.x(_this4.toKm(_this4.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)) < state.x.range()[1] ? state.x(_this4.toKm(_this4.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)) : state.x.range()[1]) - state.x(_this4.toKm(_this4.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered));
-                }).attr("height", function (data, i, j) {
-                    return dimensions.chartHeight - state.y(data.elevation);
-                });
-            }
+            bars.enter().append("rect").attr("class", "elevationbar").attr("x", function (data, _arg8, _arg7) {
+                return state.x(_this4.toKm(_this4.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered));
+            }).attr("y", function (data, _arg10, _arg9) {
+                return state.y(data.elevation);
+            }).attr("width", function (data, _arg12, _arg11) {
+                return (state.x(_this4.toKm(_this4.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)) < state.x.range()[1] ? state.x(_this4.toKm(_this4.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)) : state.x.range()[1]) - state.x(_this4.toKm(_this4.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered));
+            }).attr("height", function (data, i, j) {
+                return dimensions.chartHeight - state.y(data.elevation);
+            });
             bars.exit().remove();
             state.xAxis.scale(state.x);
             state.yAxis.scale(state.y);

@@ -12,7 +12,7 @@ type [<Pojo>] Commands =
     | BeginTracking of string
     | StopTracking of string
     | Observe of string
-    | Unobserve of string
+    | Unobserve of string    
     | ObservationPositionUpdated of string * double * double * DateTime   
     | LoadTrackingPoints of DateTime * DateTime * string
     | ClearTrackingPoints 

@@ -38,8 +38,9 @@ type [<Pojo>] ModelViewProps = {
     onStopTracking : string -> unit
     onLoadTrackingPoints : DateTime * DateTime * string -> unit
     onClearTrackingPoints : unit -> unit  
-    onObserve : string -> unit    
+    onObserve : string -> unit        
     onUnobserve : string -> unit  
+    onRefresh : unit -> unit
     onImportTrackingFiles : Browser.File[] -> unit   
     Tracks : Track List
     Observed : TrackingJob List
@@ -120,6 +121,9 @@ type NavigationView(props) =
             this.props.onObserve selectedIdentifier
         else
             this.props.onUnobserve selectedIdentifier
+
+    member this.onRefresh(_) = 
+        this.props.onRefresh()
         
     member this.onLoadTrackingPoints(_) =
         this.props.onLoadTrackingPoints(this.state.beginDateTimeLocal, this.state.endDateTimeLocal, this.state.SelectedTrack)
@@ -169,8 +173,12 @@ type NavigationView(props) =
                                     R.span [ClassName "icon-bar" ] []
                                     R.span [ClassName "icon-bar" ] []
                                     R.span [ClassName "icon-bar" ] []
-                                ]
-                        ]
+                             ]
+                            R.button [ Type "button"; ClassName "btn btn-default"; AriaLabel"Left Align"; OnClick this.onRefresh] [
+                                 R.span [ClassName "glyphicon glyphicon-refresh"; ] []
+                            ]
+                        ]  
+
                         R.div [ 
                             Id "bs-example-navbar-collapse-1"
                             ClassName "collapse navbar-collapse"] [ 
@@ -279,6 +287,7 @@ let private mapDispatchToProps (dispatch : ReactRedux.Dispatcher) ownprops =
         onClearTrackingPoints = fun () -> dispatch(Commands.ClearTrackingPoints)
         onObserve = fun observationIdentifier -> dispatch(Commands.Observe observationIdentifier)        
         onUnobserve = fun observationIdentifier -> dispatch(Commands.Unobserve observationIdentifier)
+        onRefresh = fun () -> dispatch <| asThunk Backend.refresh
         onImportTrackingFiles = fun filenames -> dispatch <| asThunk (Backend.parseTrackingPointsFromGpx filenames)
     }
 

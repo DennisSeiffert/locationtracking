@@ -21,7 +21,7 @@ import { find } from "fable-core/Seq";
 import { map } from "fable-core/List";
 import List from "fable-core/List";
 import { asThunk } from "fable-reduxthunk/Fable.Helpers.ReactRedux.ReduxThunk";
-import { parseTrackingPointsFromGpx, loadTrackingPoints, getAllTracks } from "./fable_backend";
+import { parseTrackingPointsFromGpx, refresh, loadTrackingPoints, getAllTracks } from "./fable_backend";
 import { createConnector, withStateMapper, withDispatchMapper, withProps, buildComponent } from "fable-reactredux/Fable.Helpers.ReactRedux";
 import { LocationTracker } from "./fable_domainModel";
 export var jq = jquery;
@@ -186,13 +186,18 @@ export var NavigationView = function (_Component) {
             }
         }
     }, {
-        key: "onLoadTrackingPoints",
+        key: "onRefresh",
         value: function (_arg4) {
+            this.props.onRefresh(null);
+        }
+    }, {
+        key: "onLoadTrackingPoints",
+        value: function (_arg5) {
             this.props.onLoadTrackingPoints([this.state.beginDateTimeLocal, this.state.endDateTimeLocal, this.state.SelectedTrack]);
         }
     }, {
         key: "onClearTrackingPoints",
-        value: function (_arg5) {
+        value: function (_arg6) {
             this.props.onClearTrackingPoints(null);
         }
     }, {
@@ -238,9 +243,10 @@ export var NavigationView = function (_Component) {
         key: "render",
         value: function () {
             var _createElement,
-                _createElement2,
                 _this8 = this,
-                _createElement3;
+                _createElement2,
+                _createElement3,
+                _createElement4;
 
             return createElement("div", {
                 className: "masthead clearfix"
@@ -263,6 +269,13 @@ export var NavigationView = function (_Component) {
                 className: "icon-bar"
             }), createElement("span", {
                 className: "icon-bar"
+            })), createElement("button", (_createElement2 = {
+                type: "button",
+                className: "btn btn-default"
+            }, _defineProperty(_createElement2, "aria-label", "Left Align"), _defineProperty(_createElement2, "onClick", function (arg00) {
+                _this8.onRefresh(arg00);
+            }), _createElement2), createElement("span", {
+                className: "glyphicon glyphicon-refresh"
             }))), createElement("div", {
                 id: "bs-example-navbar-collapse-1",
                 className: "collapse navbar-collapse"
@@ -271,12 +284,12 @@ export var NavigationView = function (_Component) {
             }, createElement("li", {
                 role: "presentation",
                 className: "dropdown"
-            }, createElement("a", (_createElement2 = {
+            }, createElement("a", (_createElement3 = {
                 className: "dropdown-toggle"
-            }, _defineProperty(_createElement2, "data-toggle", "dropdown"), _defineProperty(_createElement2, "href", "#"), _defineProperty(_createElement2, "role", "button"), _defineProperty(_createElement2, "aria-haspopup", "true"), _defineProperty(_createElement2, "aria-expanded", "false"), _defineProperty(_createElement2, "onClick", function (e) {
+            }, _defineProperty(_createElement3, "data-toggle", "dropdown"), _defineProperty(_createElement3, "href", "#"), _defineProperty(_createElement3, "role", "button"), _defineProperty(_createElement3, "aria-haspopup", "true"), _defineProperty(_createElement3, "aria-expanded", "false"), _defineProperty(_createElement3, "onClick", function (e) {
                 e.stopPropagation();
                 e.preventDefault();
-            }), _createElement2), this.state.VisualizeRecordedTracks, createElement("span", {
+            }), _createElement3), this.state.VisualizeRecordedTracks, createElement("span", {
                 className: "caret"
             })), createElement("ul", {
                 className: "dropdown-menu"
@@ -294,9 +307,9 @@ export var NavigationView = function (_Component) {
             })))))), createElement("li", {
                 role: "presentation",
                 className: "dropdown"
-            }, createElement("a", (_createElement3 = {
+            }, createElement("a", (_createElement4 = {
                 className: "dropdown-toggle"
-            }, _defineProperty(_createElement3, "data-toggle", "dropdown"), _defineProperty(_createElement3, "href", "#"), _defineProperty(_createElement3, "role", "button"), _defineProperty(_createElement3, "aria-haspopup", "true"), _defineProperty(_createElement3, "aria-expanded", "false"), _createElement3), createElement("label", {}, "Observation")), createElement("ul", {
+            }, _defineProperty(_createElement4, "data-toggle", "dropdown"), _defineProperty(_createElement4, "href", "#"), _defineProperty(_createElement4, "role", "button"), _defineProperty(_createElement4, "aria-haspopup", "true"), _defineProperty(_createElement4, "aria-expanded", "false"), _createElement4), createElement("label", {}, "Observation")), createElement("ul", {
                 className: "dropdown-menu",
                 style: {
                     minWidth: "250px"
@@ -337,6 +350,7 @@ function mapStateToProps(state, ownprops) {
         onClearTrackingPoints: ownprops.onClearTrackingPoints,
         onObserve: ownprops.onObserve,
         onUnobserve: ownprops.onUnobserve,
+        onRefresh: ownprops.onRefresh,
         onImportTrackingFiles: ownprops.onImportTrackingFiles,
         Tracks: state.Tracks,
         Observed: Observed
@@ -385,6 +399,12 @@ function mapDispatchToProps(dispatch, ownprops) {
         });
     };
 
+    var onRefresh = function onRefresh() {
+        dispatch(asThunk(function (dispatch_1) {
+            return refresh(dispatch_1);
+        }));
+    };
+
     var onImportTrackingFiles = function onImportTrackingFiles(filenames) {
         dispatch(asThunk(function (dispatch_1) {
             return parseTrackingPointsFromGpx(filenames, dispatch_1);
@@ -399,6 +419,7 @@ function mapDispatchToProps(dispatch, ownprops) {
         onClearTrackingPoints: onClearTrackingPoints,
         onObserve: onObserve,
         onUnobserve: onUnobserve,
+        onRefresh: onRefresh,
         onImportTrackingFiles: onImportTrackingFiles,
         Tracks: ownprops.Tracks,
         Observed: ownprops.Observed
@@ -415,6 +436,7 @@ function setDefaultProps(ownprops) {
         onClearTrackingPoints: ownprops.onClearTrackingPoints,
         onObserve: ownprops.onObserve,
         onUnobserve: ownprops.onUnobserve,
+        onRefresh: ownprops.onRefresh,
         onImportTrackingFiles: ownprops.onImportTrackingFiles,
         Tracks: Tracks,
         Observed: ownprops.Observed

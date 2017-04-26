@@ -203,6 +203,23 @@ export function getAllTracks(dispatch) {
         });
     }(PromiseImpl.promise).then(function () {});
 }
+export function refresh(dispatch) {
+    return function (builder_) {
+        return builder_.Delay(function () {
+            return postRecord("/api/tracks", "", {
+                headers: jsonHeaders
+            }).then(function (_arg1) {
+                if (_arg1.ok) {
+                    getAllTracks(dispatch);
+                    return Promise.resolve();
+                } else {
+                    dispatchShowError(dispatch, null, "Could not refresh tracks!");
+                    return Promise.resolve();
+                }
+            });
+        });
+    }(PromiseImpl.promise).then(function () {});
+}
 export function loadTrackingPoints(start, end, trackName, dispatch) {
     return function (builder_) {
         return builder_.Delay(function () {

@@ -115,6 +115,19 @@ let getAllTracks (dispatch : ReactRedux.Dispatcher) =
     }
     |> Promise.map ignore
 
+let refresh (dispatch : ReactRedux.Dispatcher) = 
+    promise {
+      let! response = 
+            postRecord ("/api/tracks") "" [ 
+                    RequestProperties.Headers jsonHeaders                                          
+                ]
+      if response.Ok then
+        getAllTracks dispatch |> ignore   
+      else
+        dispatchShowError dispatch None "Could not refresh tracks!"
+    }
+    |> Promise.map ignore
+
 let loadTrackingPoints (start, ``end``,  trackName) (dispatch : ReactRedux.Dispatcher) =
     promise {
         let! response = 
