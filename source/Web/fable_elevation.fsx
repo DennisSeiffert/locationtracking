@@ -77,8 +77,6 @@ type ElevationChart(props) =
         let geoPoint = this.props.CurrentTrack.getGeoPointFromElevationDataIndex(index, this.props.CurrentTrack.ElevationPoints.Length) 
         this.props.OnShowElevationMarker geoPoint
         ignore()
-        // if this.props.CurrentTrack.hasElevationMarker() then 
-        //     showPosition(geoPoint.latitude, geoPoint.longitude, this.currentTrack.elevationMarker);
   
   
 
@@ -195,14 +193,7 @@ type ElevationChart(props) =
                                                       Math.Min(state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index + 1, totalElevationPoints).distanceCovered)), state.x.range().[1]) -
                                                       state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index,totalElevationPoints).distanceCovered))
                                     ))                                                                    
-                                    ?attr("height",Func<_,_,_,_>( fun data i j -> dimensions.chartHeight - state.y.Invoke(data.elevation)))
-                                    // ?on("mouseover", fun data i j ->
-                                    //                                 this.onMouseOverHandler(data.index) 
-                                    //                                 D3.Globals.select(Browser.event.currentTarget).attr("fill","").classed("active", true)
-                                    // )
-                                    // ?on("mouseout",fun data _ _ ->                                                                                                                
-                                    //                     D3.Globals.select(Browser.event.currentTarget).attr("fill","").classed("active", false)
-                                    // ) |> ignore
+                                    ?attr("height",Func<_,_,_,_>( fun data i j -> dimensions.chartHeight - state.y.Invoke(data.elevation))) |> ignore
         bars?exit()?remove() |> ignore
 
          //update the axis and line
