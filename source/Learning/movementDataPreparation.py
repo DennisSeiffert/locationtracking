@@ -3,6 +3,7 @@ import requests
 
 from Track import Track
 from TrackingPoint import TrackingPoint
+import ElevationRepository
 
 # 2016-10-06T22:11:47.160Z
 datetimeFormatWithMs = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -26,16 +27,22 @@ def mapToDomainModel(t):
     return Track(t['name'], trackingpoints)
 
 
-def generateFeatures(tracks):
+def generateFeatures(tracks, elevationPoints):    
     for track in tracks:
-        for point in track.trackingpoints:
-            yield (point.latitude, point.longitude, point.velocity)
+        track.assignElevation(elevationPoints)
+        for range in track.ranges:
+            tempTrack = Track(track.name, track.filterPoints(range[0], range[1]))
+            tempTrack.calculateRise()
+            for point in tempTrack.trackingpoints:
+                yield (point.latitude, point.longitude, point.velocity, point.rise)
 
 
 def requestTracks():
     url = 'http://hmmas8wmeibjab4e.myfritz.net/api/tracks'
     result = requests.get(url)
     if result.status_code == 200:
-        tracks = [mapToDomainModel(t) for t in result.json()]
-        return generateFeatures(tracks)
+        tracks = [mapToDomainModel(t) for t in result.json()]        
+        elevationPoints = ElevationRepository.getElevationPoints()
+
+        return generateFeatures(tracks, elevationPoints)
     return []

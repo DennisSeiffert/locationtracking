@@ -7,3 +7,5 @@ class TrackingPoint:
         self.timestamputc = timestamputc
         self.distanceFromAncestor = 0
         self.velocity = 0.0
+        self.elevationInMeters = 0.0
+        self.rise = 0.0

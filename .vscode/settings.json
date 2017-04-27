@@ -1,7 +1,7 @@
 {     
 "python.unitTest.unittestEnabled": false,
-"python.unitTest.pyTestEnabled": true,
-"python.unitTest.nosetestsEnabled": false,
+"python.unitTest.pyTestEnabled": false,
+"python.unitTest.nosetestsEnabled": true,
 "eslint.enable": true,
 "editor.minimap.enabled": true
 }

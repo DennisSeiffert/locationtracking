@@ -16,6 +16,7 @@ class Track:
         self.calculateDateRange()
         self.calculateDistances()
         self.calculateVelocities()
+        self.calculateRise()
 
     def calculateDateRange(self):
         if len(self.trackingpoints) > 0:
@@ -29,6 +30,30 @@ class Track:
         for i in range(1, len(self.trackingpoints)):
             self.trackingpoints[i].distanceFromAncestor = calculateDistanceInBetween(self.trackingpoints[i - 1],
                                                                                      self.trackingpoints[i])
+
+    def calculateRise(self):
+        for i in range(1, len(self.trackingpoints)):
+            riseDifference = self.trackingpoints[i].elevationInMeters - self.trackingpoints[i -1].elevationInMeters
+            if self.trackingpoints[i].distanceFromAncestor > 0.0:
+                self.trackingpoints[i].rise = riseDifference / self.trackingpoints[i].distanceFromAncestor
+                                                                                     
+
+    def getNearestPointIndex(self, latitude, longitude):       
+        for i in range(0, len(self.trackingpoints)):
+            distanceInMeters = vincenty((latitude, longitude), (self.trackingpoints[i].latitude, self.trackingpoints[i].longitude)).meters
+            if distanceInMeters < 100.0:
+                return i
+
+        return -1
+
+    def assignElevationAt(self, index, elevation):
+        self.trackingpoints[index].elevationInMeters = elevation
+
+    def assignElevation(self, elevationPoints):
+        for elevation in elevationPoints:
+            matchingTrackingPointIndex = self.getNearestPointIndex(elevation.latitude, elevation.longitude)
+            if matchingTrackingPointIndex > -1:
+                self.assignElevationAt(matchingTrackingPointIndex, elevation.elevation)        
 
     def calculateVelocities(self):        
         minRangeTimestamp = datetime.utcnow()
@@ -48,4 +73,7 @@ class Track:
         list.sort(self.trackingpoints, cmp = lambda x,y: int((x.timestamputc - y.timestamputc).total_seconds()))
 
     def restrict(self, beginDate, endDate):
-        self.trackingpoints = filter(lambda item: beginDate <= item.timestamputc <= endDate, self.trackingpoints)
+        self.trackingpoints = self.filterPoints(beginDate, endDate)
+
+    def filterPoints(self, beginDate, endDate):
+        return filter(lambda item: beginDate <= item.timestamputc <= endDate, self.trackingpoints)

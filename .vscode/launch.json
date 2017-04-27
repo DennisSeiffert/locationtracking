@@ -1,6 +1,25 @@
 {
     "version": "0.2.0",
     "configurations": [        
+  {      
+    "name": "Nose",
+    "type": "python",
+    "request": "launch",
+    "stopOnEntry": false,
+    "pythonPath": "${config:python.pythonPath}",
+    "program": "${workspaceRoot}/.vscode/run_nose.py",
+    "cwd": "${workspaceRoot}",
+    "debugOptions": [
+        "WaitOnAbnormalExit",
+        "WaitOnNormalExit",
+        "RedirectOutput"
+    ],
+    "args": [
+        "${file}",  // currently selected file
+        "-v",       // additional nose parameters –
+        "-s"        // tweak to your liking
+    ]
+},        
          {
             "name": "Attach to Mono",
             "request": "attach",
@@ -20,7 +39,7 @@
             "type": "python",
             "request": "launch",
             "stopOnEntry": true,
-            "pythonPath": "${config.python.pythonPath}",
+            "pythonPath": "${config:python.pythonPath}",
             "program": "${file}",
             "cwd": "${workspaceRoot}",
             "debugOptions": [

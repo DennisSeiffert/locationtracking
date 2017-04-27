@@ -9,6 +9,7 @@ from flask import request
 
 import TrackingPoint
 import TrackRepository
+import ElevationRepository
 import Track
 
 app = Flask(__name__)
@@ -29,6 +30,8 @@ def jsonSerializing(obj):
 
 def update_tracks():
     TrackRepository.updateTracks(datetime.utcnow())
+    for track in TrackRepository.getTracks():
+        ElevationRepository.updateElevationPoints(track)
     return flask.Response(json.dumps([]), mimetype="application/json")
 
 def options_trackIds():
@@ -51,6 +54,10 @@ def get_tracks():
             index += 1
         yield ']'
     tracks = TrackRepository.getTracks()
+    elevationPoints = ElevationRepository.getElevationPoints()
+    for track in tracks:
+        track.assignElevation(elevationPoints)        
+
     return flask.Response(generate(tracks), mimetype="application/json")
 
 
