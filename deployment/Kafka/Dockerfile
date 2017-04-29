@@ -23,9 +23,22 @@ COPY server.properties /opt/kafka/config/server.properties
 # Supervisor config
 ADD kafka.conf /etc/supervisor/conf.d/
 
+# copy kafka connect config files
+COPY start-connect.sh /usr/bin/start-connect.sh
+COPY connect-distributed.properties /opt/kafka/config/connect-distributed.properties
+# Supervisor config
+ADD kafka-connect.conf /etc/supervisor/conf.d/
+
+# copy kafka connect config files
+COPY connect-mongodb-1.0.jar /opt/kafka/libs/connect-mongodb-1.0.jar
+COPY mongodb-sink-connector.properties /opt/kafka/config/mongodb-sink-connector.properties
+
 
 
 # 9092 is kafka
 EXPOSE 9092
+
+# expose REST Connect API
+EXPOSE 8083
 
 CMD ["supervisord", "-n"]
