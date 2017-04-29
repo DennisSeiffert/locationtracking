@@ -20,24 +20,28 @@ import tensorflow.contrib.layers as layers
 import tensorflow.contrib.rnn as rnn
 
 import movementDataPreparation as move
-tf.logging.set_verbosity(tf.logging.INFO)
+import ElevationRepository
+tf.logging.set_verbosity(tf.logging.ERROR)
 
 
 class DataPreparation:
     def __init__(self, timesteps, batchsize, val_size=0.1, test_size=0.1):
-        self.Features = ['latitude', 'longitude']
+        self.Features = ['rise']
         self.timesteps = timesteps
         self.batchsize = batchsize
         self.current_step = 0
         self.val_size = val_size
         self.test_size = test_size
 
-    def __expand_geopoints(self, geopoints, timesteps):
-        new_input = np.array([geopoints[i:i+timesteps].as_matrix() for i in range(0, geopoints.shape[0] - timesteps)])
-        return pd.DataFrame(new_input.reshape((-1,2)))
+    def __expand_rises(self, rises, timesteps):
+        new_input = np.array([rises[i:i+timesteps] for i in range(0, rises.shape[0] - timesteps)])
+        return pd.DataFrame(new_input)
 
     def __extract_velocities(self, tracksDataFrame):
         return tracksDataFrame[2]
+
+    def __extract_rises(self, tracksDataFrame):
+        return tracksDataFrame[3]
 
     def __extract_latitude(self, tracksDataFrame):
         return tracksDataFrame[0]
@@ -49,13 +53,13 @@ class DataPreparation:
         return tracksDataFrame.drop(2, axis=1)
 
     def __create_data_triple(self, tracksDataFrame):
-        geopoints_features = self.__expand_geopoints(self.__extract_geopoints(tracksDataFrame),
+        rises_features = self.__expand_rises(self.__extract_rises(tracksDataFrame),
                                                      self.timesteps)
-        train, val, test = self.__split_data(geopoints_features)
-        geopoints = self.__extract_latitude(tracksDataFrame)[self.timesteps:]
-        geopoints_train, geopoints_val, geopoints_test = self.__split_data(geopoints)
+        train, val, test = self.__split_data(rises_features)
+        velocities = self.__extract_velocities(tracksDataFrame)[self.timesteps:]
+        velocities_train, velocities_val, velocities_test = self.__split_data(velocities)
 
-        return train, val, test, geopoints_train, geopoints_val, geopoints_test
+        return train, val, test, velocities_train, velocities_val, velocities_test
 
     def __split_data(self, data):
         """
@@ -96,21 +100,21 @@ class DataPreparation:
         end = len(self.X[key])
         begin_y = 0
         end_y = len(self.y[key])
-        max_elements = end        
+        max_elements = end
+        canUpdateCurrentStep = key == 'train'
         if self.batchsize > 0 and self.current_step * self.batchsize + self.batchsize <= max_elements:
             begin = self.current_step * self.batchsize
             end = begin + self.batchsize
             begin_y = self.current_step
             end_y = self.current_step + self.batchsize / self.timesteps
-            self.current_step += 1
+            if canUpdateCurrentStep: self.current_step += 1
         elif self.batchsize > 0 and self.current_step * self.batchsize + self.batchsize > max_elements:
             begin = max_elements - self.batchsize
             end = max_elements
             begin_y = end_y - self.batchsize / self.timesteps            
-            self.current_step = -1
-        featureData = {'latitude' : tf.constant(self.X[key][0][begin:end].as_matrix(), dtype=tf.float32),
-                       'longitude' : tf.constant(self.X[key][1][begin:end].as_matrix(), dtype=tf.float32)}
-        labelData = tf.constant(self.y[key][begin_y:end_y].as_matrix(), dtype=tf.float32)
+            if canUpdateCurrentStep: self.current_step = -1
+        featureData = {'rise' : tf.constant(self.X[key][begin:end].as_matrix(), dtype=tf.float32)}
+        labelData = tf.constant(self.y[key][begin:end].as_matrix(), dtype=tf.float32)
         return featureData, labelData
 
     def get_Features(self):
@@ -141,41 +145,34 @@ class Model:
         return prediction, loss, train_op
 
     def create_rnn_network(self, features):
-        rnn_features = tf.stack([features['latitude'], features['longitude']], axis=1)
-        elements_count = features['latitude'].get_shape()[0].value        
-        rnn_features = tf.reshape(rnn_features, [-1, self.timesteps, 2])
+        batch_size = features['rise'].get_shape()[0].value
+        rnn_features = tf.reshape(features['rise'], [batch_size, self.timesteps, -1], name="input_rise") #tf.stack([features['rise']], axis=0, name="input_rise")
+        tf.summary.histogram('rise distribution', rnn_features)
+                
+        #rnn_features = tf.reshape(features, [batch_size, self.timesteps, -1])
         rnn_cells = [rnn.LSTMBlockCell(num_units) for num_units in self.rnn_units]
         stacked_lstm = tf.nn.rnn_cell.MultiRNNCell(rnn_cells)
         output, state = tf.nn.dynamic_rnn(stacked_lstm, rnn_features, dtype=tf.float32)
         return output, state
 
     def model_fn(self, features, targets, mode):
+        batch_size = features['rise'].get_shape()[0].value
         rnn_output, rnn_state = self.create_rnn_network(features)
-        rnn_output = tf.gather(tf.reshape(rnn_output, [-1,self.rnn_units[-1]]), [np.max([i-1,0]) for i in range(0, rnn_output.get_shape()[0].value * self.timesteps, self.timesteps)])        
-        prediction, loss, train_op = self.create_regression_network(rnn_output, targets)
+        #rnn_output = tf.gather(tf.reshape(rnn_output, [-1,self.rnn_units[-1]]), [np.max([i-1,0]) for i in range(0, rnn_output.get_shape()[0].value * self.timesteps, self.timesteps)])        
+        rnn_output_reshaped = tf.reshape(rnn_output, [batch_size, self.timesteps ,self.rnn_units[-1]])
+        rnn_output_reshaped = rnn_output_reshaped[:,-1]
+        prediction, loss, train_op = self.create_regression_network(rnn_output_reshaped, targets)
         return prediction, loss, train_op
 
 
 def main(_):
-    max_count = 100    
-    # tracks = [tuple([i * 1.0, max_count-i, np.sin(np.deg2rad(i)) * 100.0]) for i in range(0, max_count)]
-    tracks = move.requestTracks()
-    data_preparation = DataPreparation(10, 100)   
-    rnn_with_regression_model = Model(rnn_units=[1024, 512, 256],                                      
+    ElevationRepository.mongoDbInstance = '192.168.1.101'
+    max_count = 200    
+    tracks = [tuple([i * 1.0, max_count-i, np.sin(np.deg2rad(i)) * 100.0, np.cos(np.deg2rad(i)) * 100.0]) for i in range(0, max_count)]
+    #tracks = move.requestTracks()    
+    data_preparation = DataPreparation(10, 15)   
+    rnn_with_regression_model = Model(rnn_units=[256 for i in range(0, data_preparation.timesteps)],                                      
                                           timesteps=data_preparation.timesteps)    
-
-        # Or estimator using the ProximalAdagradOptimizer optimizer with
-        # regularization.
-        # estimator = learn.DNNRegressor(
-        #     feature_columns=data_preparation.get_Features(),
-        #     hidden_units=[1024, 512, 256],
-        #     model_dir="/tmp/velocityPrediction",
-        #     config=tf.contrib.learn.RunConfig(save_checkpoints_secs=1),
-        #     optimizer=tf.train.ProximalAdagradOptimizer(
-        #                     learning_rate=0.2,
-        #                     l1_regularization_strength=0.001
-        #     ))
-
     validation_monitor = learn.monitors.ValidationMonitor(input_fn=data_preparation.input_fn_val,
                                                           every_n_steps=1000,
                                                           eval_steps=10,
@@ -186,13 +183,16 @@ def main(_):
             config=learn.RunConfig(save_checkpoints_secs=600))
             #                       log_device_placement=True))
     data_preparation.assign_data(tracks)
-    # for epoch in range(0, 100):
-    #     data_preparation.reset_step()
-    #     while data_preparation.current_step > -1:
-    #         estimator.fit(input_fn=lambda : data_preparation.input_fn_train(step=data_preparation.current_step),
-    #                       # monitors=[validation_monitor],
-    #                       steps=500)
-            # estimator.evaluate(input_fn=data_preparation.input_fn_val, steps=100)    
+    for epoch in range(0, 5):
+        print 'epoch: %s' % epoch
+        data_preparation.reset_step()
+        while data_preparation.current_step > -1:
+            estimator.fit(input_fn=lambda : data_preparation.input_fn_train(step=data_preparation.current_step),
+                          # monitors=[validation_monitor],
+                          steps=100)
+            estimator.evaluate(input_fn=data_preparation.input_fn_val, steps=100)    
+    
+    
     data_preparation.reset_step()
     predicted = estimator.predict(input_fn=data_preparation.input_fn_test, as_iterable=False)
     from matplotlib import pyplot as plt

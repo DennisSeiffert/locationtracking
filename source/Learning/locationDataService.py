@@ -31,7 +31,9 @@ def jsonSerializing(obj):
 def update_tracks():
     TrackRepository.updateTracks(datetime.utcnow())
     for track in TrackRepository.getTracks():
-        ElevationRepository.updateElevationPoints(track)
+        for r in track.ranges:
+            tempTrack = Track.Track(track.name, track.filterPoints(r[0], r[1]))
+            ElevationRepository.updateElevationPoints(tempTrack)
     return flask.Response(json.dumps([]), mimetype="application/json")
 
 def options_trackIds():

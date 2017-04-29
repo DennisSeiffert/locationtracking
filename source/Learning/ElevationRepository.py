@@ -7,6 +7,7 @@ from bson.code import Code
 import TrackingPoint
 import ElevationPoint
 import TrackRepository
+import Track
 
 from geopy.distance import vincenty
 
@@ -32,13 +33,13 @@ def getElevationPoints():
 
 def updateElevationPoints(track):
     def offset(lat1, lng1, lat2, lng2):
-        vincenty((lat1, lng1), (lat2, lng2)).meters
+        return vincenty((lat1, lng1), (lat2, lng2)).meters
     storedElevationPoints = getElevationPoints()
     elevationPoints = getElevation(track.trackingpoints)
     elevationPointsToBeStored = []
     for newElevationPoint in elevationPoints:
         filter = [
-            e for e in storedElevationPoints if offset(e.latitude, e.longitude, newElevationPoint.latitude, newElevationPoint.longitude) <= 100.0 ]
+            e for e in storedElevationPoints if 0.0 <= offset(e.latitude, e.longitude, newElevationPoint.latitude, newElevationPoint.longitude) <= 25.0 ]
         if len(filter) == 0:
             elevationPointsToBeStored.append(newElevationPoint)
 
@@ -46,6 +47,8 @@ def updateElevationPoints(track):
 
 
 def insertElevationPoints(elevationPoints):
+    if len(elevationPoints) == 0:
+        return
     client = MongoClient(mongoDbInstance, mongoDbPort)
     db = client.parse
     db.ElevationPoints.insert_many(
@@ -69,11 +72,18 @@ def getElevation(path=[], samples="256", sensor="false", **elvtn_args):
     url = ELEVATION_BASE_URL + '?' + urllib.urlencode(elvtn_args)
     response = simplejson.load(urllib.urlopen(url))
 
-    for resultset in response['results']:
-        yield ElevationPoint.ElevationPoint(resultset['location']['lat'], resultset['location']['lng'], resultset['elevation'])
+    return [ElevationPoint.ElevationPoint(resultset['location']['lat'], resultset['location']['lng'], resultset['elevation']) for resultset in response['results']]        
 
 if __name__ == '__main__':
     TrackRepository.mongoDbInstance = '192.168.1.101'
     mongoDbInstance = '192.168.1.101'
     for track in TrackRepository.getTracks():
-        updateElevationPoints(track)
+        for r in track.ranges:
+            tempTrack = Track.Track(track.name, track.filterPoints(r[0], r[1]))
+            try:
+                now = time.time()
+                updateElevationPoints(tempTrack)
+                print 'updated elevation points for ' + track.name + ' in ' + (time.time() - now) + 's'
+            except Exception:
+                print 'cannot update elevation points for ' + track.name
+                pass

@@ -1,4 +1,5 @@
 from datetime import datetime
+from bisect import bisect_left
 
 from geopy.distance import vincenty
 
@@ -50,10 +51,55 @@ class Track:
         self.trackingpoints[index].elevationInMeters = elevation
 
     def assignElevation(self, elevationPoints):
-        for elevation in elevationPoints:
-            matchingTrackingPointIndex = self.getNearestPointIndex(elevation.latitude, elevation.longitude)
-            if matchingTrackingPointIndex > -1:
-                self.assignElevationAt(matchingTrackingPointIndex, elevation.elevation)        
+        def compareGeoPoints(f, s):
+            def compareLongitude(f1, s1):
+                if f1.longitude > s1.longitude:
+                    return 1
+                elif f1.longitude < s1.longitude:
+                    return -1
+                return 0
+            if f.latitude > s.latitude:
+                return 1
+            elif f.latitude < s.latitude:
+                return -1
+            
+            return compareLongitude(f,s)
+
+        def bisect(a, x, lo=0, hi=None, cmp=None):                
+            def simpleCmp(x,y): 
+                if x < y: 
+                    -1 
+                elif x > y:
+                     1 
+                else: 0
+            if lo < 0:
+                raise ValueError('lo must be non-negative')
+            if hi is None:
+                hi = len(a)
+            if cmp is None:
+                cmp = simpleCmp
+
+            while lo < hi:
+                mid = (lo+hi)//2
+                comparedValue = cmp(a[mid], x)
+                if comparedValue < 0: 
+                    lo = mid+1
+                elif comparedValue > 0:
+                    hi = mid
+                else: 
+                    return mid                
+            return lo
+
+        sortedElevationPoints = list(elevationPoints)
+        sortedElevationPoints.sort(compareGeoPoints)
+
+        # sortedTrackingPoints = list(self.trackingpoints)
+        # sortedTrackingPoints.sort(compareGeoPoints)
+
+        for trackingPoint in self.trackingpoints:
+            i = bisect(sortedElevationPoints, trackingPoint, cmp=compareGeoPoints)
+            if i != len(sortedElevationPoints):
+                trackingPoint.elevationInMeters = sortedElevationPoints[i].elevation        
 
     def calculateVelocities(self):        
         minRangeTimestamp = datetime.utcnow()

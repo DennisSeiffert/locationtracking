@@ -52,7 +52,8 @@ class TrackTest(unittest2.TestCase):
                            ElevationPoint(3.4, 8.8, 20.0),
                            ElevationPoint(3.5, 8.8, 10.0)]
         track.assignElevation(elevationPoints)
-
+        track.calculateRise()
+        
         self.assertEqual(track.trackingpoints[0].elevationInMeters, 10.0)
         self.assertEqual(track.trackingpoints[1].elevationInMeters, 20.0)
         self.assertEqual(track.trackingpoints[2].elevationInMeters, 30.0)

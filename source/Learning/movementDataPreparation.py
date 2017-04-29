@@ -18,10 +18,10 @@ def mapToDomainModel(t):
         def mapTrackingPoint(x):
             try:
                 timestamp = datetime.strptime(
-                    x['timestamputc']['$date'], datetimeFormatWithMs)
+                    x['timestamputc']['date'], datetimeFormatWithMs)
             except ValueError:
                 timestamp = datetime.strptime(
-                    x['timestamputc']['$date'], datetimeFormatWithoutMs)
+                    x['timestamputc']['date'], datetimeFormatWithoutMs)
             return TrackingPoint(x['latitude'], x['longitude'], timestamp)
         trackingpoints = [mapTrackingPoint(tp) for tp in trackingpointsRef]
     return Track(t['name'], trackingpoints)
@@ -34,14 +34,14 @@ def generateFeatures(tracks, elevationPoints):
             tempTrack = Track(track.name, track.filterPoints(range[0], range[1]))
             tempTrack.calculateRise()
             for point in tempTrack.trackingpoints:
-                yield (point.latitude, point.longitude, point.velocity, point.rise)
+                yield (point.latitude, point.longitude, round(point.velocity, 1), int(point.rise * 100.0))
 
 
 def requestTracks():
     url = 'http://hmmas8wmeibjab4e.myfritz.net/api/tracks'
     result = requests.get(url)
     if result.status_code == 200:
-        tracks = [mapToDomainModel(t) for t in result.json()]        
+        tracks = [mapToDomainModel(t) for i, t in enumerate(result.json()) if i < 100]        
         elevationPoints = ElevationRepository.getElevationPoints()
 
         return generateFeatures(tracks, elevationPoints)
