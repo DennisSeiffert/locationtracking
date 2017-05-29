@@ -170,7 +170,7 @@ type ElevationChart(props) =
         let totalElevationPoints = this.props.CurrentTrack.ElevationPoints.Length                          
         state.x.domain([|0.0; maxXValue |]) |> ignore 
         state.y.domain([|0.0; this.props.CurrentTrack.ElevationPoints |> Array.map (fun (d) -> d.elevation) |> Array.max |]) |> ignore
-        state.ySpeed.domain([|0.0; this.props.CurrentTrack.Points |> List.map (fun (d) -> d.speed * 3.6) |> List.max |]) |> ignore
+        state.ySpeed.domain([|0.0; this.props.CurrentTrack.Points |> Array.map (fun (d) -> d.speed * 3.6) |> Array.max |]) |> ignore
         let bars = state.chartWrapper.selectAll(".elevationbar").data(this.props.CurrentTrack.ElevationPoints)
         bars?attr("x",Func<_,_,_,_>(fun data _ _ ->
                                                   state.x.Invoke(this.toKm(this.props.CurrentTrack.getGeoPointFromElevationDataIndex(data.index, totalElevationPoints).distanceCovered))
@@ -207,7 +207,7 @@ type ElevationChart(props) =
                         .x(fun d _ -> state.x.Invoke(this.toKm(d.distanceCovered)))
                         .y(fun d _ -> state.ySpeed.Invoke(d.speed * 3.6))
                         .interpolate_linear()  
-        lines?attr("d", line.Invoke(Array.ofList this.props.CurrentTrack.Points)) |> ignore
+        lines?attr("d", line.Invoke(this.props.CurrentTrack.Points)) |> ignore
         lines?enter()?append("path")?classed("line", true)        
       
 
@@ -259,7 +259,7 @@ type ElevationChart(props) =
                         .domain([|0.0; this.props.CurrentTrack.ElevationPoints |> Array.map (fun (d) -> d.elevation) |> Array.max |])                
         let ySpeed = D3.Scale.Globals.linear()
                         .range([|dimensions.chartHeight; 0.0|])
-                        .domain([|0.0; this.props.CurrentTrack.Points |> List.map (fun (d) -> d.speed * 3.6) |> List.max |])
+                        .domain([|0.0; this.props.CurrentTrack.Points |> Array.map (fun (d) -> d.speed * 3.6) |> Array.max |])
         let chartWrapper = svg
                             .append("g")
                             // (D3.Globals.transform("").translate(dimensions.margin.left, dimensions.margin.top))
@@ -333,7 +333,7 @@ let private mapDispatchToProps (dispatch : ReactRedux.Dispatcher) (ownprops: Ele
 
 let private setDefaultProps (ownprops : ElevationProps) =
     { ownprops with
-         CurrentTrack = new TrackVisualization(String.Empty, List.Empty)                      
+         CurrentTrack = new TrackVisualization(String.Empty, [||])                      
          OnShowElevationMarker = fun(trackingPoint) -> ignore() }   
 
 let createElevationViewComponent =

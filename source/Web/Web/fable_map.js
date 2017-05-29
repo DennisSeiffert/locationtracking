@@ -10,7 +10,7 @@ import { setType } from "fable-core/Symbol";
 import _Symbol from "fable-core/Symbol";
 import { Any, round, toString, equals, Interface, extendInfo, compareRecords, equalsRecords } from "fable-core/Util";
 import { createElement, Component } from "react";
-import { reverse, map as map_1 } from "fable-core/List";
+import { ofArray, reverse, map as map_1 } from "fable-core/List";
 import List from "fable-core/List";
 import { item, tryFind } from "fable-core/Seq";
 import { format } from "fable-core/String";
@@ -325,7 +325,7 @@ setType("Fable_map.MapView", MapView);
 
 function mapStateToProps(state, ownprops) {
     return {
-        Track: state.Visualization.Points,
+        Track: ofArray(state.Visualization.Points),
         ObservedTrackingJobs: state.TrackingService.observedTrackingJobs,
         trackMarkerPosition: state.Visualization.LastKnownPosition
     };

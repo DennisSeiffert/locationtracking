@@ -197,9 +197,9 @@ export var TrackVisualization = function () {
     function TrackVisualization(name, points) {
         _classCallCheck(this, TrackVisualization);
 
-        this.name = name;
-        this.points = points;
         this["ElevationPoints@"] = new Array(0);
+        this["Points@"] = points;
+        this["TrackName@"] = name;
         this["LastKnownPosition@"] = null;
     }
 
@@ -217,6 +217,12 @@ export var TrackVisualization = function () {
         key: "AssignElevationPoints",
         value: function (elevationPoints) {
             this.ElevationPoints = elevationPoints;
+        }
+    }, {
+        key: "AssignPoints",
+        value: function (name, trackingPoints) {
+            this.TrackName = name;
+            this.Points = trackingPoints;
         }
     }, {
         key: "getIndexOfNearestPoint",
@@ -255,12 +261,18 @@ export var TrackVisualization = function () {
     }, {
         key: "Points",
         get: function () {
-            return this.points;
+            return this["Points@"];
+        },
+        set: function (v) {
+            this["Points@"] = v;
         }
     }, {
         key: "TrackName",
         get: function () {
-            return this.name;
+            return this["TrackName@"];
+        },
+        set: function (v) {
+            this["TrackName@"] = v;
         }
     }, {
         key: "LastKnownPosition",

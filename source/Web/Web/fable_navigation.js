@@ -18,7 +18,7 @@ import { setType } from "fable-core/Symbol";
 import _Symbol from "fable-core/Symbol";
 import { now } from "fable-core/Date";
 import { find } from "fable-core/Seq";
-import { map } from "fable-core/List";
+import { map, ofArray } from "fable-core/List";
 import List from "fable-core/List";
 import { asThunk } from "fable-reduxthunk/Fable.Helpers.ReactRedux.ReduxThunk";
 import { parseTrackingPointsFromGpx, refresh, loadTrackingPoints, getAllTracks } from "./fable_backend";
@@ -207,7 +207,7 @@ export var NavigationView = function (_Component) {
 
             return createElement.apply(undefined, ["div", {
                 className: "list-group track-selection-list"
-            }].concat(_toConsumableArray(map(function (t) {
+            }].concat(_toConsumableArray(ofArray(Array.from(this.props.Tracks).map(function (t) {
                 return createElement("button", {
                     className: "list-group-item",
                     onClick: function onClick(arg00) {
@@ -215,7 +215,7 @@ export var NavigationView = function (_Component) {
                     },
                     value: buildUniqueIdentifier(t)
                 }, createElement("h4", {}, t.name), createElement("h6", {}, toString(t.mintimestamp)), createElement("h6", {}, toString(t.maxtimestamp)));
-            }, this.props.Tracks))));
+            })))));
         }
     }, {
         key: "getObservedList",

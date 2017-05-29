@@ -14,8 +14,7 @@ import _Symbol from "fable-core/Symbol";
 import { Interface, toString, compareRecords, equalsRecords } from "fable-core/Util";
 import { ElevationPoint, Track, TrackingPoint, TrackingService, TrackVisualization, LocationTracker } from "./fable_domainModel";
 import { ofArray } from "fable-core/List";
-import List from "fable-core/List";
-import { LocationService, saveLocationTracker } from "./fable_backend";
+import { LocationService, loadLocationTracker, saveLocationTracker } from "./fable_backend";
 import { addDays, now, utcNow } from "fable-core/Date";
 import * as redux from "redux";
 import * as redux_thunk from "redux-thunk";
@@ -132,16 +131,16 @@ export function reducer(domainModel, _arg1) {
         })(_arg1.Item1)(_arg1.Item2)(_arg1.Item3)(_arg1.Item4);
         return domainModel;
     } else if (_arg1.type === "LoadTrackingPoints") {
-        var Visualization = new TrackVisualization(_arg1.Item3, new List());
+        var Visualization = new TrackVisualization(_arg1.Item3, []);
         return new LocationTracker(domainModel.TrackingService, Visualization, domainModel.Tracks, domainModel.Error, domainModel.Info);
     } else if (_arg1.type === "ClearTrackingPoints") {
-        var _Visualization = new TrackVisualization("", new List());
+        var _Visualization = new TrackVisualization("", []);
 
         return new LocationTracker(domainModel.TrackingService, _Visualization, domainModel.Tracks, domainModel.Error, domainModel.Info);
     } else if (_arg1.type === "ReceivedTrack") {
         var aggregatedPoints = TrackVisualization.calculate(ofArray(_arg1.Item2));
 
-        var _Visualization2 = new TrackVisualization(_arg1.Item1, aggregatedPoints);
+        var _Visualization2 = new TrackVisualization(_arg1.Item1, Array.from(aggregatedPoints));
 
         return new LocationTracker(domainModel.TrackingService, _Visualization2, domainModel.Tracks, domainModel.Error, domainModel.Info);
     } else if (_arg1.type === "LoadingTracks") {
@@ -221,40 +220,33 @@ export function onPositionChanged(identifier, latitude, longitude, timestamputc)
     });
 }
 export function start() {
-    var initialStoreState = null;
-
-    var storeState = function () {
-        var matchValue = initialStoreState;
-
-        if (matchValue == null) {
-            return new LocationTracker(new TrackingService(new LocationService(window.location.origin), function (identifier) {
-                return function (latitude) {
-                    return function (longitude) {
-                        return function (timestamputc) {
-                            onPositionChanged(identifier, latitude, longitude, timestamputc);
-                        };
+    var initialStoreState = loadLocationTracker;
+    var storeState = initialStoreState == null ? new LocationTracker(new TrackingService(new LocationService(window.location.origin), function (identifier) {
+        return function (latitude) {
+            return function (longitude) {
+                return function (timestamputc) {
+                    onPositionChanged(identifier, latitude, longitude, timestamputc);
+                };
+            };
+        };
+    }), new TrackVisualization("", Array.from(TrackVisualization.calculate(ofArray([new TrackingPoint(8.9, 5.9, now(), 34.9, 0, 32300.9, 0, 320.3), new TrackingPoint(9.9, 5.9, now(), 34.9, 0, 32300.9, 1, 32.3)])))), ofArray([new Track(now(), function () {
+        var copyOfStruct = now();
+        return addDays(copyOfStruct, 1);
+    }(), "first Track"), new Track(now(), function () {
+        var copyOfStruct = now();
+        return addDays(copyOfStruct, 2);
+    }(), "second Track")]), null, null) : function () {
+        var tracker = new LocationTracker(new TrackingService(new LocationService(window.location.origin), function (identifier) {
+            return function (latitude) {
+                return function (longitude) {
+                    return function (timestamputc) {
+                        onPositionChanged(identifier, latitude, longitude, timestamputc);
                     };
                 };
-            }), new TrackVisualization("", TrackVisualization.calculate(ofArray([new TrackingPoint(8.9, 5.9, now(), 34.9, 0, 32300.9, 0, 320.3), new TrackingPoint(9.9, 5.9, now(), 34.9, 0, 32300.9, 1, 32.3)]))), ofArray([new Track(now(), function () {
-                var copyOfStruct = now();
-                return addDays(copyOfStruct, 1);
-            }(), "first Track"), new Track(now(), function () {
-                var copyOfStruct = now();
-                return addDays(copyOfStruct, 2);
-            }(), "second Track")]), null, null);
-        } else {
-            return new LocationTracker(new TrackingService(new LocationService(window.location.origin), function (identifier) {
-                return function (latitude) {
-                    return function (longitude) {
-                        return function (timestamputc) {
-                            onPositionChanged(identifier, latitude, longitude, timestamputc);
-                        };
-                    };
-                };
-            }), new TrackVisualization(matchValue.Visualization.TrackName, matchValue.Visualization.Points), matchValue.Tracks, matchValue.Error, matchValue.Info);
-        }
+            };
+        }), new TrackVisualization(toString(initialStoreState.Visualization["TrackName@"]), initialStoreState.Visualization["Points@"]), initialStoreState.Tracks, initialStoreState.Error, initialStoreState.Info);
+        return tracker;
     }();
-
     storeState.Visualization.AssignElevationPoints([new ElevationPoint(0, 0)]);
     var middleware = redux.applyMiddleware(redux_thunk.default);
     store = createStore(function (domainModel) {

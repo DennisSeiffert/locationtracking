@@ -88,12 +88,12 @@ let reducer (domainModel: LocationTracker) = function
         domainModel.TrackingService.UpdateCoordinates identifier latitude longitude timestamputc
         domainModel       
     | LoadTrackingPoints (beginDate, endDate, selectedTrack) -> 
-        { domainModel with Visualization = new TrackVisualization(selectedTrack, List.Empty)}
+        { domainModel with Visualization = new TrackVisualization(selectedTrack, [||])}
     | ClearTrackingPoints ->
-        { domainModel with Visualization = new TrackVisualization(String.Empty, List.Empty)}
+        { domainModel with Visualization = new TrackVisualization(String.Empty, [||])}
     | ReceivedTrack (trackName, trackingPoints) ->
         let aggregatedPoints = TrackVisualization.calculate (List.ofArray trackingPoints)
-        { domainModel with Visualization = new TrackVisualization(trackName, aggregatedPoints)}
+        { domainModel with Visualization = new TrackVisualization(trackName, Array.ofList aggregatedPoints)}
     | LoadingTracks ->
         domainModel        
     | ReceivedTracks tracks ->
@@ -150,16 +150,18 @@ let onPositionChanged identifier latitude longitude timestamputc =
     store.Value.dispatch(Commands.ObservationPositionUpdated(identifier, latitude, longitude, timestamputc))    
 
 let start() = 
-    let initialStoreState = None // Backend.loadLocationTracker
+    let initialStoreState = Backend.loadLocationTracker
 
     let storeState = match initialStoreState with
-                        | Some x -> { x with 
+                        | Some x -> let tracker = { x with 
                                         TrackingService= new TrackingService(new Backend.LocationService(Browser.window.location.origin), onPositionChanged); 
-                                        Visualization=new TrackVisualization(name=x.Visualization.TrackName, points = x.Visualization.Points); 
-                                    }
+                                        Visualization=new TrackVisualization(string x.Visualization?``TrackName@``, unbox<TrackingPoint[]> x.Visualization?``Points@``); 
+                                    }                                    
+                                    //tracker.Visualization.AssignPoints x.Visualization.TrackName x.Visualization.Points
+                                    tracker
                         | None -> {
                                     TrackingService= new TrackingService(new Backend.LocationService(Browser.window.location.origin), onPositionChanged); 
-                                    Visualization=new TrackVisualization(name=String.Empty, points = TrackVisualization.calculate [{
+                                    Visualization=new TrackVisualization(name=String.Empty, points = Array.ofList(TrackVisualization.calculate [{
                                                                                                         latitude = 8.9
                                                                                                         longitude = 5.9
                                                                                                         timestamputc = DateTime.Now
@@ -178,7 +180,7 @@ let start() =
                                                                                                         distance = 32300.9
                                                                                                         index = 1
                                                                                                         elevation = 32.3
-                                                                                                    }]);
+                                                                                                    }]));
                                     Tracks=[
                                             {                        
                                                 mintimestamp=DateTime.Now;

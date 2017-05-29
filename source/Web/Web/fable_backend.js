@@ -326,12 +326,12 @@ export function parseTrackingPointsFromGpx(filenames, dispatch) {
     }(PromiseImpl.promise).then(function () {});
 }
 export function loadLocalStorage(key) {
-    return defaultArg(localStorage.getItem(key), null, function ($var1) {
+    return defaultArg(localStorage.getItem(key), null, function ($var10) {
         return function (value) {
             return value;
         }(function (arg00) {
             return JSON.parse(arg00);
-        }($var1));
+        }($var10));
     });
 }
 export function saveToLocalStorage(key, data) {

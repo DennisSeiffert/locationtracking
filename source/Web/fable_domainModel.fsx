@@ -49,9 +49,9 @@ let distance lat1 lon1 lat2 lon2 =
     d * 1000.0
 
 
-type TrackVisualization(name : string, points : TrackingPoint List) =         
+type TrackVisualization(name : string, points : TrackingPoint[]) =         
     member val ElevationPoints : ElevationPoint[] = Array.empty with get, set
-    member this.Points = points     
+    member this.Points = points 
     member this.TrackName = name 
     member val LastKnownPosition : TrackingPoint option = None with get, set
 
@@ -67,7 +67,7 @@ type TrackVisualization(name : string, points : TrackingPoint List) =
         this.ElevationPoints <- elevationPoints        
 
     member this.getIndexOfNearestPoint (distanceInMeters) =   
-        match this.Points |> List.tryFindIndex (fun (p) -> p.distanceCovered >= distanceInMeters) with
+        match this.Points |> Array.tryFindIndex (fun (p) -> p.distanceCovered >= distanceInMeters) with
             | Some index -> index
             | None -> this.Points.Length - 1
 

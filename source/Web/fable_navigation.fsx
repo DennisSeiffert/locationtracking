@@ -132,13 +132,13 @@ type NavigationView(props) =
         this.props.onClearTrackingPoints()
     member this.getTrackSelection() = 
         R.div [ClassName "list-group track-selection-list"]               
-                    (this.props.Tracks
-                    |> List.map (fun t -> R.button [ClassName "list-group-item"; OnClick this.onTrackSelected; Value (U2.Case1 (buildUniqueIdentifier t))][
+                    (Array.ofList this.props.Tracks
+                    |> Array.map (fun t -> R.button [ClassName "list-group-item"; OnClick this.onTrackSelected; Value (U2.Case1 (buildUniqueIdentifier t))][
                                                     R.h4 [] [unbox t.name]
                                                     R.h6 [] [unbox(t.mintimestamp.ToString())]
                                                     R.h6 [] [unbox(t.maxtimestamp.ToString())]                                                                                                
                                                 ]        
-                    ))        
+                    ) |> List.ofArray )        
 
     member this.getObservedList() = 
         R.div [ClassName "list-group observed-list"]                

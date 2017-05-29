@@ -201,7 +201,7 @@ type MapView(props) =
 
 let private mapStateToProps (state : LocationTracker) (ownprops : MapViewModel) =
     { ownprops with
-        Track = state.Visualization.Points
+        Track = List.ofArray state.Visualization.Points
         ObservedTrackingJobs = state.TrackingService.observedTrackingJobs   
         trackMarkerPosition = state.Visualization.LastKnownPosition     
     }
